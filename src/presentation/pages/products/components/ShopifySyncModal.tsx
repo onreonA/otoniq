@@ -7,6 +7,8 @@
 import { useState } from 'react';
 import { ShopifySyncService } from '../../../../infrastructure/services/ShopifySyncService';
 import { SyncResult } from '../../../../application/use-cases/shopify/SyncProductsFromShopifyUseCase';
+import { IntegrationLogService } from '../../../../infrastructure/services/IntegrationLogService';
+import { SupabaseIntegrationLogRepository } from '../../../../infrastructure/database/supabase/repositories/SupabaseIntegrationLogRepository';
 import toast from 'react-hot-toast';
 
 interface ShopifySyncModalProps {
@@ -82,36 +84,84 @@ export default function ShopifySyncModal({
     setLoading(true);
     setSyncResult(null);
 
+    // Initialize integration logging
+    const logRepository = new SupabaseIntegrationLogRepository();
+    const logService = new IntegrationLogService(logRepository);
+
     try {
-      const syncService = new ShopifySyncService(shopifyConfig);
-      let result: SyncResult;
+      // Log the sync operation
+      await logService.logSync(
+        tenantId,
+        'shopify',
+        async () => {
+          const syncService = new ShopifySyncService(shopifyConfig);
+          let result: SyncResult;
 
-      switch (syncType) {
-        case 'all':
-          result = await syncService.syncAllProducts(tenantId, 50);
-          break;
-        case 'page':
-          result = await syncService.syncProductsPage(tenantId, 10);
-          break;
-        case 'single':
-          if (!productId) {
-            toast.error('Ürün ID gerekli');
-            return;
+          switch (syncType) {
+            case 'all':
+              result = await syncService.syncAllProducts(tenantId, 50);
+              break;
+            case 'page':
+              result = await syncService.syncProductsPage(tenantId, 10);
+              break;
+            case 'single':
+              if (!productId) {
+                toast.error('Ürün ID gerekli');
+                return {
+                  success: false,
+                  errorCount: 1,
+                  errorMessage: 'Ürün ID gerekli',
+                };
+              }
+              result = await syncService.syncSingleProduct(tenantId, productId);
+              break;
+            default:
+              result = await syncService.syncAllProducts(tenantId, 50);
           }
-          result = await syncService.syncSingleProduct(tenantId, productId);
-          break;
-        default:
-          result = await syncService.syncAllProducts(tenantId, 50);
-      }
 
-      setSyncResult(result);
+          setSyncResult(result);
 
-      if (result.success) {
-        toast.success(`${result.syncedCount} ürün senkronize edildi`);
-        onSuccess();
-      } else {
-        toast.error(`Senkronizasyon hatası: ${result.errors.join(', ')}`);
-      }
+          if (result.success) {
+            toast.success(`${result.syncedCount} ürün senkronize edildi`);
+            onSuccess();
+            
+            return {
+              success: true,
+              successCount: result.syncedCount,
+              errorCount: result.errors.length,
+              responseData: {
+                syncedProducts: result.syncedCount,
+                errors: result.errors,
+                syncType,
+                productId,
+              },
+            };
+          } else {
+            toast.error(`Senkronizasyon hatası: ${result.errors.join(', ')}`);
+            
+            return {
+              success: false,
+              successCount: result.syncedCount,
+              errorCount: result.errors.length,
+              errorMessage: result.errors.join(', '),
+              responseData: {
+                syncedProducts: result.syncedCount,
+                errors: result.errors,
+                syncType,
+                productId,
+              },
+            };
+          }
+        },
+        {
+          entityType: 'product',
+          entityId: productId?.toString(),
+          metadata: {
+            syncType,
+            shopUrl: shopifyConfig.shop,
+          },
+        }
+      );
     } catch (error) {
       console.error('Sync error:', error);
       toast.error('Senkronizasyon başarısız');

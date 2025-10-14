@@ -7,6 +7,8 @@
 import { useState } from 'react';
 import { OdooSyncService } from '../../../../infrastructure/services/OdooSyncService';
 import { SyncResult } from '../../../../application/use-cases/odoo/SyncProductsFromOdooUseCase';
+import { IntegrationLogService } from '../../../../infrastructure/services/IntegrationLogService';
+import { SupabaseIntegrationLogRepository } from '../../../../infrastructure/database/supabase/repositories/SupabaseIntegrationLogRepository';
 import toast from 'react-hot-toast';
 
 interface OdooSyncModalProps {
@@ -82,32 +84,74 @@ export default function OdooSyncModal({
     setLoading(true);
     setSyncResult(null);
 
+    // Initialize integration logging
+    const logRepository = new SupabaseIntegrationLogRepository();
+    const logService = new IntegrationLogService(logRepository);
+
     try {
-      const syncService = new OdooSyncService(odooConfig);
-      let result: SyncResult;
+      // Log the sync operation
+      await logService.logSync(
+        tenantId,
+        'odoo',
+        async () => {
+          const syncService = new OdooSyncService(odooConfig);
+          let result: SyncResult;
 
-      switch (syncType) {
-        case 'all':
-          result = await syncService.syncAllProducts(tenantId);
-          break;
-        case 'recent':
-          result = await syncService.syncRecentProducts(tenantId, 24);
-          break;
-        case 'active':
-          result = await syncService.syncActiveProducts(tenantId);
-          break;
-        default:
-          result = await syncService.syncAllProducts(tenantId);
-      }
+          switch (syncType) {
+            case 'all':
+              result = await syncService.syncAllProducts(tenantId);
+              break;
+            case 'recent':
+              result = await syncService.syncRecentProducts(tenantId, 24);
+              break;
+            case 'active':
+              result = await syncService.syncActiveProducts(tenantId);
+              break;
+            default:
+              result = await syncService.syncAllProducts(tenantId);
+          }
 
-      setSyncResult(result);
+          setSyncResult(result);
 
-      if (result.success) {
-        toast.success(`${result.syncedCount} ürün senkronize edildi`);
-        onSuccess();
-      } else {
-        toast.error(`Senkronizasyon hatası: ${result.errors.join(', ')}`);
-      }
+          if (result.success) {
+            toast.success(`${result.syncedCount} ürün senkronize edildi`);
+            onSuccess();
+            
+            return {
+              success: true,
+              successCount: result.syncedCount,
+              errorCount: result.errors.length,
+              responseData: {
+                syncedProducts: result.syncedCount,
+                errors: result.errors,
+                syncType,
+              },
+            };
+          } else {
+            toast.error(`Senkronizasyon hatası: ${result.errors.join(', ')}`);
+            
+            return {
+              success: false,
+              successCount: result.syncedCount,
+              errorCount: result.errors.length,
+              errorMessage: result.errors.join(', '),
+              responseData: {
+                syncedProducts: result.syncedCount,
+                errors: result.errors,
+                syncType,
+              },
+            };
+          }
+        },
+        {
+          entityType: 'product',
+          metadata: {
+            syncType,
+            odooUrl: odooConfig.url,
+            odooDatabase: odooConfig.db,
+          },
+        }
+      );
     } catch (error) {
       console.error('Sync error:', error);
       toast.error('Senkronizasyon başarısız');
