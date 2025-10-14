@@ -60,6 +60,12 @@ export interface StockLevel {
   lastCountedQuantity: number | null;
   createdAt: Date;
   updatedAt: Date;
+
+  // Joined data from related tables
+  productName?: string;
+  productSku?: string;
+  warehouseName?: string;
+  averageCost?: number;
 }
 
 export type StockStatus =
@@ -112,6 +118,12 @@ export interface StockMovement {
   notes: string | null;
   createdAt: Date;
   createdBy: string | null;
+
+  // Joined data from related tables
+  productName?: string;
+  productSku?: string;
+  warehouseName?: string;
+  relatedWarehouseName?: string;
 }
 
 export interface CreateStockMovementDTO {

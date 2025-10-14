@@ -28,7 +28,10 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
     return data || [];
   }
 
-  async getWarehouseById(id: string, tenantId: string): Promise<Warehouse | null> {
+  async getWarehouseById(
+    id: string,
+    tenantId: string
+  ): Promise<Warehouse | null> {
     const { data, error } = await supabase
       .from('warehouses')
       .select('*')
@@ -92,23 +95,67 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   }
 
   // Stock Level operations
-  async getStockLevels(tenantId: string, warehouseId?: string): Promise<StockLevel[]> {
+  async getStockLevels(
+    tenantId: string,
+    warehouseId?: string
+  ): Promise<StockLevel[]> {
     let query = supabase
       .from('stock_levels')
-      .select('*')
+      .select(
+        `
+        *,
+        products!inner(id, name, sku, cost),
+        warehouses!inner(id, name)
+      `
+      )
       .eq('tenant_id', tenantId);
 
     if (warehouseId) {
       query = query.eq('warehouse_id', warehouseId);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', {
+      ascending: false,
+    });
 
     if (error) throw error;
-    return data || [];
+
+    // Map to StockLevel entity with joined data
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      tenantId: row.tenant_id,
+      productId: row.product_id,
+      warehouseId: row.warehouse_id,
+      quantity: parseFloat(row.quantity) || 0,
+      reservedQuantity: parseFloat(row.reserved_quantity) || 0,
+      availableQuantity: parseFloat(row.available_quantity) || 0,
+      minimumQuantity: parseFloat(row.minimum_quantity) || 0,
+      maximumQuantity: row.maximum_quantity
+        ? parseFloat(row.maximum_quantity)
+        : null,
+      aisle: row.aisle,
+      rack: row.rack,
+      shelf: row.shelf,
+      bin: row.bin,
+      lastCountedAt: row.last_counted_at ? new Date(row.last_counted_at) : null,
+      lastCountedQuantity: row.last_counted_quantity
+        ? parseFloat(row.last_counted_quantity)
+        : null,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+
+      // Joined data
+      productName: row.products?.name || 'Unknown Product',
+      productSku: row.products?.sku || 'N/A',
+      warehouseName: row.warehouses?.name || 'Unknown Warehouse',
+      averageCost: row.products?.cost ? parseFloat(row.products.cost) : 0,
+    }));
   }
 
-  async getStockLevelById(id: string, tenantId: string): Promise<StockLevel | null> {
+  async getStockLevelById(
+    id: string,
+    tenantId: string
+  ): Promise<StockLevel | null> {
     const { data, error } = await supabase
       .from('stock_levels')
       .select('*')
@@ -182,13 +229,17 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   ): Promise<StockMovement[]> {
     let query = supabase
       .from('stock_movements')
-      .select(`
-        *
-      `)
+      .select(
+        `
+        *,
+        products!inner(id, name, sku),
+        warehouses!inner(id, name)
+      `
+      )
       .eq('tenant_id', tenantId);
 
     if (options.warehouseId) {
-      query = query.or(`warehouse_id.eq.${options.warehouseId},from_warehouse_id.eq.${options.warehouseId},to_warehouse_id.eq.${options.warehouseId}`);
+      query = query.eq('warehouse_id', options.warehouseId);
     }
 
     if (options.productId) {
@@ -199,10 +250,40 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
       query = query.limit(options.limit);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', {
+      ascending: false,
+    });
 
     if (error) throw error;
-    return data || [];
+
+    // Map to StockMovement entity with joined data
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      tenantId: row.tenant_id,
+      productId: row.product_id,
+      warehouseId: row.warehouse_id,
+      movementType: row.movement_type,
+      quantity: parseFloat(row.quantity) || 0,
+      relatedWarehouseId: row.related_warehouse_id,
+      referenceType: row.reference_type,
+      referenceId: row.reference_id,
+      referenceNumber: row.reference_number,
+      unitCost: row.unit_cost ? parseFloat(row.unit_cost) : null,
+      totalCost: row.total_cost ? parseFloat(row.total_cost) : null,
+      quantityBefore: row.quantity_before
+        ? parseFloat(row.quantity_before)
+        : null,
+      quantityAfter: row.quantity_after ? parseFloat(row.quantity_after) : null,
+      notes: row.notes,
+      createdAt: new Date(row.created_at),
+      createdBy: row.created_by,
+
+      // Joined data
+      productName: row.products?.name || 'Unknown Product',
+      productSku: row.products?.sku || 'N/A',
+      warehouseName: row.warehouses?.name || 'Unknown Warehouse',
+      relatedWarehouseName: null, // Will be fetched separately if needed
+    }));
   }
 
   async createStockMovement(
