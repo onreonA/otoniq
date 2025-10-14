@@ -63,27 +63,27 @@ export default function RecentActivity() {
   ];
 
   return (
-    <div className="bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-slate-500 to-gray-500 rounded-xl flex items-center justify-center mr-4">
-            <i className="ri-history-line text-white text-2xl"></i>
+    <div className='bg-gradient-to-br from-slate-800/40 to-slate-900/40 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
+      <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center'>
+          <div className='w-12 h-12 bg-gradient-to-r from-slate-500 to-gray-500 rounded-xl flex items-center justify-center mr-4'>
+            <i className='ri-history-line text-white text-2xl'></i>
           </div>
           <div>
-            <h3 className="text-xl font-bold text-white">Son Aktiviteler</h3>
-            <p className="text-gray-300 text-sm">Sistem güncellemeleri</p>
+            <h3 className='text-xl font-bold text-white'>Son Aktiviteler</h3>
+            <p className='text-gray-300 text-sm'>Sistem güncellemeleri</p>
           </div>
         </div>
-        <button className="text-gray-400 hover:text-white transition-colors cursor-pointer">
-          <i className="ri-more-line text-xl"></i>
+        <button className='text-gray-400 hover:text-white transition-colors cursor-pointer'>
+          <i className='ri-more-line text-xl'></i>
         </button>
       </div>
 
-      <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20">
+      <div className='space-y-4 max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20'>
         {activities.map((activity, index) => (
           <div
             key={activity.id}
-            className="flex items-start space-x-4 p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-300 cursor-pointer group"
+            className='flex items-start space-x-4 p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-300 cursor-pointer group'
           >
             <div
               className={`w-10 h-10 ${activity.bgColor} rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}
@@ -91,28 +91,28 @@ export default function RecentActivity() {
               <i className={`${activity.icon} ${activity.color} text-lg`}></i>
             </div>
 
-            <div className="flex-1 min-w-0">
-              <h4 className="text-white font-semibold text-sm group-hover:text-blue-400 transition-colors">
+            <div className='flex-1 min-w-0'>
+              <h4 className='text-white font-semibold text-sm group-hover:text-blue-400 transition-colors'>
                 {activity.title}
               </h4>
-              <p className="text-gray-400 text-xs mt-1 line-clamp-2">
+              <p className='text-gray-400 text-xs mt-1 line-clamp-2'>
                 {activity.description}
               </p>
-              <p className="text-gray-500 text-xs mt-2">{activity.time}</p>
+              <p className='text-gray-500 text-xs mt-2'>{activity.time}</p>
             </div>
 
-            <div className="flex-shrink-0">
-              <i className="ri-arrow-right-line text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all duration-300"></i>
+            <div className='flex-shrink-0'>
+              <i className='ri-arrow-right-line text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all duration-300'></i>
             </div>
           </div>
         ))}
       </div>
 
       {/* View All Button */}
-      <div className="mt-6 pt-4 border-t border-white/10">
-        <button className="w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 border border-white/10 rounded-xl py-3 text-white font-medium transition-all duration-300 cursor-pointer">
+      <div className='mt-6 pt-4 border-t border-white/10'>
+        <button className='w-full bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-600/30 hover:to-purple-600/30 border border-white/10 rounded-xl py-3 text-white font-medium transition-all duration-300 cursor-pointer'>
           Tüm Aktiviteleri Görüntüle
-          <i className="ri-arrow-right-line ml-2"></i>
+          <i className='ri-arrow-right-line ml-2'></i>
         </button>
       </div>
     </div>

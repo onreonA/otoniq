@@ -79,13 +79,13 @@ export default function StatsCards() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
       {stats.map((stat, index) => (
         <div
           key={index}
           className={`bg-gradient-to-br ${stat.bgColor} backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer group`}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className='flex items-center justify-between mb-4'>
             <div
               className={`w-12 h-12 bg-gradient-to-r ${stat.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
             >
@@ -103,16 +103,16 @@ export default function StatsCards() {
           </div>
 
           <div>
-            <h3 className="text-gray-300 text-sm font-medium mb-2">
+            <h3 className='text-gray-300 text-sm font-medium mb-2'>
               {stat.title}
             </h3>
-            <p className="text-3xl font-bold text-white">
+            <p className='text-3xl font-bold text-white'>
               {formatValue(animatedValues[index], stat.value)}
             </p>
           </div>
 
           {/* Animated Progress Bar */}
-          <div className="mt-4 h-1 bg-white/10 rounded-full overflow-hidden">
+          <div className='mt-4 h-1 bg-white/10 rounded-full overflow-hidden'>
             <div
               className={`h-full bg-gradient-to-r ${stat.color} transition-all duration-1000 ease-out`}
               style={{

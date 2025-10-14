@@ -136,19 +136,19 @@ export default function AdminStats() {
   // Loading durumu
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
         {statsConfig.map((_, index) => (
           <div
             key={index}
-            className="bg-gradient-to-br from-gray-800/20 to-gray-900/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 animate-pulse"
+            className='bg-gradient-to-br from-gray-800/20 to-gray-900/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 animate-pulse'
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gray-700 rounded-xl"></div>
-              <div className="w-16 h-6 bg-gray-700 rounded-full"></div>
+            <div className='flex items-center justify-between mb-4'>
+              <div className='w-12 h-12 bg-gray-700 rounded-xl'></div>
+              <div className='w-16 h-6 bg-gray-700 rounded-full'></div>
             </div>
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-700 rounded w-3/4"></div>
-              <div className="h-8 bg-gray-700 rounded w-1/2"></div>
+            <div className='space-y-2'>
+              <div className='h-4 bg-gray-700 rounded w-3/4'></div>
+              <div className='h-8 bg-gray-700 rounded w-1/2'></div>
             </div>
           </div>
         ))}
@@ -159,20 +159,20 @@ export default function AdminStats() {
   // Veri yoksa
   if (!stats) {
     return (
-      <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8">
-        <div className="text-center">
-          <i className="ri-error-warning-line text-red-400 text-4xl mb-4"></i>
-          <h3 className="text-white text-lg font-medium mb-2">
+      <div className='bg-gradient-to-r from-red-600/20 to-orange-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8'>
+        <div className='text-center'>
+          <i className='ri-error-warning-line text-red-400 text-4xl mb-4'></i>
+          <h3 className='text-white text-lg font-medium mb-2'>
             İstatistikler Yüklenemedi
           </h3>
-          <p className="text-gray-300 mb-4">
+          <p className='text-gray-300 mb-4'>
             Veriler yüklenirken bir hata oluştu
           </p>
           <button
             onClick={loadStats}
-            className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300"
+            className='bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300'
           >
-            <i className="ri-refresh-line mr-2"></i>
+            <i className='ri-refresh-line mr-2'></i>
             Tekrar Dene
           </button>
         </div>
@@ -181,13 +181,13 @@ export default function AdminStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
       {statsConfig.map((config, index) => (
         <div
           key={index}
           className={`bg-gradient-to-br ${config.bgColor} backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer group`}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className='flex items-center justify-between mb-4'>
             <div
               className={`w-12 h-12 bg-gradient-to-r ${config.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
             >
@@ -205,21 +205,21 @@ export default function AdminStats() {
           </div>
 
           <div>
-            <h3 className="text-gray-300 text-sm font-medium mb-2">
+            <h3 className='text-gray-300 text-sm font-medium mb-2'>
               {config.title}
             </h3>
-            <p className="text-3xl font-bold text-white">
+            <p className='text-3xl font-bold text-white'>
               {config.format(animatedValues[index])}
             </p>
           </div>
 
           {/* Real-time indicator */}
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-gray-400 text-xs">Canlı</span>
+          <div className='mt-4 flex items-center justify-between'>
+            <div className='flex items-center space-x-2'>
+              <div className='w-2 h-2 bg-green-400 rounded-full animate-pulse'></div>
+              <span className='text-gray-400 text-xs'>Canlı</span>
             </div>
-            <div className="text-gray-400 text-xs">
+            <div className='text-gray-400 text-xs'>
               {new Date().toLocaleTimeString('tr-TR', {
                 hour: '2-digit',
                 minute: '2-digit',

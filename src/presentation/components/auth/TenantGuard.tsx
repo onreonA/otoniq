@@ -26,10 +26,10 @@ export function TenantGuard({ children, requiredRole }: TenantGuardProps) {
   // Show loading
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Kontrol ediliyor...</p>
+      <div className='min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'>
+        <div className='text-center'>
+          <div className='w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4'></div>
+          <p className='text-white text-lg'>Kontrol ediliyor...</p>
         </div>
       </div>
     );
@@ -37,7 +37,7 @@ export function TenantGuard({ children, requiredRole }: TenantGuardProps) {
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to='/login' replace />;
   }
 
   // Super admin can access everything
@@ -51,20 +51,20 @@ export function TenantGuard({ children, requiredRole }: TenantGuardProps) {
 
   // Check if user has active tenant
   if (!hasActiveTenant) {
-    return <Navigate to="/no-tenant" replace />;
+    return <Navigate to='/no-tenant' replace />;
   }
 
   // Check required role
   if (requiredRole === 'tenant_admin' && !isTenantAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to='/dashboard' replace />;
   }
 
   // Render children or outlet
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        <div className='min-h-screen flex items-center justify-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500'></div>
         </div>
       }
     >

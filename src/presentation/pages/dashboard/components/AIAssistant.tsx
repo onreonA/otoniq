@@ -54,22 +54,22 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-600/20 to-purple-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-      <div className="flex items-center mb-6">
-        <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mr-4">
-          <i className="ri-robot-line text-white text-2xl"></i>
+    <div className='bg-gradient-to-br from-indigo-600/20 to-purple-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
+      <div className='flex items-center mb-6'>
+        <div className='w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mr-4'>
+          <i className='ri-robot-line text-white text-2xl'></i>
         </div>
         <div>
-          <h3 className="text-xl font-bold text-white">AI Asistan</h3>
-          <p className="text-gray-300 text-sm">Akıllı iş yardımcınız</p>
+          <h3 className='text-xl font-bold text-white'>AI Asistan</h3>
+          <p className='text-gray-300 text-sm'>Akıllı iş yardımcınız</p>
         </div>
-        <div className="ml-auto">
-          <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+        <div className='ml-auto'>
+          <div className='w-3 h-3 bg-green-400 rounded-full animate-pulse'></div>
         </div>
       </div>
 
       {/* Chat Messages */}
-      <div className="h-64 overflow-y-auto mb-4 space-y-3 scrollbar-thin scrollbar-thumb-white/20">
+      <div className='h-64 overflow-y-auto mb-4 space-y-3 scrollbar-thin scrollbar-thumb-white/20'>
         {messages.map(message => (
           <div
             key={message.id}
@@ -82,19 +82,19 @@ export default function AIAssistant() {
                   : 'bg-white/10 text-gray-200'
               }`}
             >
-              <p className="text-sm">{message.content}</p>
-              <p className="text-xs opacity-70 mt-1">{message.time}</p>
+              <p className='text-sm'>{message.content}</p>
+              <p className='text-xs opacity-70 mt-1'>{message.time}</p>
             </div>
           </div>
         ))}
 
         {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-white/10 text-gray-200 px-4 py-2 rounded-2xl">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+          <div className='flex justify-start'>
+            <div className='bg-white/10 text-gray-200 px-4 py-2 rounded-2xl'>
+              <div className='flex space-x-1'>
+                <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce'></div>
+                <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100'></div>
+                <div className='w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200'></div>
               </div>
             </div>
           </div>
@@ -102,30 +102,30 @@ export default function AIAssistant() {
       </div>
 
       {/* Input */}
-      <div className="flex space-x-2">
+      <div className='flex space-x-2'>
         <input
-          type="text"
+          type='text'
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
-          placeholder="Mesajınızı yazın..."
-          className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 transition-colors text-sm"
+          placeholder='Mesajınızı yazın...'
+          className='flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 transition-colors text-sm'
         />
         <button
           onClick={handleSendMessage}
-          className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white p-2 rounded-xl transition-all duration-200 cursor-pointer"
+          className='bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white p-2 rounded-xl transition-all duration-200 cursor-pointer'
         >
-          <i className="ri-send-plane-line"></i>
+          <i className='ri-send-plane-line'></i>
         </button>
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className='mt-4 flex flex-wrap gap-2'>
         {['Rapor oluştur', 'Analiz yap', 'Öneri al'].map((action, index) => (
           <button
             key={index}
             onClick={() => setInputValue(action)}
-            className="bg-white/10 hover:bg-white/20 text-gray-300 text-xs px-3 py-1 rounded-full transition-colors cursor-pointer"
+            className='bg-white/10 hover:bg-white/20 text-gray-300 text-xs px-3 py-1 rounded-full transition-colors cursor-pointer'
           >
             {action}
           </button>

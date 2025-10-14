@@ -98,7 +98,7 @@ export interface ProductRepository {
   /**
    * Update existing product
    */
-  update(product: Product): Promise<Product>;
+  update(id: string, productData: Partial<Product>): Promise<Product>;
 
   /**
    * Delete product

@@ -67,6 +67,8 @@ export class Product {
     public sku: string,
     public status: 'active' | 'inactive' | 'draft' | 'archived',
     public product_type: 'simple' | 'variable' | 'grouped' | 'external',
+    public price: number,
+    public cost: number,
     public categories: string[],
     public tags: string[],
     public weight?: number,
@@ -84,6 +86,14 @@ export class Product {
     public created_at: Date = new Date(),
     public updated_at: Date = new Date()
   ) {
+    // Ensure arrays are always initialized
+    this.variants = this.variants || [];
+    this.images = this.images || [];
+    this.categories = this.categories || [];
+    this.tags = this.tags || [];
+    this.seo_keywords = this.seo_keywords || [];
+    this.metadata = this.metadata || {};
+
     this.validate();
   }
 
@@ -355,6 +365,8 @@ export class Product {
       sku: this.sku,
       status: this.status,
       product_type: this.product_type,
+      price: this.price,
+      cost: this.cost,
       categories: this.categories,
       tags: this.tags,
       weight: this.weight,
@@ -369,4 +381,31 @@ export class Product {
       updated_at: this.updated_at,
     };
   }
+}
+
+/**
+ * Create Product DTO
+ */
+export interface CreateProductDto {
+  name: string;
+  description?: string;
+  short_description?: string;
+  sku: string;
+  status: 'active' | 'inactive' | 'draft';
+  product_type: 'physical' | 'digital' | 'service';
+  price?: number;
+  cost?: number;
+  currency?: string;
+  weight?: number;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  categories?: string[];
+  tags?: string[];
+  seo_title?: string;
+  seo_description?: string;
+  seo_keywords?: string[];
+  metadata?: Record<string, any>;
 }

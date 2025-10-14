@@ -110,8 +110,13 @@ export class SupabaseProductRepository implements ProductRepository {
       }
 
       if (filters.search) {
+        // Escape special characters for ilike query
+        const escapedSearch = filters.search
+          .replace(/[%_\\]/g, '\\$&') // Escape PostgreSQL special characters
+          .replace(/[|,]/g, ' '); // Replace problematic characters with spaces
+
         query = query.or(
-          `name.ilike.%${filters.search}%,description.ilike.%${filters.search}%,sku.ilike.%${filters.search}%`
+          `name.ilike.%${escapedSearch}%,description.ilike.%${escapedSearch}%,sku.ilike.%${escapedSearch}%`
         );
       }
 
@@ -224,6 +229,7 @@ export class SupabaseProductRepository implements ProductRepository {
     );
   }
 
+
   /**
    * Create new product
    */
@@ -238,6 +244,8 @@ export class SupabaseProductRepository implements ProductRepository {
         sku: product.sku,
         status: product.status,
         product_type: product.product_type,
+        price: product.price,
+        cost: product.cost,
         categories: product.categories,
         tags: product.tags,
         weight: product.weight,
@@ -260,7 +268,7 @@ export class SupabaseProductRepository implements ProductRepository {
       if (productError) throw productError;
 
       // Insert variants if any
-      if (product.variants.length > 0) {
+      if (product.variants && product.variants.length > 0) {
         const variantsData = product.variants.map(variant => ({
           id: variant.id,
           product_id: variant.product_id,
@@ -285,7 +293,7 @@ export class SupabaseProductRepository implements ProductRepository {
       }
 
       // Insert images if any
-      if (product.images.length > 0) {
+      if (product.images && product.images.length > 0) {
         const imagesData = product.images.map(image => ({
           id: image.id,
           product_id: image.product_id,
@@ -314,34 +322,51 @@ export class SupabaseProductRepository implements ProductRepository {
   /**
    * Update existing product
    */
-  async update(product: Product): Promise<Product> {
+  async update(id: string, productData: Partial<Product>): Promise<Product> {
     try {
-      const productData = {
-        name: product.name,
-        description: product.description,
-        short_description: product.short_description,
-        sku: product.sku,
-        status: product.status,
-        product_type: product.product_type,
-        categories: product.categories,
-        tags: product.tags,
-        weight: product.weight,
-        dimensions: product.dimensions,
-        metadata: product.metadata,
-        seo_title: product.seo_title,
-        seo_description: product.seo_description,
-        seo_keywords: product.seo_keywords,
-        updated_at: product.updated_at.toISOString(),
+      const updateData: any = {
+        updated_at: new Date().toISOString(),
       };
+
+      // Only include fields that are provided
+      if (productData.name !== undefined) updateData.name = productData.name;
+      if (productData.description !== undefined)
+        updateData.description = productData.description;
+      if (productData.short_description !== undefined)
+        updateData.short_description = productData.short_description;
+      if (productData.sku !== undefined) updateData.sku = productData.sku;
+      if (productData.status !== undefined)
+        updateData.status = productData.status;
+      if (productData.product_type !== undefined)
+        updateData.product_type = productData.product_type;
+      if (productData.price !== undefined) updateData.price = productData.price;
+      if (productData.cost !== undefined) updateData.cost = productData.cost;
+      if (productData.currency !== undefined)
+        updateData.currency = productData.currency;
+      if (productData.categories !== undefined)
+        updateData.categories = productData.categories;
+      if (productData.tags !== undefined) updateData.tags = productData.tags;
+      if (productData.weight !== undefined)
+        updateData.weight = productData.weight;
+      if (productData.dimensions !== undefined)
+        updateData.dimensions = productData.dimensions;
+      if (productData.metadata !== undefined)
+        updateData.metadata = productData.metadata;
+      if (productData.seo_title !== undefined)
+        updateData.seo_title = productData.seo_title;
+      if (productData.seo_description !== undefined)
+        updateData.seo_description = productData.seo_description;
+      if (productData.seo_keywords !== undefined)
+        updateData.seo_keywords = productData.seo_keywords;
 
       const { error } = await supabase
         .from('products')
-        .update(productData)
-        .eq('id', product.id);
+        .update(updateData)
+        .eq('id', id);
 
       if (error) throw error;
 
-      return (await this.findById(product.id)) as Product;
+      return (await this.findById(id)) as Product;
     } catch (error) {
       console.error('Update product error:', error);
       throw error;
@@ -606,6 +631,8 @@ export class SupabaseProductRepository implements ProductRepository {
       data.sku,
       data.status,
       data.product_type,
+      data.price || 0,
+      data.cost || 0,
       data.categories || [],
       data.tags || [],
       data.weight,

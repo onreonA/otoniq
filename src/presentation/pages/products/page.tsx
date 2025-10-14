@@ -3,6 +3,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { productService } from '../../../infrastructure/services/ProductService';
 import { Product } from '../../../domain/entities/Product';
 import ProductModal from './components/ProductModal';
+import OdooSyncModal from './components/OdooSyncModal';
+import ShopifySyncModal from './components/ShopifySyncModal';
 import toast from 'react-hot-toast';
 
 export default function ProductManagement() {
@@ -14,6 +16,8 @@ export default function ProductManagement() {
   const [filterType, setFilterType] = useState('all');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showOdooSyncModal, setShowOdooSyncModal] = useState(false);
+  const [showShopifySyncModal, setShowShopifySyncModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -190,116 +194,132 @@ export default function ProductManagement() {
   // Loading durumu
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Ürünler yükleniyor...</p>
+      <div className='min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4'></div>
+          <p className='text-white text-lg'>Ürünler yükleniyor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className='min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'>
       {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      <div className='fixed inset-0 overflow-hidden pointer-events-none'>
+        <div className='absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse'></div>
+        <div className='absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000'></div>
+        <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-2000'></div>
       </div>
 
-      <div className="relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className='relative z-10'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8">
-            <div className="flex items-center justify-between">
+          <div className='bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8'>
+            <div className='flex items-center justify-between'>
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">
+                <h1 className='text-3xl font-bold text-white mb-2'>
                   Ürün Yönetimi
                 </h1>
-                <p className="text-gray-300">
+                <p className='text-gray-300'>
                   Ürünlerinizi görüntüleyin ve yönetin
                 </p>
               </div>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer"
-              >
-                <i className="ri-add-line mr-2"></i>
-                Yeni Ürün
-              </button>
+              <div className='flex space-x-3'>
+                <button
+                  onClick={() => setShowOdooSyncModal(true)}
+                  className='bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer'
+                >
+                  <i className='ri-download-line mr-2'></i>
+                  Odoo Sync
+                </button>
+                <button
+                  onClick={() => setShowShopifySyncModal(true)}
+                  className='bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer'
+                >
+                  <i className='ri-store-line mr-2'></i>
+                  Shopify Sync
+                </button>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className='bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer'
+                >
+                  <i className='ri-add-line mr-2'></i>
+                  Yeni Ürün
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
+          <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8'>
+            <div className='flex flex-col md:flex-row gap-4'>
               {/* Search */}
-              <div className="flex-1">
-                <div className="relative">
+              <div className='flex-1'>
+                <div className='relative'>
                   <input
-                    type="text"
-                    placeholder="Ürün ara..."
+                    type='text'
+                    placeholder='Ürün ara...'
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 pl-12 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 pl-12 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
                   />
-                  <i className="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                  <i className='ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400'></i>
                 </div>
               </div>
 
               {/* Status Filter */}
-              <div className="md:w-48">
+              <div className='md:w-48'>
                 <select
                   value={filterStatus}
                   onChange={e => setFilterStatus(e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors pr-8"
+                  className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors pr-8'
                 >
-                  <option value="all">Tüm Durumlar</option>
-                  <option value="active">Aktif</option>
-                  <option value="inactive">Pasif</option>
-                  <option value="draft">Taslak</option>
-                  <option value="archived">Arşiv</option>
+                  <option value='all'>Tüm Durumlar</option>
+                  <option value='active'>Aktif</option>
+                  <option value='inactive'>Pasif</option>
+                  <option value='draft'>Taslak</option>
+                  <option value='archived'>Arşiv</option>
                 </select>
               </div>
 
               {/* Type Filter */}
-              <div className="md:w-48">
+              <div className='md:w-48'>
                 <select
                   value={filterType}
                   onChange={e => setFilterType(e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors pr-8"
+                  className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors pr-8'
                 >
-                  <option value="all">Tüm Tipler</option>
-                  <option value="simple">Basit</option>
-                  <option value="variable">Varyantlı</option>
-                  <option value="grouped">Gruplu</option>
-                  <option value="external">Harici</option>
+                  <option value='all'>Tüm Tipler</option>
+                  <option value='simple'>Basit</option>
+                  <option value='variable'>Varyantlı</option>
+                  <option value='grouped'>Gruplu</option>
+                  <option value='external'>Harici</option>
                 </select>
               </div>
 
               {/* Bulk Actions */}
               {selectedProducts.length > 0 && (
-                <div className="flex space-x-2">
+                <div className='flex space-x-2'>
                   <button
                     onClick={() => handleBulkStatusUpdate('active')}
-                    className="bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 text-green-400 px-4 py-3 rounded-xl transition-colors cursor-pointer"
+                    className='bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 text-green-400 px-4 py-3 rounded-xl transition-colors cursor-pointer'
                   >
-                    <i className="ri-check-line mr-2"></i>
+                    <i className='ri-check-line mr-2'></i>
                     Aktifleştir
                   </button>
                   <button
                     onClick={() => handleBulkStatusUpdate('inactive')}
-                    className="bg-gray-500/20 hover:bg-gray-500/30 border border-gray-500/50 text-gray-400 px-4 py-3 rounded-xl transition-colors cursor-pointer"
+                    className='bg-gray-500/20 hover:bg-gray-500/30 border border-gray-500/50 text-gray-400 px-4 py-3 rounded-xl transition-colors cursor-pointer'
                   >
-                    <i className="ri-pause-line mr-2"></i>
+                    <i className='ri-pause-line mr-2'></i>
                     Pasifleştir
                   </button>
                   <button
                     onClick={() => handleBulkStatusUpdate('archived')}
-                    className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl transition-colors cursor-pointer"
+                    className='bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl transition-colors cursor-pointer'
                   >
-                    <i className="ri-archive-line mr-2"></i>
+                    <i className='ri-archive-line mr-2'></i>
                     Arşivle
                   </button>
                 </div>
@@ -308,15 +328,15 @@ export default function ProductManagement() {
           </div>
 
           {/* Products Table */}
-          <div className="bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-white/5 border-b border-white/10">
+          <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden'>
+            <div className='overflow-x-auto'>
+              <table className='w-full'>
+                <thead className='bg-white/5 border-b border-white/10'>
                   <tr>
-                    <th className="text-left p-4">
+                    <th className='text-left p-4'>
                       <input
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                        type='checkbox'
+                        className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500'
                         onChange={e => {
                           if (e.target.checked) {
                             setSelectedProducts(
@@ -328,28 +348,28 @@ export default function ProductManagement() {
                         }}
                       />
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       Ürün
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       SKU
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       Tip
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       Durum
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       Stok
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       Fiyat
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       Oluşturulma
                     </th>
-                    <th className="text-left p-4 text-gray-300 font-medium">
+                    <th className='text-left p-4 text-gray-300 font-medium'>
                       İşlemler
                     </th>
                   </tr>
@@ -358,93 +378,93 @@ export default function ProductManagement() {
                   {filteredProducts.map(product => (
                     <tr
                       key={product.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                      className='border-b border-white/5 hover:bg-white/5 transition-colors'
                     >
-                      <td className="p-4">
+                      <td className='p-4'>
                         <input
-                          type="checkbox"
+                          type='checkbox'
                           checked={selectedProducts.includes(product.id)}
                           onChange={() => toggleProductSelection(product.id)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                          className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500'
                         />
                       </td>
-                      <td className="p-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center">
+                      <td className='p-4'>
+                        <div className='flex items-center space-x-3'>
+                          <div className='w-12 h-12 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center'>
                             {product.getPrimaryImageUrl() ? (
                               <img
                                 src={product.getPrimaryImageUrl() || ''}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                className='w-full h-full object-cover'
                               />
                             ) : (
-                              <i className="ri-image-line text-gray-400 text-xl"></i>
+                              <i className='ri-image-line text-gray-400 text-xl'></i>
                             )}
                           </div>
                           <div>
-                            <div className="text-white font-medium">
+                            <div className='text-white font-medium'>
                               {product.name}
                             </div>
-                            <div className="text-gray-400 text-sm line-clamp-1">
+                            <div className='text-gray-400 text-sm line-clamp-1'>
                               {product.short_description}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-gray-300 font-mono text-sm">
+                      <td className='p-4 text-gray-300 font-mono text-sm'>
                         {product.sku}
                       </td>
-                      <td className="p-4">
+                      <td className='p-4'>
                         <span
                           className={`px-2 py-1 rounded-full text-sm ${getTypeColor(product.product_type)}`}
                         >
                           {getTypeText(product.product_type)}
                         </span>
                       </td>
-                      <td className="p-4">
+                      <td className='p-4'>
                         <span
                           className={`px-2 py-1 rounded-full text-sm ${getStatusColor(product.status)}`}
                         >
                           {getStatusText(product.status)}
                         </span>
                       </td>
-                      <td className="p-4">
-                        <div className="text-gray-300">
+                      <td className='p-4'>
+                        <div className='text-gray-300'>
                           {product.getTotalStock()}
                           {product.getTotalStock() <= 10 && (
-                            <span className="text-red-400 text-xs ml-1">
+                            <span className='text-red-400 text-xs ml-1'>
                               (Düşük)
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="p-4 text-gray-300">
+                      <td className='p-4 text-gray-300'>
                         {product.getMinPrice() && product.getMaxPrice()
                           ? product.getMinPrice() === product.getMaxPrice()
                             ? `₺${product.getMinPrice()}`
                             : `₺${product.getMinPrice()} - ₺${product.getMaxPrice()}`
                           : '-'}
                       </td>
-                      <td className="p-4 text-gray-400 text-sm">
+                      <td className='p-4 text-gray-400 text-sm'>
                         {new Date(product.created_at).toLocaleDateString(
                           'tr-TR'
                         )}
                       </td>
-                      <td className="p-4">
-                        <div className="flex space-x-2">
+                      <td className='p-4'>
+                        <div className='flex space-x-2'>
                           <button
                             onClick={() => setEditingProduct(product)}
-                            className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-                            title="Düzenle"
+                            className='text-blue-400 hover:text-blue-300 transition-colors cursor-pointer'
+                            title='Düzenle'
                           >
-                            <i className="ri-edit-line"></i>
+                            <i className='ri-edit-line'></i>
                           </button>
                           <button
                             onClick={() => handleDeleteProduct(product.id)}
-                            className="text-red-400 hover:text-red-300 transition-colors cursor-pointer"
-                            title="Sil"
+                            className='text-red-400 hover:text-red-300 transition-colors cursor-pointer'
+                            title='Sil'
                           >
-                            <i className="ri-delete-bin-line"></i>
+                            <i className='ri-delete-bin-line'></i>
                           </button>
                         </div>
                       </td>
@@ -455,19 +475,19 @@ export default function ProductManagement() {
             </div>
 
             {/* Pagination */}
-            <div className="p-4 border-t border-white/10 flex items-center justify-between">
-              <div className="text-gray-400 text-sm">
+            <div className='p-4 border-t border-white/10 flex items-center justify-between'>
+              <div className='text-gray-400 text-sm'>
                 {filteredProducts.length} ürün gösteriliyor
               </div>
-              <div className="flex space-x-2">
+              <div className='flex space-x-2'>
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                  className='bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 px-3 py-2 rounded-lg transition-colors cursor-pointer'
                 >
-                  <i className="ri-arrow-left-line"></i>
+                  <i className='ri-arrow-left-line'></i>
                 </button>
-                <span className="bg-blue-500 text-white px-3 py-2 rounded-lg">
+                <span className='bg-blue-500 text-white px-3 py-2 rounded-lg'>
                   {currentPage}
                 </span>
                 <button
@@ -475,9 +495,9 @@ export default function ProductManagement() {
                     setCurrentPage(Math.min(totalPages, currentPage + 1))
                   }
                   disabled={currentPage === totalPages}
-                  className="bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                  className='bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 px-3 py-2 rounded-lg transition-colors cursor-pointer'
                 >
-                  <i className="ri-arrow-right-line"></i>
+                  <i className='ri-arrow-right-line'></i>
                 </button>
               </div>
             </div>
@@ -497,6 +517,26 @@ export default function ProductManagement() {
         }}
         editingProduct={editingProduct}
         tenantId={userProfile?.tenant_id || undefined}
+      />
+
+      {/* Odoo Sync Modal */}
+      <OdooSyncModal
+        isOpen={showOdooSyncModal}
+        onClose={() => setShowOdooSyncModal(false)}
+        onSuccess={() => {
+          loadProducts();
+        }}
+        tenantId={userProfile?.tenant_id || ''}
+      />
+
+      {/* Shopify Sync Modal */}
+      <ShopifySyncModal
+        isOpen={showShopifySyncModal}
+        onClose={() => setShowShopifySyncModal(false)}
+        onSuccess={() => {
+          loadProducts();
+        }}
+        tenantId={userProfile?.tenant_id || ''}
       />
     </div>
   );

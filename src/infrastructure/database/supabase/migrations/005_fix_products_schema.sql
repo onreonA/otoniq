@@ -27,6 +27,11 @@ CREATE TABLE IF NOT EXISTS products (
   categories TEXT[] DEFAULT '{}',
   tags TEXT[] DEFAULT '{}',
   
+  -- Pricing
+  price DECIMAL(10, 2),
+  cost DECIMAL(10, 2),
+  currency TEXT DEFAULT 'TRY',
+  
   -- Physical properties
   weight DECIMAL(8, 3),
   dimensions JSONB,

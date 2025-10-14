@@ -61,28 +61,28 @@ const Pricing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className='min-h-screen bg-white'>
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+      <section className='pt-32 pb-20 bg-gradient-to-br from-gray-50 to-blue-50'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
+          <h1 className='text-5xl md:text-6xl font-bold text-gray-900 mb-6'>
             İşinize Uygun
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className='bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
               {' '}
               Planı{' '}
             </span>
             Seçin
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+          <p className='text-xl text-gray-600 mb-12 max-w-3xl mx-auto'>
             Yapay zeka destekli e-ticaret otomasyonu ile işletmenizi bir sonraki
             seviyeye taşıyın. Her büyüklükteki işletme için özel olarak
             tasarlanmış planlarımızı keşfedin.
           </p>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center mb-16">
+          <div className='flex items-center justify-center mb-16'>
             <span
               className={`mr-3 text-sm font-medium ${!isAnnual ? 'text-gray-900' : 'text-gray-500'}`}
             >
@@ -106,7 +106,7 @@ const Pricing = () => {
               Yıllık
             </span>
             {isAnnual && (
-              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <span className='ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'>
                 %17 İndirim
               </span>
             )}
@@ -115,9 +115,9 @@ const Pricing = () => {
       </section>
 
       {/* Pricing Cards */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className='py-20 bg-white'>
+        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
             {plans.map((plan, index) => (
               <div
                 key={index}
@@ -128,29 +128,29 @@ const Pricing = () => {
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                  <div className='absolute -top-4 left-1/2 transform -translate-x-1/2'>
+                    <span className='inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 text-white'>
                       En Popüler
                     </span>
                   </div>
                 )}
 
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                <div className='text-center mb-8'>
+                  <h3 className='text-2xl font-bold text-gray-900 mb-2'>
                     {plan.name}
                   </h3>
-                  <p className="text-gray-600 mb-6">{plan.description}</p>
+                  <p className='text-gray-600 mb-6'>{plan.description}</p>
 
-                  <div className="mb-6">
-                    <span className="text-5xl font-bold text-gray-900">
+                  <div className='mb-6'>
+                    <span className='text-5xl font-bold text-gray-900'>
                       ₺
                       {isAnnual
                         ? Math.floor(plan.annualPrice / 12)
                         : plan.monthlyPrice}
                     </span>
-                    <span className="text-gray-600 ml-2">/ay</span>
+                    <span className='text-gray-600 ml-2'>/ay</span>
                     {isAnnual && (
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className='text-sm text-gray-500 mt-1'>
                         Yıllık ₺{plan.annualPrice} faturalandırılır
                       </div>
                     )}
@@ -167,15 +167,15 @@ const Pricing = () => {
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className='space-y-4'>
                   {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-center">
+                    <div key={featureIndex} className='flex items-center'>
                       <div
                         className={`w-5 h-5 rounded-full flex items-center justify-center mr-3 bg-gradient-to-r ${plan.color}`}
                       >
-                        <i className="ri-check-line text-white text-sm"></i>
+                        <i className='ri-check-line text-white text-sm'></i>
                       </div>
-                      <span className="text-gray-700">{feature}</span>
+                      <span className='text-gray-700'>{feature}</span>
                     </div>
                   ))}
                 </div>
@@ -186,18 +186,18 @@ const Pricing = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+      <section className='py-20 bg-gray-50'>
+        <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <div className='text-center mb-16'>
+            <h2 className='text-4xl font-bold text-gray-900 mb-4'>
               Sıkça Sorulan Sorular
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className='text-xl text-gray-600'>
               Fiyatlandırma ile ilgili merak ettikleriniz
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className='space-y-6'>
             {[
               {
                 question: 'Ücretsiz deneme süresi var mı?',
@@ -220,11 +220,11 @@ const Pricing = () => {
                   'Kurumsal planda temel entegrasyonlar dahildir. Özel geliştirme gerektiren entegrasyonlar için ayrı fiyatlandırma yapılır.',
               },
             ].map((faq, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              <div key={index} className='bg-white rounded-xl p-6 shadow-sm'>
+                <h3 className='text-lg font-semibold text-gray-900 mb-3'>
                   {faq.question}
                 </h3>
-                <p className="text-gray-600">{faq.answer}</p>
+                <p className='text-gray-600'>{faq.answer}</p>
               </div>
             ))}
           </div>
@@ -232,15 +232,15 @@ const Pricing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
+      <section className='py-20 bg-gradient-to-r from-blue-600 to-purple-600'>
+        <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
+          <h2 className='text-4xl font-bold text-white mb-6'>
             Hemen Başlamaya Hazır mısınız?
           </h2>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className='text-xl text-blue-100 mb-8'>
             14 günlük ücretsiz deneme ile Otoniq.ai'nin gücünü keşfedin
           </p>
-          <button className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors whitespace-nowrap">
+          <button className='bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors whitespace-nowrap'>
             Ücretsiz Denemeyi Başlat
           </button>
         </div>

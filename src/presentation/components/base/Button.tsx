@@ -39,7 +39,7 @@ export default function Button({
       className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
-      {icon && <span className="mr-2">{icon}</span>}
+      {icon && <span className='mr-2'>{icon}</span>}
       {children}
     </button>
   );

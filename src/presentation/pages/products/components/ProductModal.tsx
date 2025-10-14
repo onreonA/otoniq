@@ -176,57 +176,57 @@ export default function ProductModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'>
+      <div className='bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto'>
         {/* Header */}
-        <div className="p-6 border-b border-white/10">
-          <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-bold text-white">
+        <div className='p-6 border-b border-white/10'>
+          <div className='flex items-center justify-between'>
+            <h3 className='text-2xl font-bold text-white'>
               {editingProduct ? 'Ürün Düzenle' : 'Yeni Ürün'}
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
+              className='text-gray-400 hover:text-white transition-colors'
             >
-              <i className="ri-close-line text-2xl"></i>
+              <i className='ri-close-line text-2xl'></i>
             </button>
           </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className='p-6 space-y-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             {/* Product Name */}
-            <div className="md:col-span-2">
-              <label className="block text-white font-medium mb-2">
+            <div className='md:col-span-2'>
+              <label className='block text-white font-medium mb-2'>
                 Ürün Adı *
               </label>
               <input
-                type="text"
+                type='text'
                 required
                 value={formData.name}
                 onChange={e => handleInputChange('name', e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-                placeholder="Ürün adını girin"
+                className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                placeholder='Ürün adını girin'
               />
             </div>
 
             {/* SKU */}
             <div>
-              <label className="block text-white font-medium mb-2">SKU *</label>
+              <label className='block text-white font-medium mb-2'>SKU *</label>
               <input
-                type="text"
+                type='text'
                 required
                 value={formData.sku}
                 onChange={e => handleInputChange('sku', e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors font-mono"
-                placeholder="ÜRÜN-SKU-001"
+                className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors font-mono'
+                placeholder='ÜRÜN-SKU-001'
               />
             </div>
 
             {/* Product Type */}
             <div>
-              <label className="block text-white font-medium mb-2">
+              <label className='block text-white font-medium mb-2'>
                 Ürün Tipi
               </label>
               <select
@@ -234,39 +234,39 @@ export default function ProductModal({
                 onChange={e =>
                   handleInputChange('product_type', e.target.value)
                 }
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors"
+                className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors'
               >
-                <option value="simple">Basit</option>
-                <option value="variable">Varyantlı</option>
-                <option value="grouped">Gruplu</option>
-                <option value="external">Harici</option>
+                <option value='simple'>Basit</option>
+                <option value='variable'>Varyantlı</option>
+                <option value='grouped'>Gruplu</option>
+                <option value='external'>Harici</option>
               </select>
             </div>
 
             {/* Status */}
             <div>
-              <label className="block text-white font-medium mb-2">Durum</label>
+              <label className='block text-white font-medium mb-2'>Durum</label>
               <select
                 value={formData.status}
                 onChange={e => handleInputChange('status', e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors"
+                className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors'
               >
-                <option value="draft">Taslak</option>
-                <option value="active">Aktif</option>
-                <option value="inactive">Pasif</option>
-                <option value="archived">Arşiv</option>
+                <option value='draft'>Taslak</option>
+                <option value='active'>Aktif</option>
+                <option value='inactive'>Pasif</option>
+                <option value='archived'>Arşiv</option>
               </select>
             </div>
 
             {/* Weight */}
             <div>
-              <label className="block text-white font-medium mb-2">
+              <label className='block text-white font-medium mb-2'>
                 Ağırlık (kg)
               </label>
               <input
-                type="number"
-                step="0.01"
-                min="0"
+                type='number'
+                step='0.01'
+                min='0'
                 value={formData.weight || ''}
                 onChange={e =>
                   handleInputChange(
@@ -274,15 +274,15 @@ export default function ProductModal({
                     e.target.value ? parseFloat(e.target.value) : undefined
                   )
                 }
-                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-                placeholder="0.5"
+                className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                placeholder='0.5'
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-white font-medium mb-2">
+            <label className='block text-white font-medium mb-2'>
               Kısa Açıklama *
             </label>
             <textarea
@@ -291,72 +291,72 @@ export default function ProductModal({
               onChange={e =>
                 handleInputChange('short_description', e.target.value)
               }
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder="Ürünün kısa açıklaması..."
+              className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+              placeholder='Ürünün kısa açıklaması...'
               rows={2}
             />
           </div>
 
           {/* Full Description */}
           <div>
-            <label className="block text-white font-medium mb-2">
+            <label className='block text-white font-medium mb-2'>
               Detaylı Açıklama *
             </label>
             <textarea
               required
               value={formData.description}
               onChange={e => handleInputChange('description', e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder="Ürünün detaylı açıklaması..."
+              className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+              placeholder='Ürünün detaylı açıklaması...'
               rows={4}
             />
           </div>
 
           {/* Categories */}
           <div>
-            <label className="block text-white font-medium mb-2">
+            <label className='block text-white font-medium mb-2'>
               Kategoriler
             </label>
             <input
-              type="text"
+              type='text'
               value={formData.categories.join(', ')}
               onChange={e => handleArrayChange('categories', e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder="Elektronik, Telefon, Aksesuar"
+              className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+              placeholder='Elektronik, Telefon, Aksesuar'
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-white font-medium mb-2">
+            <label className='block text-white font-medium mb-2'>
               Etiketler
             </label>
             <input
-              type="text"
+              type='text'
               value={formData.tags.join(', ')}
               onChange={e => handleArrayChange('tags', e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder="popüler, indirim, yeni"
+              className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+              placeholder='popüler, indirim, yeni'
             />
           </div>
 
           {/* SEO Title */}
           <div>
-            <label className="block text-white font-medium mb-2">
+            <label className='block text-white font-medium mb-2'>
               SEO Başlığı
             </label>
             <input
-              type="text"
+              type='text'
               value={formData.seo_title}
               onChange={e => handleInputChange('seo_title', e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder="SEO için başlık..."
+              className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+              placeholder='SEO için başlık...'
             />
           </div>
 
           {/* SEO Description */}
           <div>
-            <label className="block text-white font-medium mb-2">
+            <label className='block text-white font-medium mb-2'>
               SEO Açıklaması
             </label>
             <textarea
@@ -364,43 +364,43 @@ export default function ProductModal({
               onChange={e =>
                 handleInputChange('seo_description', e.target.value)
               }
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder="SEO için açıklama..."
+              className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+              placeholder='SEO için açıklama...'
               rows={2}
             />
           </div>
 
           {/* SEO Keywords */}
           <div>
-            <label className="block text-white font-medium mb-2">
+            <label className='block text-white font-medium mb-2'>
               SEO Anahtar Kelimeler
             </label>
             <input
-              type="text"
+              type='text'
               value={formData.seo_keywords.join(', ')}
               onChange={e => handleArrayChange('seo_keywords', e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
-              placeholder="telefon, akıllı telefon, iphone"
+              className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+              placeholder='telefon, akıllı telefon, iphone'
             />
           </div>
 
           {/* Actions */}
-          <div className="flex space-x-4 pt-4">
+          <div className='flex space-x-4 pt-4'>
             <button
-              type="button"
+              type='button'
               onClick={onClose}
-              className="flex-1 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300"
+              className='flex-1 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300'
             >
               İptal
             </button>
             <button
-              type="submit"
+              type='submit'
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-medium transition-all duration-300"
+              className='flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-medium transition-all duration-300'
             >
               {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                <div className='flex items-center justify-center'>
+                  <div className='w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2'></div>
                   {editingProduct ? 'Güncelleniyor...' : 'Oluşturuluyor...'}
                 </div>
               ) : editingProduct ? (

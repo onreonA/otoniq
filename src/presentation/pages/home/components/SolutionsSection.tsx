@@ -57,89 +57,89 @@ export default function SolutionsSection() {
   ];
 
   return (
-    <section id="solutions" className="py-24 bg-white relative overflow-hidden">
+    <section id='solutions' className='py-24 bg-white relative overflow-hidden'>
       {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-0 w-96 h-96 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full blur-3xl opacity-50"></div>
+      <div className='absolute inset-0'>
+        <div className='absolute top-1/4 left-0 w-96 h-96 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full blur-3xl opacity-50'></div>
+        <div className='absolute bottom-1/4 right-0 w-96 h-96 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full blur-3xl opacity-50'></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-blue-700 text-sm font-medium mb-6">
-            <i className="ri-settings-4-line mr-2"></i>
+      <div className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+        <div className='text-center mb-20'>
+          <div className='inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-blue-700 text-sm font-medium mb-6'>
+            <i className='ri-settings-4-line mr-2'></i>
             Her İşletme Büyüklüğü İçin AI Çözümleri
           </div>
-          <h2 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <h2 className='text-5xl lg:text-6xl font-bold text-gray-900 mb-6'>
             Büyüklüğünüze Uygun
-            <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className='block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
               AI Otomasyon Paketi
             </span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className='text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed'>
             Startup'tan enterprise'a kadar her seviyede işletme için
             özelleştirilmiş yapay zeka otomasyon çözümleri.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className='grid lg:grid-cols-3 gap-8'>
           {solutions.map((solution, index) => (
             <div
               key={index}
               className={`relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group ${solution.popular ? 'ring-2 ring-purple-500 scale-105' : ''}`}
             >
               {solution.popular && (
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full text-sm font-bold">
+                <div className='absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20'>
+                  <div className='bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full text-sm font-bold'>
                     En Popüler
                   </div>
                 </div>
               )}
 
-              <div className="relative h-48 overflow-hidden">
+              <div className='relative h-48 overflow-hidden'>
                 <img
                   src={solution.image}
                   alt={solution.title}
-                  className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
+                  className='w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500'
                 />
                 <div
                   className={`absolute inset-0 bg-gradient-to-t ${solution.color} opacity-80`}
                 ></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <h3 className="text-2xl font-bold mb-2">
+                <div className='absolute inset-0 flex items-center justify-center'>
+                  <div className='text-center text-white'>
+                    <h3 className='text-2xl font-bold mb-2'>
                       {solution.title}
                     </h3>
-                    <p className="text-sm opacity-90">{solution.subtitle}</p>
+                    <p className='text-sm opacity-90'>{solution.subtitle}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-8">
-                <div className="text-center mb-6">
-                  <div className="flex items-baseline justify-center mb-2">
-                    <span className="text-4xl font-bold text-gray-900">
+              <div className='p-8'>
+                <div className='text-center mb-6'>
+                  <div className='flex items-baseline justify-center mb-2'>
+                    <span className='text-4xl font-bold text-gray-900'>
                       {solution.price}
                     </span>
-                    <span className="text-gray-500 ml-1">
+                    <span className='text-gray-500 ml-1'>
                       {solution.period}
                     </span>
                   </div>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className='text-gray-600 leading-relaxed'>
                     {solution.description}
                   </p>
                 </div>
 
-                <ul className="space-y-4 mb-8">
+                <ul className='space-y-4 mb-8'>
                   {solution.features.map((feature, featureIndex) => (
                     <li
                       key={featureIndex}
-                      className="flex items-start text-gray-700"
+                      className='flex items-start text-gray-700'
                     >
-                      <div className="w-5 h-5 flex items-center justify-center mr-3 mt-0.5">
-                        <i className="ri-check-line text-green-500 text-lg"></i>
+                      <div className='w-5 h-5 flex items-center justify-center mr-3 mt-0.5'>
+                        <i className='ri-check-line text-green-500 text-lg'></i>
                       </div>
-                      <span className="text-sm">{feature}</span>
+                      <span className='text-sm'>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -147,7 +147,7 @@ export default function SolutionsSection() {
                 <button
                   className={`w-full py-4 px-6 bg-gradient-to-r ${solution.color} text-white font-bold rounded-2xl hover:shadow-lg transition-all duration-300 cursor-pointer whitespace-nowrap group-hover:scale-105`}
                 >
-                  <i className="ri-rocket-line mr-2"></i>
+                  <i className='ri-rocket-line mr-2'></i>
                   {solution.price === 'Özel' ? 'İletişime Geç' : 'Hemen Başla'}
                 </button>
               </div>
@@ -156,9 +156,9 @@ export default function SolutionsSection() {
         </div>
 
         {/* Bottom guarantee */}
-        <div className="text-center mt-16">
-          <div className="inline-flex items-center px-6 py-3 bg-green-50 border border-green-200 rounded-full text-green-700 text-sm font-medium">
-            <i className="ri-shield-check-line mr-2"></i>
+        <div className='text-center mt-16'>
+          <div className='inline-flex items-center px-6 py-3 bg-green-50 border border-green-200 rounded-full text-green-700 text-sm font-medium'>
+            <i className='ri-shield-check-line mr-2'></i>
             30 gün para iade garantisi • Anında kurulum • 7/24 AI destek
           </div>
         </div>

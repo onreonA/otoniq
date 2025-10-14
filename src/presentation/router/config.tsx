@@ -12,6 +12,9 @@ const SignupPage = lazy(() => import('../pages/signup/page'));
 const DemoPage = lazy(() => import('../pages/demo/page'));
 const DashboardPage = lazy(() => import('../pages/dashboard/page'));
 const ProductManagementPage = lazy(() => import('../pages/products/page'));
+const MarketplaceConnectionsPage = lazy(
+  () => import('../pages/marketplace/page')
+);
 const AdminPage = lazy(() => import('../pages/admin/page'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
@@ -62,6 +65,14 @@ const routes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <ProductManagementPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/marketplace',
+    element: (
+      <ProtectedRoute>
+        <MarketplaceConnectionsPage />
       </ProtectedRoute>
     ),
   },
