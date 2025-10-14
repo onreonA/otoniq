@@ -15,6 +15,17 @@ const SignupPage = lazy(() => import('../pages/signup/page'));
 const DemoPage = lazy(() => import('../pages/demo/page'));
 const DashboardPage = lazy(() => import('../pages/dashboard/page'));
 const ProductManagementPage = lazy(() => import('../pages/products/page'));
+const CategoriesPage = lazy(() => import('../pages/categories/page'));
+const InventoryPage = lazy(() => import('../pages/inventory/page'));
+const OrdersPage = lazy(() => import('../pages/orders/page'));
+const CustomersPage = lazy(() => import('../pages/customers/page'));
+const IntegrationsPage = lazy(() => import('../pages/integrations/page'));
+const OdooIntegrationPage = lazy(
+  () => import('../pages/integrations/odoo/page')
+);
+const ShopifyIntegrationPage = lazy(
+  () => import('../pages/integrations/shopify/page')
+);
 const MarketplaceConnectionsPage = lazy(
   () => import('../pages/marketplace/page')
 );
@@ -102,6 +113,34 @@ const routes: RouteObject[] = [
       {
         path: '/products',
         element: <ProductManagementPage />,
+      },
+      {
+        path: '/categories',
+        element: <CategoriesPage />,
+      },
+      {
+        path: '/inventory',
+        element: <InventoryPage />,
+      },
+      {
+        path: '/orders',
+        element: <OrdersPage />,
+      },
+      {
+        path: '/customers',
+        element: <CustomersPage />,
+      },
+      {
+        path: '/integrations',
+        element: <IntegrationsPage />,
+      },
+      {
+        path: '/integrations/odoo',
+        element: <OdooIntegrationPage />,
+      },
+      {
+        path: '/integrations/shopify',
+        element: <ShopifyIntegrationPage />,
       },
       {
         path: '/marketplace',

@@ -31,6 +31,9 @@ import {
   MessageSquare,
   Glasses,
   Activity,
+  Puzzle,
+  Server,
+  Building,
 } from 'lucide-react';
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { useUIStore } from '../../store/ui/uiStore';
@@ -58,6 +61,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Brain,
   Image,
   UserCircle,
+  Puzzle,
+  Server,
+  Building,
   List,
   FolderTree,
   ShoppingBag,

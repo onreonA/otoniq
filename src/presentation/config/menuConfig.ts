@@ -49,6 +49,102 @@ export const superAdminMenuConfig: MenuGroup[] = [
         label: 'Ürünler',
         icon: 'Package',
         path: '/products',
+        children: [
+          {
+            id: 'all-products',
+            label: 'Tüm Ürünler',
+            icon: 'List',
+            path: '/products',
+          },
+          {
+            id: 'categories',
+            label: 'Kategoriler',
+            icon: 'FolderTree',
+            path: '/categories',
+          },
+          {
+            id: 'inventory',
+            label: 'Stok Yönetimi',
+            icon: 'Database',
+            path: '/inventory',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'sales',
+    label: 'Satış',
+    items: [
+      {
+        id: 'orders',
+        label: 'Siparişler',
+        icon: 'ShoppingCart',
+        path: '/orders',
+      },
+      {
+        id: 'customers',
+        label: 'Müşteriler',
+        icon: 'Users',
+        path: '/customers',
+      },
+    ],
+  },
+  {
+    id: 'integrations',
+    label: 'Entegrasyonlar',
+    items: [
+      {
+        id: 'integrations-overview',
+        label: 'Genel Bakış',
+        icon: 'Puzzle',
+        path: '/integrations',
+      },
+      {
+        id: 'erp-systems',
+        label: 'ERP Sistemleri',
+        icon: 'Server',
+        path: '/integrations',
+        children: [
+          {
+            id: 'odoo',
+            label: 'Odoo',
+            icon: 'Database',
+            path: '/integrations/odoo',
+          },
+          {
+            id: 'sap',
+            label: 'SAP',
+            icon: 'Building',
+            path: '/integrations/sap',
+          },
+        ],
+      },
+      {
+        id: 'ecommerce-platforms',
+        label: 'E-Ticaret Platformları',
+        icon: 'ShoppingBag',
+        path: '/integrations',
+        children: [
+          {
+            id: 'shopify',
+            label: 'Shopify',
+            icon: 'Store',
+            path: '/integrations/shopify',
+          },
+          {
+            id: 'woocommerce',
+            label: 'WooCommerce',
+            icon: 'ShoppingCart',
+            path: '/integrations/woocommerce',
+          },
+        ],
+      },
+      {
+        id: 'marketplaces',
+        label: 'Pazaryerleri',
+        icon: 'Store',
+        path: '/marketplace',
       },
     ],
   },
@@ -150,16 +246,22 @@ export const tenantMenuConfig: MenuGroup[] = [
             id: 'categories',
             label: 'Kategoriler',
             icon: 'FolderTree',
-            path: '/products/categories',
+            path: '/categories',
           },
           {
             id: 'inventory',
             label: 'Stok Yönetimi',
             icon: 'Database',
-            path: '/products/inventory',
+            path: '/inventory',
           },
         ],
       },
+    ],
+  },
+  {
+    id: 'sales',
+    label: 'Satış',
+    items: [
       {
         id: 'orders',
         label: 'Siparişler',
@@ -180,13 +282,59 @@ export const tenantMenuConfig: MenuGroup[] = [
     label: 'Entegrasyonlar',
     items: [
       {
+        id: 'integrations-overview',
+        label: 'Genel Bakış',
+        icon: 'Puzzle',
+        path: '/integrations',
+      },
+      {
+        id: 'erp-systems',
+        label: 'ERP Sistemleri',
+        icon: 'Server',
+        path: '/integrations',
+        children: [
+          {
+            id: 'odoo',
+            label: 'Odoo',
+            icon: 'Database',
+            path: '/integrations/odoo',
+          },
+          {
+            id: 'sap',
+            label: 'SAP',
+            icon: 'Building',
+            path: '/integrations/sap',
+          },
+        ],
+      },
+      {
+        id: 'ecommerce-platforms',
+        label: 'E-Ticaret Platformları',
+        icon: 'ShoppingBag',
+        path: '/integrations',
+        children: [
+          {
+            id: 'shopify',
+            label: 'Shopify',
+            icon: 'Store',
+            path: '/integrations/shopify',
+          },
+          {
+            id: 'woocommerce',
+            label: 'WooCommerce',
+            icon: 'ShoppingCart',
+            path: '/integrations/woocommerce',
+          },
+        ],
+      },
+      {
         id: 'marketplaces',
         label: 'Pazaryerleri',
         icon: 'Store',
         path: '/marketplace',
         children: [
           {
-            id: 'shopify',
+            id: 'shopify-marketplace',
             label: 'Shopify',
             icon: 'ShoppingBag',
             path: '/marketplace/shopify',

@@ -42,8 +42,12 @@ export default function HeroSection() {
           </h1>
 
           <p className='text-xl lg:text-2xl text-gray-300 mb-12 leading-relaxed max-w-4xl mx-auto'>
-            E-ticaret operasyonlarınızı <span className='text-blue-400 font-semibold'>%98 otomatikleştirin</span>.
-            Günde 4 saatlik işi 5 dakikaya indirin. İlk aydan <span className='text-green-400 font-semibold'>ROI alın</span>.
+            E-ticaret operasyonlarınızı{' '}
+            <span className='text-blue-400 font-semibold'>
+              %98 otomatikleştirin
+            </span>
+            . Günde 4 saatlik işi 5 dakikaya indirin. İlk aydan{' '}
+            <span className='text-green-400 font-semibold'>ROI alın</span>.
           </p>
 
           <div className='flex flex-col sm:flex-row gap-6 justify-center mb-16'>

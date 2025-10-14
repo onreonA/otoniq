@@ -1,179 +1,323 @@
-# 🗄️ Database Migrations
+# Database Migrations
 
-Bu klasör Supabase PostgreSQL database schema migration dosyalarını içerir.
+## Migration Order
 
-## 📋 Migration Dosyaları
+All migrations must be run in the following order:
 
-| Dosya                              | Açıklama                 | İçerik                                       |
-| ---------------------------------- | ------------------------ | -------------------------------------------- |
-| `001_initial_schema.sql`           | Temel tablolar           | tenants, users, RLS, triggers                |
-| `002_products_schema.sql`          | Ürün yönetimi            | products, product_history, audit logs        |
-| `003_marketplace_schema.sql`       | Marketplace entegrasyonu | marketplace_connections, listings, sync_jobs |
-| `004_orders_automation_schema.sql` | Sipariş & otomasyon      | orders, n8n_workflows, automation_logs       |
+### Core Migrations (Already Applied)
 
-## 🚀 Migration'ları Çalıştırma
+1. **001_initial_schema.sql** - Tenants and Users
+2. **002_products_schema.sql** - Products and variants
+3. **003_marketplace_schema.sql** - Marketplace connections
+4. **004_orders_automation_schema.sql** - Orders and automation
+5. **005_fix_products_schema.sql** - Product fixes
 
-### Yöntem 1: Supabase SQL Editor (Önerilen - İlk Sefer)
+### New Migrations (Phase 5)
 
-1. [Supabase Dashboard](https://supabase.com/dashboard) → Projenize gidin
-2. Sol menüden **SQL Editor** sekmesine tıklayın
-3. **New query** butonuna tıklayın
-4. Migration dosyalarını **sırayla** kopyalayıp çalıştırın:
+6. **006_categories_schema.sql** ✅ - Product categories with tree structure
+7. **007_inventory_schema.sql** ✅ - Warehouses, stock levels, movements
+8. **008_customers_crm_schema.sql** ✅ - Customers, addresses, notes (B2C/B2B)
+9. **009_orders_extended_schema.sql** ✅ - Extended orders: items, shipments, payments, returns
+10. **010_suppliers_schema.sql** ✅ - Suppliers and product-supplier relationships
 
-```bash
-# Sıra önemli! 001'den başlayın
-1. 001_initial_schema.sql
-2. 002_products_schema.sql
-3. 003_marketplace_schema.sql
-4. 004_orders_automation_schema.sql
-```
+## Migration Status
 
-5. Her dosyayı yapıştırın ve **Run** butonuna tıklayın
-6. Hata olmadığını kontrol edin (yeşil ✓ işareti göreceksiniz)
+✅ **All Phase 5 migrations successfully applied!**
 
-### Yöntem 2: Supabase CLI (Gelişmiş Kullanım)
+## Database Structure Overview
 
-```bash
-# 1. Supabase CLI kurulumu (eğer yoksa)
-npm install -g supabase
+### Multi-Tenant Architecture
 
-# 2. Login
-supabase login
+- All tables include `tenant_id` for data isolation
+- Row Level Security (RLS) policies enforce tenant boundaries
+- Super admins can see all data, tenant users only their own
 
-# 3. Projeyi link et
-supabase link --project-ref ydqqmyhkxczmdnqkswro
+### Key Tables
 
-# 4. Migration'ları push et
-supabase db push
+#### Categories (006)
 
-# 5. Migration history'yi görmek için
-supabase migration list
-```
+- `categories` - Hierarchical product categories
+- `category_tree_view` - Recursive view for tree navigation
 
-## ✅ Kontrol Listesi
+#### Inventory (007)
 
-Migration'lar başarıyla çalıştırıldıysa:
+- `warehouses` - Storage locations
+- `stock_levels` - Current stock per product per warehouse
+- `stock_movements` - All stock transactions history
+- `stock_status_view` - Aggregated stock status
+- `stock_alerts_view` - Low stock alerts
 
-- [ ] **Database** → **Tables** sekmesinde tüm tabloları görebiliyorsunuz:
-  - ✅ tenants
-  - ✅ users
-  - ✅ products
-  - ✅ product_history
-  - ✅ marketplace_connections
-  - ✅ marketplace_listings
-  - ✅ sync_jobs
-  - ✅ orders
-  - ✅ order_status_history
-  - ✅ n8n_workflows
-  - ✅ automation_logs
+#### Customers (008)
 
-- [ ] Her tabloda **RLS (Row Level Security)** aktif
-- [ ] **Policies** tab'ında güvenlik politikaları görünüyor
-- [ ] **Database** → **Functions** sekmesinde helper functions var
+- `customers` - Master customer data (B2C/B2B)
+- `customer_addresses` - Billing and shipping addresses
+- `customer_notes` - Activity log and notes
+- `customers_summary_view` - Display names and key metrics
+- `customer_segment_stats_view` - Segmentation analytics
 
-## 🔐 İlk Super Admin Kullanıcısı Oluşturma
+#### Orders (009)
 
-Migration'lar tamamlandıktan sonra ilk super admin kullanıcısını manuel oluşturmalısınız:
+- `orders` - Extended with new columns
+- `order_items` - Line items
+- `shipments` - Tracking information
+- `payments` - Payment transactions
+- `returns` - Return requests
+- `orders_summary_view` - Orders with customer info
+- `order_fulfillment_view` - Fulfillment status
 
-### Adım 1: Supabase Auth ile kullanıcı oluşturun
+#### Suppliers (010)
 
-1. **Authentication** → **Users** sekmesine gidin
-2. **Add user** butonuna tıklayın
-3. Email ve şifre girin (örn: admin@otoniq.ai)
-4. Kullanıcı oluşturulduktan sonra **User ID**'sini kopyalayın
+- `suppliers` - Supplier master data
+- `supplier_contacts` - Contact persons
+- `supplier_products` - Product-supplier pricing
+- `supplier_performance_view` - Performance metrics
+- `product_supplier_options_view` - Purchasing options
 
-### Adım 2: Users tablosuna super admin ekleyin
+## Testing Migrations
 
-SQL Editor'da şu komutu çalıştırın (USER_ID'yi değiştirin):
+### 1. Verify Tables Exist
 
 ```sql
-INSERT INTO users (id, tenant_id, email, role, full_name)
-VALUES (
-  'BURAYA_USER_ID_YAPIŞTIRIN', -- Yukarıda kopyaladığınız User ID
-  NULL, -- super admin için tenant_id NULL olmalı
-  'admin@otoniq.ai',
-  'super_admin',
-  'Super Admin'
+-- List all tables
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_type = 'BASE TABLE'
+ORDER BY table_name;
+
+-- Check specific tables
+SELECT EXISTS (
+  SELECT 1 FROM information_schema.tables
+  WHERE table_name = 'categories'
 );
 ```
 
-## 🧪 Test Verileri (Opsiyonel)
-
-Development ortamında test için örnek veriler:
+### 2. Check RLS Policies
 
 ```sql
--- Test tenant oluştur
-INSERT INTO tenants (company_name, subscription_plan, subscription_status)
-VALUES ('Test Şirketi A.Ş.', 'professional', 'active')
-RETURNING id; -- Bu ID'yi not edin
-
--- Test kullanıcısı oluştur (önce auth.users'ta olmalı!)
-INSERT INTO users (id, tenant_id, email, role, full_name)
-VALUES (
-  'test_user_id', -- Auth'dan alınacak
-  'yukarıdaki_tenant_id',
-  'test@test.com',
-  'tenant_admin',
-  'Test Kullanıcısı'
-);
+-- View all RLS policies
+SELECT
+  schemaname,
+  tablename,
+  policyname,
+  permissive,
+  roles,
+  cmd,
+  qual
+FROM pg_policies
+WHERE schemaname = 'public'
+ORDER BY tablename, policyname;
 ```
 
-## 🔄 Migration Güncelleme
-
-Eğer schema'da değişiklik yapmak isterseniz:
-
-1. **ASLA** mevcut migration dosyalarını değiştirmeyin!
-2. Yeni bir migration dosyası oluşturun: `005_description.sql`
-3. Yeni dosyayı çalıştırın
-
-## ⚠️ Önemli Notlar
-
-- **Migration sırası**: Dosyaları mutlaka sırayla (001, 002, 003, 004) çalıştırın
-- **RLS**: Row Level Security tüm tablolarda aktif olmalı
-- **Backup**: Önemli değişikliklerden önce database backup alın
-- **Production**: Production'a geçmeden önce tüm migration'ları staging'de test edin
-
-## 🆘 Sorun Giderme
-
-### "relation does not exist" hatası
-
-- Önceki migration'lar çalıştırılmamış olabilir
-- Migration sırasına dikkat edin
-
-### "permission denied" hatası
-
-- RLS politikaları ile çakışma olabilir
-- Super admin kullanıcısı ile çalıştırın
-
-### "duplicate key value" hatası
-
-- Migration daha önce çalıştırılmış
-- Tabloyu drop edip tekrar çalıştırabilirsiniz (dikkatli!)
+### 3. Verify Indexes
 
 ```sql
--- Dikkat: Veri kaybı riski!
-DROP TABLE IF EXISTS table_name CASCADE;
--- Sonra migration'ı tekrar çalıştırın
+-- List all indexes
+SELECT
+  tablename,
+  indexname,
+  indexdef
+FROM pg_indexes
+WHERE schemaname = 'public'
+ORDER BY tablename, indexname;
 ```
 
-## 📝 Migration History Takibi
-
-Supabase otomatik olarak `supabase_migrations.schema_migrations` tablosunda migration history tutar.
+### 4. Check Foreign Keys
 
 ```sql
--- Hangi migration'lar çalıştırıldı?
-SELECT * FROM supabase_migrations.schema_migrations;
+-- View foreign key relationships
+SELECT
+  tc.table_name,
+  kcu.column_name,
+  ccu.table_name AS foreign_table_name,
+  ccu.column_name AS foreign_column_name
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+  ON tc.constraint_name = kcu.constraint_name
+JOIN information_schema.constraint_column_usage AS ccu
+  ON ccu.constraint_name = tc.constraint_name
+WHERE tc.constraint_type = 'FOREIGN KEY'
+ORDER BY tc.table_name, kcu.column_name;
 ```
 
-## ✅ Sonraki Adımlar
+## Sample Data Insertion
 
-Migration'lar tamamlandıktan sonra:
+### Categories Sample Data
 
-1. ✅ Environment variables kontrol edin (`.env.local`)
-2. ✅ Frontend uygulamasını çalıştırın: `npm run dev`
-3. ✅ Supabase connection test edin
-4. ✅ İlk super admin ile login olun
+```sql
+-- Get your tenant_id first
+SELECT id FROM tenants LIMIT 1;
 
----
+-- Insert sample categories (replace {tenant_id})
+INSERT INTO categories (tenant_id, name, slug, description, display_order, is_active, is_featured)
+VALUES
+  ('{tenant_id}', 'Elektronik', 'elektronik', 'Elektronik ürünler', 1, true, true),
+  ('{tenant_id}', 'Giyim', 'giyim', 'Giyim ürünleri', 2, true, true),
+  ('{tenant_id}', 'Ev & Yaşam', 'ev-yasam', 'Ev ve yaşam ürünleri', 3, true, false);
 
-**Hazır mısınız?** Migration'ları çalıştırın ve projeye devam edin! 🚀
+-- Insert subcategories
+INSERT INTO categories (tenant_id, parent_id, name, slug, description, display_order, is_active)
+SELECT
+  c.tenant_id,
+  c.id,
+  'Cep Telefonu',
+  'cep-telefonu',
+  'Akıllı telefonlar',
+  1,
+  true
+FROM categories c
+WHERE c.slug = 'elektronik' AND c.tenant_id = '{tenant_id}';
+```
+
+### Warehouse Sample Data
+
+```sql
+-- Insert main warehouse (already created by migration seed data)
+-- Verify it exists:
+SELECT * FROM warehouses WHERE tenant_id = '{tenant_id}';
+```
+
+### Customer Sample Data
+
+```sql
+-- Insert sample customers
+INSERT INTO customers (
+  tenant_id,
+  customer_type,
+  first_name,
+  last_name,
+  email,
+  phone,
+  segment,
+  status
+)
+VALUES
+  ('{tenant_id}', 'individual', 'Ahmet', 'Yılmaz', 'ahmet@example.com', '+905551234567', 'new', 'active'),
+  ('{tenant_id}', 'individual', 'Ayşe', 'Demir', 'ayse@example.com', '+905557654321', 'repeat', 'active'),
+  ('{tenant_id}', 'business', NULL, NULL, 'info@example.com', '+902121234567', 'b2b', 'active');
+
+-- Update company name for business customer
+UPDATE customers
+SET company_name = 'Örnek Ltd. Şti.', tax_number = '1234567890'
+WHERE customer_type = 'business' AND tenant_id = '{tenant_id}';
+```
+
+### Supplier Sample Data
+
+```sql
+-- Insert sample suppliers
+INSERT INTO suppliers (
+  tenant_id,
+  supplier_code,
+  company_name,
+  email,
+  phone,
+  city,
+  country,
+  status,
+  supplier_type
+)
+VALUES
+  ('{tenant_id}', 'SUP001', 'ABC Tedarik A.Ş.', 'abc@tedarik.com', '+902121111111', 'İstanbul', 'Türkiye', 'active', 'manufacturer'),
+  ('{tenant_id}', 'SUP002', 'XYZ Dağıtım Ltd.', 'xyz@dagitim.com', '+903122222222', 'Ankara', 'Türkiye', 'active', 'distributor');
+```
+
+## Useful Queries
+
+### View Category Tree
+
+```sql
+SELECT * FROM category_tree_view
+WHERE tenant_id = '{tenant_id}'
+ORDER BY path;
+```
+
+### Check Stock Levels
+
+```sql
+SELECT
+  p.name AS product_name,
+  w.name AS warehouse_name,
+  sl.quantity,
+  sl.reserved_quantity,
+  sl.available_quantity
+FROM stock_levels sl
+JOIN products p ON sl.product_id = p.id
+JOIN warehouses w ON sl.warehouse_id = w.id
+WHERE sl.tenant_id = '{tenant_id}';
+```
+
+### Customer Segments
+
+```sql
+SELECT * FROM customer_segment_stats_view
+WHERE tenant_id = '{tenant_id}';
+```
+
+### Orders with Customer Info
+
+```sql
+SELECT * FROM orders_summary_view
+WHERE tenant_id = '{tenant_id}'
+ORDER BY order_date DESC
+LIMIT 10;
+```
+
+### Supplier Performance
+
+```sql
+SELECT * FROM supplier_performance_view
+WHERE tenant_id = '{tenant_id}'
+ORDER BY quality_rating DESC;
+```
+
+## Rollback Instructions
+
+If you need to rollback migrations (⚠️ use with caution):
+
+```sql
+-- Rollback in reverse order
+DROP TABLE IF EXISTS supplier_products CASCADE;
+DROP TABLE IF EXISTS supplier_contacts CASCADE;
+DROP TABLE IF EXISTS suppliers CASCADE;
+
+DROP TABLE IF EXISTS returns CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS shipments CASCADE;
+DROP TABLE IF EXISTS order_items CASCADE;
+-- Note: orders table existed before, only drop new columns
+
+DROP TABLE IF EXISTS customer_notes CASCADE;
+DROP TABLE IF EXISTS customer_addresses CASCADE;
+DROP TABLE IF EXISTS customers CASCADE;
+
+DROP TABLE IF EXISTS stock_movements CASCADE;
+DROP TABLE IF EXISTS stock_levels CASCADE;
+DROP TABLE IF EXISTS warehouses CASCADE;
+
+DROP TABLE IF EXISTS categories CASCADE;
+```
+
+## Next Steps
+
+1. ✅ All migrations applied successfully
+2. ⏭️ Insert sample data for testing
+3. ⏭️ Create repository and service layers (Phase 6)
+4. ⏭️ Connect frontend pages to real data (Phase 7)
+
+## Notes
+
+- All tables have RLS enabled for security
+- Indexes are created for performance
+- Helpful views simplify complex queries
+- Seed data is automatically inserted for tenants
+- Foreign keys ensure data integrity
+- Triggers auto-update timestamps
+
+## Support
+
+For issues or questions:
+
+- Check Supabase logs: Dashboard > Logs
+- Verify RLS policies: Dashboard > Authentication > Policies
+- Test queries: Dashboard > SQL Editor

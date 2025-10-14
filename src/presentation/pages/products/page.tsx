@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { productService } from '../../../infrastructure/services/ProductService';
 import { Product } from '../../../domain/entities/Product';
 import ProductModal from './components/ProductModal';
-import OdooSyncModal from './components/OdooSyncModal';
-import ShopifySyncModal from './components/ShopifySyncModal';
 import toast from 'react-hot-toast';
 
 export default function ProductManagement() {
@@ -16,8 +15,6 @@ export default function ProductManagement() {
   const [filterType, setFilterType] = useState('all');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showOdooSyncModal, setShowOdooSyncModal] = useState(false);
-  const [showShopifySyncModal, setShowShopifySyncModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -217,21 +214,14 @@ export default function ProductManagement() {
                 Ürünlerinizi görüntüleyin ve yönetin
               </p>
             </div>
-            <div className='flex space-x-3'>
-              <button
-                onClick={() => setShowOdooSyncModal(true)}
-                className='bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer'
+            <div className='flex items-center space-x-3'>
+              <Link
+                to='/integrations'
+                className='bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 border border-purple-500/30 hover:border-purple-500/50 flex items-center gap-2'
               >
-                <i className='ri-download-line mr-2'></i>
-                Odoo Sync
-              </button>
-              <button
-                onClick={() => setShowShopifySyncModal(true)}
-                className='bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer'
-              >
-                <i className='ri-store-line mr-2'></i>
-                Shopify Sync
-              </button>
+                <i className='ri-plug-line'></i>
+                <span className='text-sm'>Entegrasyonları Yönet</span>
+              </Link>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className='bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 cursor-pointer'
@@ -506,26 +496,6 @@ export default function ProductManagement() {
         }}
         editingProduct={editingProduct}
         tenantId={userProfile?.tenant_id || undefined}
-      />
-
-      {/* Odoo Sync Modal */}
-      <OdooSyncModal
-        isOpen={showOdooSyncModal}
-        onClose={() => setShowOdooSyncModal(false)}
-        onSuccess={() => {
-          loadProducts();
-        }}
-        tenantId={userProfile?.tenant_id || ''}
-      />
-
-      {/* Shopify Sync Modal */}
-      <ShopifySyncModal
-        isOpen={showShopifySyncModal}
-        onClose={() => setShowShopifySyncModal(false)}
-        onSuccess={() => {
-          loadProducts();
-        }}
-        tenantId={userProfile?.tenant_id || ''}
       />
     </div>
   );

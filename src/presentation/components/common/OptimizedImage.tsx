@@ -25,7 +25,10 @@ export default function OptimizedImage({
   const [error, setError] = useState(false);
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ aspectRatio }}>
+    <div
+      className={`relative overflow-hidden ${className}`}
+      style={{ aspectRatio }}
+    >
       {/* Placeholder */}
       {!isLoaded && !error && (
         <div className='absolute inset-0 bg-gray-800 animate-pulse' />
@@ -58,4 +61,3 @@ export default function OptimizedImage({
     </div>
   );
 }
-

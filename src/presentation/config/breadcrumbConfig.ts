@@ -18,18 +18,14 @@ export const breadcrumbLabels: BreadcrumbConfig = {
 
   // Products
   '/products': 'Ürünler',
-  '/products/categories': 'Kategoriler',
-  '/products/inventory': 'Stok Yönetimi',
+  '/categories': 'Kategoriler',
+  '/inventory': 'Stok Yönetimi',
 
   // Orders
   '/orders': 'Siparişler',
-  '/orders/new': 'Yeni Sipariş',
-  '/orders/pending': 'Bekleyen Siparişler',
-  '/orders/completed': 'Tamamlanan Siparişler',
 
   // Customers
   '/customers': 'Müşteriler',
-  '/customers/new': 'Yeni Müşteri',
 
   // Marketplace
   '/marketplace': 'Pazaryerleri',
@@ -40,6 +36,9 @@ export const breadcrumbLabels: BreadcrumbConfig = {
   // Integrations
   '/integrations': 'Entegrasyonlar',
   '/integrations/odoo': 'Odoo ERP',
+  '/integrations/shopify': 'Shopify',
+  '/integrations/sap': 'SAP',
+  '/integrations/woocommerce': 'WooCommerce',
   '/automation': 'Otomasyon Merkezi',
 
   // AI Features
