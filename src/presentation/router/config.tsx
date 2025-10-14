@@ -21,6 +21,9 @@ const MarketplaceConnectionsPage = lazy(
 const AnalyticsPage = lazy(() => import('../pages/analytics/page'));
 const AutomationPage = lazy(() => import('../pages/automation/page'));
 const CreativePage = lazy(() => import('../pages/creative/page'));
+const ChatAutomationPage = lazy(() => import('../pages/chat-automation/page'));
+const ARVRPage = lazy(() => import('../pages/ar-vr/page'));
+const IoTPage = lazy(() => import('../pages/iot/page'));
 const AdminPage = lazy(() => import('../pages/admin/page'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
@@ -100,6 +103,18 @@ const routes: RouteObject[] = [
       {
         path: '/creative',
         element: <CreativePage />,
+      },
+      {
+        path: '/chat-automation',
+        element: <ChatAutomationPage />,
+      },
+      {
+        path: '/ar-vr',
+        element: <ARVRPage />,
+      },
+      {
+        path: '/iot',
+        element: <IoTPage />,
       },
 
       // Super admin only routes (still inside SidebarLayout)
