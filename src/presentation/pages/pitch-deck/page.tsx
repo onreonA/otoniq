@@ -125,7 +125,7 @@ const PitchDeck = () => {
           number: '2',
           title: 'OTOMATİKLEŞTİRİN',
           subtitle: '10 dakika',
-          description: 'AI workflow'ları aktifleştir',
+          description: 'AI workflow\'ları aktifleştir',
           detail: 'Kuralları belirle',
         },
         {
