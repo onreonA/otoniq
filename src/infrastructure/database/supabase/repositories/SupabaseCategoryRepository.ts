@@ -2,7 +2,7 @@
  * Supabase Category Repository Implementation
  */
 
-import { supabase } from '../supabaseClient';
+import { supabase } from '../client';
 import { ICategoryRepository } from '../../../../domain/repositories/ICategoryRepository';
 import {
   Category,
