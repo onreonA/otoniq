@@ -78,7 +78,18 @@ const InventoryPage = () => {
   const filteredStockLevels = stockLevels.filter(stock => {
     if (filterWarehouse !== 'all' && stock.warehouseId !== filterWarehouse)
       return false;
-    if (filterStatus !== 'all' && stock.status !== filterStatus) return false;
+    
+    // Calculate status from available and reorderPoint
+    if (filterStatus !== 'all') {
+      const status = stock.available === 0 
+        ? 'out_of_stock' 
+        : stock.available <= stock.reorderPoint 
+          ? 'low_stock' 
+          : 'in_stock';
+      
+      if (status !== filterStatus) return false;
+    }
+    
     return true;
   });
 
@@ -292,9 +303,9 @@ const InventoryPage = () => {
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap text-center'>
                           <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStockStatusColor(stock.status)}`}
+                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStockStatusColor(stock.available, stock.reorderPoint)}`}
                           >
-                            {getStockStatusLabel(stock.status)}
+                            {getStockStatusLabel(stock.available, stock.reorderPoint)}
                           </span>
                         </td>
                         <td className='px-6 py-4 whitespace-nowrap text-center'>
@@ -385,10 +396,10 @@ const InventoryPage = () => {
                       {Math.abs(movement.quantity)}
                     </p>
                     <p className='text-xs text-white/50'>
-                      {movement.createdAt.toLocaleString('tr-TR')}
+                      {movement.createdAt ? new Date(movement.createdAt).toLocaleString('tr-TR') : 'N/A'}
                     </p>
                     <p className='text-xs text-white/50'>
-                      {movement.createdBy}
+                      {movement.createdBy || 'N/A'}
                     </p>
                   </div>
                 </div>
@@ -441,33 +452,36 @@ const InventoryPage = () => {
 
                 <div className='grid grid-cols-2 gap-3'>
                   <div className='bg-white/5 p-3 rounded-lg'>
-                    <p className='text-xs text-white/60 mb-1'>Ürün Çeşidi</p>
+                    <p className='text-xs text-white/60 mb-1'>Kod</p>
                     <p className='text-xl font-bold text-white'>
-                      {warehouse.totalProducts}
+                      {warehouse.code || 'N/A'}
                     </p>
                   </div>
                   <div className='bg-white/5 p-3 rounded-lg'>
-                    <p className='text-xs text-white/60 mb-1'>Toplam Stok</p>
+                    <p className='text-xs text-white/60 mb-1'>Durum</p>
                     <p className='text-xl font-bold text-white'>
-                      {warehouse.totalStock.toLocaleString('tr-TR')}
+                      {warehouse.isActive ? '✓ Aktif' : '✗ Pasif'}
                     </p>
                   </div>
                   <div className='col-span-2 bg-white/5 p-3 rounded-lg'>
                     <div className='flex items-center justify-between mb-2'>
                       <p className='text-xs text-white/60'>Doluluk Oranı</p>
                       <p className='text-xs text-white font-medium'>
-                        {(
-                          (warehouse.totalStock / warehouse.capacity) *
-                          100
-                        ).toFixed(1)}
-                        %
+                        {warehouse.totalCapacity && warehouse.currentUsage
+                          ? ((warehouse.currentUsage / warehouse.totalCapacity) * 100).toFixed(1)
+                          : '0'
+                        }%
                       </p>
                     </div>
                     <div className='w-full bg-white/10 rounded-full h-2'>
                       <div
                         className='bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full'
                         style={{
-                          width: `${Math.min((warehouse.totalStock / warehouse.capacity) * 100, 100)}%`,
+                          width: `${
+                            warehouse.totalCapacity && warehouse.currentUsage
+                              ? Math.min((warehouse.currentUsage / warehouse.totalCapacity) * 100, 100)
+                              : 0
+                          }%`,
                         }}
                       ></div>
                     </div>

@@ -95,11 +95,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   async getStockLevels(tenantId: string, warehouseId?: string): Promise<StockLevel[]> {
     let query = supabase
       .from('stock_levels')
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code)
-      `)
+      .select('*')
       .eq('tenant_id', tenantId);
 
     if (warehouseId) {
@@ -115,11 +111,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   async getStockLevelById(id: string, tenantId: string): Promise<StockLevel | null> {
     const { data, error } = await supabase
       .from('stock_levels')
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code)
-      `)
+      .select('*')
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .single();
@@ -140,11 +132,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
         tenant_id: tenantId,
         created_by: userId,
       })
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code)
-      `)
+      .select('*')
       .single();
 
     if (error) throw error;
@@ -166,11 +154,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
       })
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code)
-      `)
+      .select('*')
       .single();
 
     if (error) throw error;
@@ -199,12 +183,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
     let query = supabase
       .from('stock_movements')
       .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code),
-        from_warehouse:from_warehouse_id (id, name, code),
-        to_warehouse:to_warehouse_id (id, name, code),
-        users:created_by (id, full_name, email)
+        *
       `)
       .eq('tenant_id', tenantId);
 
@@ -238,14 +217,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
         tenant_id: tenantId,
         created_by: userId,
       })
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code),
-        from_warehouse:from_warehouse_id (id, name, code),
-        to_warehouse:to_warehouse_id (id, name, code),
-        users:created_by (id, full_name, email)
-      `)
+      .select('*')
       .single();
 
     if (error) throw error;
@@ -260,11 +232,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   ): Promise<StockLevel | null> {
     const { data, error } = await supabase
       .from('stock_levels')
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code)
-      `)
+      .select('*')
       .eq('product_id', productId)
       .eq('warehouse_id', warehouseId)
       .eq('tenant_id', tenantId)
@@ -277,11 +245,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   async getLowStockProducts(tenantId: string): Promise<StockLevel[]> {
     const { data, error } = await supabase
       .from('stock_levels')
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code)
-      `)
+      .select('*')
       .eq('tenant_id', tenantId)
       .lte('available', supabase.raw('reorder_point'))
       .order('available');
@@ -293,11 +257,7 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
   async getOutOfStockProducts(tenantId: string): Promise<StockLevel[]> {
     const { data, error } = await supabase
       .from('stock_levels')
-      .select(`
-        *,
-        products:product_id (id, name, sku),
-        warehouses:warehouse_id (id, name, code)
-      `)
+      .select('*')
       .eq('tenant_id', tenantId)
       .eq('available', 0)
       .order('updated_at', { ascending: false });
