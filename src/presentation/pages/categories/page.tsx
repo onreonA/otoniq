@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   FolderTree,
   Plus,
@@ -10,22 +10,33 @@ import {
   TrendingUp,
   CheckCircle,
   XCircle,
+  AlertCircle,
 } from 'lucide-react';
-import {
-  mockCategories,
-  mockCategoryStats,
-  getCategoryStatusColor,
-  type Category,
-} from './mocks/categoriesMockData';
-import { MockBadge } from '../../components/common/MockBadge';
+import { useCategories } from '../../hooks/useCategories';
+import type { Category as CategoryEntity } from '../../../domain/entities/Category';
 
 const CategoriesPage = () => {
+  const { categoryTree, loading, error, deleteCategory } = useCategories();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['cat_001', 'cat_011', 'cat_015'])
+    new Set()
   );
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+  const [selectedCategory, setSelectedCategory] = useState<CategoryEntity | null>(
     null
   );
+
+  // Calculate stats from real data
+  const stats = useMemo(() => {
+    const allCategories = categoryTree.flatMap(function flatten(cat): CategoryEntity[] {
+      return [cat, ...cat.children.flatMap(flatten)];
+    });
+
+    return {
+      total: allCategories.length,
+      active: allCategories.filter(c => c.isActive).length,
+      featured: allCategories.filter(c => c.isFeatured).length,
+      inactive: allCategories.filter(c => !c.isActive).length,
+    };
+  }, [categoryTree]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev => {
@@ -39,7 +50,7 @@ const CategoriesPage = () => {
     });
   };
 
-  const renderCategoryTree = (categories: Category[], level: number = 0) => {
+  const renderCategoryTree = (categories: CategoryEntity[], level: number = 0) => {
     return categories.map(category => {
       const hasChildren = category.children && category.children.length > 0;
       const isExpanded = expandedCategories.has(category.id);
@@ -87,7 +98,11 @@ const CategoriesPage = () => {
 
             {/* Status Badge */}
             <div
-              className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryStatusColor(category.isActive)}`}
+              className={`px-2 py-1 rounded-full text-xs font-medium border ${
+                category.isActive
+                  ? 'bg-green-100 text-green-800 border-green-300'
+                  : 'bg-gray-100 text-gray-800 border-gray-300'
+              }`}
             >
               {category.isActive ? (
                 <CheckCircle className='w-3 h-3 inline mr-1' />
@@ -119,10 +134,35 @@ const CategoriesPage = () => {
     });
   };
 
+  // Handle delete
+  const handleDelete = async (id: string) => {
+    if (!confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) return;
+    
+    const success = await deleteCategory(id);
+    if (success) {
+      alert('Kategori başarıyla silindi!');
+    }
+  };
+
+  if (loading && categoryTree.length === 0) {
+    return (
+      <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
+        <div className='flex items-center justify-center h-64'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
-      {/* Mock Badge */}
-      <MockBadge storageKey='mock-badge-categories' />
+      {/* Error Display */}
+      {error && (
+        <div className='mb-6 bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-center gap-3'>
+          <AlertCircle className='w-5 h-5 text-red-400' />
+          <p className='text-red-200'>{error}</p>
+        </div>
+      )}
 
       {/* Page Header */}
       <div className='mb-6 bg-gradient-to-r from-green-600/20 to-emerald-600/20 backdrop-blur-sm rounded-2xl p-6 border border-green-500/20'>
@@ -150,7 +190,7 @@ const CategoriesPage = () => {
             <FolderTree className='w-5 h-5 text-purple-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockCategoryStats.totalCategories}
+            {stats.total}
           </p>
         </div>
 
@@ -160,29 +200,29 @@ const CategoriesPage = () => {
             <CheckCircle className='w-5 h-5 text-green-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockCategoryStats.activeCategories}
+            {stats.active}
           </p>
         </div>
 
         <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
           <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>Toplam Ürün</span>
+            <span className='text-sm text-white/60'>Öne Çıkanlar</span>
             <Package className='w-5 h-5 text-blue-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockCategoryStats.totalProducts}
+            {stats.featured}
           </p>
         </div>
 
         <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
           <div className='flex items-center justify-between mb-2'>
             <span className='text-sm text-white/60'>
-              Ortalama Ürün/Kategori
+              Pasif Kategori
             </span>
-            <TrendingUp className='w-5 h-5 text-orange-400' />
+            <XCircle className='w-5 h-5 text-orange-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockCategoryStats.avgProductsPerCategory}
+            {stats.inactive}
           </p>
         </div>
       </div>
@@ -190,7 +230,15 @@ const CategoriesPage = () => {
       {/* Category Tree */}
       <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6'>
         <h2 className='text-xl font-bold text-white mb-4'>Kategori Ağacı</h2>
-        <div className='space-y-1'>{renderCategoryTree(mockCategories)}</div>
+        {categoryTree.length === 0 ? (
+          <div className='text-center py-12'>
+            <FolderTree className='w-12 h-12 text-white/30 mx-auto mb-3' />
+            <p className='text-white/60'>Henüz kategori eklenmemiş</p>
+            <p className='text-white/40 text-sm mt-1'>Başlamak için yeni kategori ekleyin</p>
+          </div>
+        ) : (
+          <div className='space-y-1'>{renderCategoryTree(categoryTree)}</div>
+        )}
       </div>
 
       {/* Selected Category Detail (Simple Modal-like) */}
