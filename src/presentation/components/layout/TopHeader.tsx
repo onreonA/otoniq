@@ -70,7 +70,7 @@ const TopHeader = memo(function TopHeader() {
   return (
     <header
       className={`
-        fixed top-0 h-16 z-20
+        fixed top-0 h-16 z-40
         transition-all duration-300 ease-in-out
         left-0 right-0
         bg-gray-900 border-b border-gray-800
@@ -78,7 +78,7 @@ const TopHeader = memo(function TopHeader() {
     >
       <div className='h-full px-4 flex items-center justify-between w-full'>
         {/* Left Section */}
-        <div className='flex items-center gap-4 flex-1 min-w-0'>
+        <div className='flex items-center gap-4'>
           {/* Mobile Menu Button */}
           <button
             onClick={toggleMobileSidebar}
@@ -101,16 +101,21 @@ const TopHeader = memo(function TopHeader() {
             )}
           </button>
 
-          {/* Current Page Title */}
+          {/* Logo */}
           <div className='flex items-center gap-2'>
-            <div className='hidden md:block'>
-              <div className='text-lg font-bold text-white'>Dashboard</div>
-              <div className='text-xs text-gray-400 -mt-1'>Genel Bakış</div>
+            <div className='w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center'>
+              <span className='text-white font-bold text-lg'>O</span>
             </div>
+            <span className='hidden md:block text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent'>
+              Otoniq.ai
+            </span>
           </div>
+        </div>
 
-          {/* Search Bar */}
-          <div className='hidden sm:flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 w-64 lg:w-96 ml-4'>
+        {/* Right Section */}
+        <div className='flex items-center gap-3 flex-shrink-0'>
+          {/* Search Bar - Moved to Right */}
+          <div className='hidden sm:flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 w-64 lg:w-80'>
             <Search className='w-4 h-4 text-gray-400' />
             <input
               type='text'
@@ -118,10 +123,6 @@ const TopHeader = memo(function TopHeader() {
               className='flex-1 bg-transparent border-none outline-none text-sm text-white placeholder-gray-400 focus:outline-none'
             />
           </div>
-        </div>
-
-        {/* Right Section */}
-        <div className='flex items-center gap-2 flex-shrink-0'>
           {/* Search Button (Mobile) */}
           <button
             className='sm:hidden p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-300'
