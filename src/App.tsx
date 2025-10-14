@@ -3,11 +3,13 @@ import { AppRoutes } from './presentation/router';
 import { Toaster } from 'react-hot-toast';
 import { Suspense } from 'react';
 import { LoadingSpinner } from './presentation/components/animation/LoadingSpinner';
+import { ErrorBoundary } from './presentation/components/common/ErrorBoundary';
 
 function App() {
   return (
-    <BrowserRouter basename={__BASE_PATH__}>
-      <Toaster
+    <ErrorBoundary>
+      <BrowserRouter basename={__BASE_PATH__}>
+        <Toaster
         position='top-right'
         toastOptions={{
           duration: 4000,
@@ -47,6 +49,7 @@ function App() {
         <AppRoutes />
       </Suspense>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
