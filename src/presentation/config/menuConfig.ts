@@ -63,6 +63,13 @@ export const superAdminMenuConfig: MenuGroup[] = [
         path: '/analytics',
         badge: 'new',
       },
+      {
+        id: 'automation',
+        label: 'Otomasyon Merkezi',
+        icon: 'Zap',
+        path: '/automation',
+        badge: 'new',
+      },
     ],
   },
   {

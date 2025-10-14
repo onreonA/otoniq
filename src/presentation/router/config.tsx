@@ -19,6 +19,7 @@ const MarketplaceConnectionsPage = lazy(
   () => import('../pages/marketplace/page')
 );
 const AnalyticsPage = lazy(() => import('../pages/analytics/page'));
+const AutomationPage = lazy(() => import('../pages/automation/page'));
 const AdminPage = lazy(() => import('../pages/admin/page'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
@@ -90,6 +91,10 @@ const routes: RouteObject[] = [
       {
         path: '/analytics',
         element: <AnalyticsPage />,
+      },
+      {
+        path: '/automation',
+        element: <AutomationPage />,
       },
 
       // Super admin only routes (still inside SidebarLayout)

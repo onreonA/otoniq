@@ -40,7 +40,7 @@ export const breadcrumbLabels: BreadcrumbConfig = {
   // Integrations
   '/integrations': 'Entegrasyonlar',
   '/integrations/odoo': 'Odoo ERP',
-  '/automation': 'Otomasyon',
+  '/automation': 'Otomasyon Merkezi',
 
   // AI Features
   '/ai': 'AI Özellikleri',
