@@ -43,19 +43,23 @@ export default function CTASection() {
 
         <div className='flex flex-col sm:flex-row gap-6 justify-center mb-12'>
           <Button
+            as='a'
+            to='/signup'
             size='lg'
             className='bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-10 py-5 text-xl font-bold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300'
             icon={<i className='ri-rocket-line'></i>}
           >
-            Ücretsiz AI Deneyimi Başlat
+            14 Gün Ücretsiz Dene
           </Button>
           <Button
+            as='a'
+            to='/pricing'
             variant='outline'
             size='lg'
             className='border-2 border-blue-400/50 text-blue-300 hover:bg-blue-400/10 px-10 py-5 text-xl font-bold backdrop-blur-sm'
-            icon={<i className='ri-phone-line'></i>}
+            icon={<i className='ri-eye-line'></i>}
           >
-            Uzman Danışmanlık
+            Planları İncele
           </Button>
         </div>
 

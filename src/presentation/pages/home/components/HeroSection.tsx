@@ -42,21 +42,23 @@ export default function HeroSection() {
           </h1>
 
           <p className='text-xl lg:text-2xl text-gray-300 mb-12 leading-relaxed max-w-4xl mx-auto'>
-            Yüzlerce yapay zeka aracıyla e-ticaret süreçlerinizi
-            otomatikleştirin.
-            <span className='text-blue-400 font-semibold'>Otoniq.ai</span> ile
-            geleceğin ticaretini bugün yaşayın.
+            E-ticaret operasyonlarınızı <span className='text-blue-400 font-semibold'>%98 otomatikleştirin</span>.
+            Günde 4 saatlik işi 5 dakikaya indirin. İlk aydan <span className='text-green-400 font-semibold'>ROI alın</span>.
           </p>
 
           <div className='flex flex-col sm:flex-row gap-6 justify-center mb-16'>
             <Button
+              as='a'
+              to='/signup'
               size='lg'
               className='bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300'
               icon={<i className='ri-rocket-line'></i>}
             >
-              AI Gücünü Keşfet
+              14 Gün Ücretsiz Başla
             </Button>
             <Button
+              as='a'
+              to='/demo'
               variant='outline'
               size='lg'
               className='border-2 border-blue-400/50 text-blue-300 hover:bg-blue-400/10 px-8 py-4 text-lg font-semibold backdrop-blur-sm'

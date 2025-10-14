@@ -8,14 +8,14 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 
 **Platform Performansı (İlk 6 Ay)**
 
-| Metrik | Ortalama Sonuç |
-|--------|----------------|
-| Zaman Tasarrufu | %85 |
-| Maliyet Düşüşü | ₺8,500/ay |
-| Satış Artışı | %42 |
-| Müşteri Memnuniyeti | 4.8/5.0 |
-| ROI | 3.2x |
-| Churn Rate | %3 (sektör ort: %15) |
+| Metrik              | Ortalama Sonuç       |
+| ------------------- | -------------------- |
+| Zaman Tasarrufu     | %85                  |
+| Maliyet Düşüşü      | ₺8,500/ay            |
+| Satış Artışı        | %42                  |
+| Müşteri Memnuniyeti | 4.8/5.0              |
+| ROI                 | 3.2x                 |
+| Churn Rate          | %3 (sektör ort: %15) |
 
 ---
 
@@ -24,6 +24,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 ### **CASE STUDY #1: Fashion Store Turkey**
 
 **📋 Firma Profili**
+
 - **Sektör:** Moda & Giyim E-Ticaret
 - **Kuruluş:** 2018
 - **Çalışan Sayısı:** 8 kişi
@@ -32,6 +33,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 - **Ürün Sayısı:** 1,200+ SKU
 
 **❌ Sorunlar (Otoniq.ai Öncesi)**
+
 1. **Ürün Listeleme:**
    - Manuel olarak her ürünü 4 farklı platforma yüklüyorlardı
    - Bir ürün için ortalama 15 dakika (fotoğraf düzenleme, açıklama yazma, SEO)
@@ -56,6 +58,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 **✅ Çözüm: Otoniq.ai Professional Plan**
 
 **Uygulama Süreci:**
+
 - **Gün 1-2:** Shopify + Trendyol entegrasyonu
 - **Gün 3:** WhatsApp bot kurulumu
 - **Gün 4-5:** AI içerik üretimi ve otomasyonları
@@ -63,15 +66,15 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 
 **📈 Sonuçlar (6 Ay Sonra)**
 
-| Metrik | Öncesi | Sonrası | İyileşme |
-|--------|--------|---------|----------|
-| Ürün Listeleme Süresi | 4 saat/gün | 20 dakika/gün | %92 azalma |
-| Sosyal Medya Maliyeti | ₺3,500/ay | ₺0 | %100 tasarruf |
-| Engagement Rate | %1.2 | %4.5 | %275 artış |
-| Müşteri Destek Saati | 16 saat/gün | 6 saat/gün | %63 azalma |
-| Overselling Sorunu | 2-3/ay | 0 | %100 azalma |
-| **Aylık Satış** | **₺350K** | **₺475K** | **%35 artış** |
-| **Net Tasarruf** | **-** | **₺10,500/ay** | **ROI: 2.1x** |
+| Metrik                | Öncesi      | Sonrası        | İyileşme      |
+| --------------------- | ----------- | -------------- | ------------- |
+| Ürün Listeleme Süresi | 4 saat/gün  | 20 dakika/gün  | %92 azalma    |
+| Sosyal Medya Maliyeti | ₺3,500/ay   | ₺0             | %100 tasarruf |
+| Engagement Rate       | %1.2        | %4.5           | %275 artış    |
+| Müşteri Destek Saati  | 16 saat/gün | 6 saat/gün     | %63 azalma    |
+| Overselling Sorunu    | 2-3/ay      | 0              | %100 azalma   |
+| **Aylık Satış**       | **₺350K**   | **₺475K**      | **%35 artış** |
+| **Net Tasarruf**      | **-**       | **₺10,500/ay** | **ROI: 2.1x** |
 
 **💬 Müşteri Yorumu:**
 
@@ -80,6 +83,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 > **— Ayşe Yılmaz, Kurucu & CEO**
 
 **📸 Başarı Göstergeleri:**
+
 - ✅ Instagram takipçi sayısı: 12K → 28K (6 ayda)
 - ✅ Trendyol satıcı puanı: 8.4 → 9.6
 - ✅ Müşteri memnuniyeti: %76 → %94
@@ -90,6 +94,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 ### **CASE STUDY #2: Teknoloji Perakende A.Ş.**
 
 **📋 Firma Profili**
+
 - **Sektör:** Teknoloji & Elektronik Perakende
 - **Kuruluş:** 2010
 - **Çalışan Sayısı:** 45 kişi
@@ -99,6 +104,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 - **ERP:** Odoo
 
 **❌ Sorunlar (Otoniq.ai Öncesi)**
+
 1. **Stok Kayıpları:**
    - Depo ve mağazalarda aylık ₺15K - ₺20K stok kaybı
    - Sıcaklık/nem kontrol edilmiyordu
@@ -122,6 +128,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 **✅ Çözüm: Otoniq.ai Enterprise Plan**
 
 **Uygulama Süreci:**
+
 - **Hafta 1:** Odoo ERP entegrasyonu
 - **Hafta 2:** IoT sensör kurulumu (12 şube + 1 ana depo)
 - **Hafta 3:** AI analitik ve transfer otomasyonu
@@ -130,14 +137,14 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 
 **📈 Sonuçlar (1 Yıl Sonra)**
 
-| Metrik | Öncesi | Sonrası | İyileşme |
-|--------|--------|---------|----------|
-| Aylık Stok Kaybı | ₺17.5K | ₺7K | %60 azalma |
-| Şubeler Arası Transfer Hatası | 18% | 3% | %83 iyileşme |
-| Satış Tahmin Doğruluğu | %58 | %89 | %31 artış |
-| Operasyon Maliyeti | ₺85K/ay | ₺60K/ay | %29 azalma |
-| Stok Devir Hızı | 3.2x/yıl | 4.8x/yıl | %50 iyileşme |
-| **Yıllık Net Tasarruf** | **-** | **₺420K** | **ROI: 3.5x** |
+| Metrik                        | Öncesi   | Sonrası   | İyileşme      |
+| ----------------------------- | -------- | --------- | ------------- |
+| Aylık Stok Kaybı              | ₺17.5K   | ₺7K       | %60 azalma    |
+| Şubeler Arası Transfer Hatası | 18%      | 3%        | %83 iyileşme  |
+| Satış Tahmin Doğruluğu        | %58      | %89       | %31 artış     |
+| Operasyon Maliyeti            | ₺85K/ay  | ₺60K/ay   | %29 azalma    |
+| Stok Devir Hızı               | 3.2x/yıl | 4.8x/yıl  | %50 iyileşme  |
+| **Yıllık Net Tasarruf**       | **-**    | **₺420K** | **ROI: 3.5x** |
 
 **💬 Müşteri Yorumu:**
 
@@ -146,6 +153,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 > **— Mehmet Demir, Operasyon Müdürü**
 
 **📸 Başarı Göstergeleri:**
+
 - ✅ Yıllık stok kaybı: ₺210K → ₺84K (₺126K tasarruf)
 - ✅ Müşteri memnuniyeti: %82 → %91
 - ✅ Şube yöneticilerinin operasyon zamanı: %70 → %40 (stratejik işlere daha fazla zaman)
@@ -156,6 +164,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 ### **CASE STUDY #3: Organik Gıda Evi**
 
 **📋 Firma Profili**
+
 - **Sektör:** Organik Gıda & Sağlıklı Yaşam E-Ticaret
 - **Kuruluş:** 2020
 - **Çalışan Sayısı:** 3 kişi (kurucular)
@@ -165,6 +174,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 - **Hedef:** Nişe pazar, sağlık bilincine sahip müşteriler
 
 **❌ Sorunlar (Otoniq.ai Öncesi)**
+
 1. **Küçük Ekip, Büyük İş Yükü:**
    - 3 kişi her şeyi yapıyordu: ürün yönetimi, müşteri desteği, pazarlama, muhasebe
    - Günde 14-16 saat çalışıyorlardı
@@ -187,6 +197,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 **✅ Çözüm: Otoniq.ai Starter Plan**
 
 **Uygulama Süreci:**
+
 - **Gün 1:** Shopify entegrasyonu
 - **Gün 2:** WhatsApp bot kurulumu (sık sorulan sorular)
 - **Gün 3-4:** Instagram içerik otomasyonu
@@ -194,15 +205,15 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 
 **📈 Sonuçlar (6 Ay Sonra)**
 
-| Metrik | Öncesi | Sonrası | İyileşme |
-|--------|--------|---------|----------|
-| Sosyal Medya İçerik Üretimi | 4 post/hafta | 15 post/hafta | %275 artış |
-| Instagram Engagement | %0.8 | %3.2 | %300 artış |
-| Instagram Takipçi | 2.5K | 8.2K | %228 artış |
-| Müşteri Destek Saati | 8 saat/gün | 2 saat/gün | %75 azalma |
-| Sosyal Medya Maliyeti | ₺2K/ay | ₺0 | %100 tasarruf |
-| **Aylık Satış** | **₺80K** | **₺135K** | **%69 artış** |
-| **Net Tasarruf** | **-** | **₺3,750/ay** | **ROI: 1.87x** |
+| Metrik                      | Öncesi       | Sonrası       | İyileşme       |
+| --------------------------- | ------------ | ------------- | -------------- |
+| Sosyal Medya İçerik Üretimi | 4 post/hafta | 15 post/hafta | %275 artış     |
+| Instagram Engagement        | %0.8         | %3.2          | %300 artış     |
+| Instagram Takipçi           | 2.5K         | 8.2K          | %228 artış     |
+| Müşteri Destek Saati        | 8 saat/gün   | 2 saat/gün    | %75 azalma     |
+| Sosyal Medya Maliyeti       | ₺2K/ay       | ₺0            | %100 tasarruf  |
+| **Aylık Satış**             | **₺80K**     | **₺135K**     | **%69 artış**  |
+| **Net Tasarruf**            | **-**        | **₺3,750/ay** | **ROI: 1.87x** |
 
 **💬 Müşteri Yorumu:**
 
@@ -211,6 +222,7 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 > **— Zeynep Kaya, Kurucu & CEO**
 
 **📸 Başarı Göstergeleri:**
+
 - ✅ Instagram story view rate: %5 → %22
 - ✅ WhatsApp bot otomatik yanıt oranı: %78
 - ✅ Müşteri memnuniyeti: %85 → %96
@@ -287,24 +299,28 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 ## 📊 **SEKTÖREL BAŞARI HİKAYELERİ**
 
 ### **Moda & Giyim**
+
 - **Ortalama Zaman Tasarrufu:** %88
 - **Ortalama Maliyet Düşüşü:** ₺9,200/ay
 - **Ortalama Satış Artışı:** %38
 - **En Çok Kullanılan Özellik:** Sosyal medya otomasyonu, ürün senkronizasyonu
 
 ### **Elektronik & Teknoloji**
+
 - **Ortalama Zaman Tasarrufu:** %75
 - **Ortalama Maliyet Düşüşü:** ₺12,500/ay
 - **Ortalama Satış Artışı:** %28
 - **En Çok Kullanılan Özellik:** IoT monitoring, stok analizi
 
 ### **Gıda & İçecek**
+
 - **Ortalama Zaman Tasarrufu:** %82
 - **Ortalama Maliyet Düşüşü:** ₺6,800/ay
 - **Ortalama Satış Artışı:** %52
 - **En Çok Kullanılan Özellik:** WhatsApp bot, sosyal medya otomasyonu
 
 ### **Mobilya & Dekorasyon**
+
 - **Ortalama Zaman Tasarrufu:** %79
 - **Ortalama Maliyet Düşüşü:** ₺8,100/ay
 - **Ortalama Satış Artışı:** %34
@@ -316,25 +332,25 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 
 ### **Genel İstatistikler (Tüm Müşteriler)**
 
-| Kategori | Ortalama Sonuç |
-|----------|----------------|
-| **Zaman Tasarrufu** | |
-| Ürün listeleme | %91 azalma |
-| Müşteri desteği | %68 azalma |
-| Sosyal medya yönetimi | %94 azalma |
-| Stok yönetimi | %76 azalma |
-| **Maliyet Tasarrufu** | |
-| Tasarımcı maliyeti | ₺3,500/ay → ₺0 |
-| Müşteri destek maliyeti | ₺8,000/ay → ₺2,500/ay |
-| IT/yazılım maliyeti | ₺5,000/ay → ₺0 |
-| **Gelir Artışı** | |
-| Ortalama satış artışı | %42 |
-| Instagram dönüşüm | %215 artış |
-| Müşteri yaşam boyu değeri | %38 artış |
-| **Müşteri Memnuniyeti** | |
-| NPS (Net Promoter Score) | +68 |
-| Müşteri destek memnuniyeti | 4.8/5.0 |
-| Platform kullanım kolaylığı | 4.7/5.0 |
+| Kategori                    | Ortalama Sonuç        |
+| --------------------------- | --------------------- |
+| **Zaman Tasarrufu**         |                       |
+| Ürün listeleme              | %91 azalma            |
+| Müşteri desteği             | %68 azalma            |
+| Sosyal medya yönetimi       | %94 azalma            |
+| Stok yönetimi               | %76 azalma            |
+| **Maliyet Tasarrufu**       |                       |
+| Tasarımcı maliyeti          | ₺3,500/ay → ₺0        |
+| Müşteri destek maliyeti     | ₺8,000/ay → ₺2,500/ay |
+| IT/yazılım maliyeti         | ₺5,000/ay → ₺0        |
+| **Gelir Artışı**            |                       |
+| Ortalama satış artışı       | %42                   |
+| Instagram dönüşüm           | %215 artış            |
+| Müşteri yaşam boyu değeri   | %38 artış             |
+| **Müşteri Memnuniyeti**     |                       |
+| NPS (Net Promoter Score)    | +68                   |
+| Müşteri destek memnuniyeti  | 4.8/5.0               |
+| Platform kullanım kolaylığı | 4.7/5.0               |
 
 ---
 
@@ -343,26 +359,31 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 ### **Senaryo 1: Ayşe Yılmaz (Fashion Store Turkey)**
 
 **Sahne 1 - Açılış (0:00-0:05)**
+
 - [Ayşe ofiste, laptop'un başında, kameraya gülümseyerek bakar]
 
 **Ayşe:** "Merhaba, ben Ayşe. Fashion Store Turkey'in kurucusuyum."
 
 **Sahne 2 - Problem (0:05-0:20)**
+
 - [B-roll: Ayşe'nin ekibi manuel olarak ürün yüklerken, stresli görünürken]
 
 **Ayşe:** "Ürün listeleme işi bizi gerçekten yoruyordu. Her gün 4 saat sadece ürün yüklemekle geçiyordu. Ekibim tükenmiş durumdaydı."
 
 **Sahne 3 - Çözüm (0:20-0:35)**
+
 - [B-roll: Otoniq.ai arayüzü, otomatik ürün senkronizasyonu]
 
 **Ayşe:** "Otoniq.ai'yi keşfettiğimizde her şey değişti. AI otomatik olarak ürünleri tüm platformlara yüklüyor. 4 saat iş artık 20 dakika!"
 
 **Sahne 4 - Sonuç (0:35-0:50)**
+
 - [B-roll: Satış grafiği yükselir, mutlu ekip toplantısı]
 
 **Ayşe:** "İlk 6 ayda satışlarımız %35 arttı. Artık büyüme stratejilerine odaklanabiliyoruz. Otoniq.ai'yi herkese tavsiye ediyorum!"
 
 **Sahne 5 - Kapanış (0:50-0:55)**
+
 - [Ayşe kameraya bakar, gülümser]
 
 **Ayşe:** "Teşekkürler Otoniq.ai!"
@@ -372,26 +393,31 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 ### **Senaryo 2: Mehmet Demir (Teknoloji Perakende A.Ş.)**
 
 **Sahne 1 - Açılış (0:00-0:05)**
+
 - [Mehmet depoda, IoT sensörlerinin yanında]
 
 **Mehmet:** "Ben Mehmet, Teknoloji Perakende'nin operasyon müdürüyüm."
 
 **Sahne 2 - Problem (0:05-0:25)**
+
 - [B-roll: Hasar görmüş ürünler, stok kayıp raporu]
 
 **Mehmet:** "12 şubemiz ve 1 ana depomuz var. Geçmişte stok kayıpları bizi çok vuruyordu. Aylık ₺15-20K kayıp. Sıcaklık kontrolü yoktu, hasarları fark edemiyorduk."
 
 **Sahne 3 - Çözüm (0:25-0:45)**
+
 - [B-roll: IoT sensör kurulumu, Otoniq.ai dashboard'u, gerçek zamanlı uyarılar]
 
 **Mehmet:** "Otoniq.ai'nin IoT sensör monitoring özelliği tam bir kurtarıcı oldu. Geçen yaz depoda klima arızalandı, sıcaklık 35°C'ye çıktı. Otoniq.ai anında uyarı verdi ve ₺25K'lık ürün kaybını önledik!"
 
 **Sahne 4 - Sonuç (0:45-1:00)**
+
 - [B-roll: Azalan stok kaybı grafiği, mutlu şube yöneticileri]
 
 **Mehmet:** "1 yıl içinde stok kayıplarımız %60 azaldı. Yıllık ₺420K tasarruf ettik. ROI 3.5x!"
 
 **Sahne 5 - Kapanış (1:00-1:05)**
+
 - [Mehmet kameraya bakar, başparmak kaldırır]
 
 **Mehmet:** "Otoniq.ai harika bir platform. Kesinlikle deneyin!"
@@ -403,14 +429,17 @@ Gerçekçi müşteri hikayeleri, testimonial'lar ve detaylı case study'ler.
 ### **Müşteri Ödülleri**
 
 **Fashion Store Turkey**
+
 - 🏅 "Trendyol Yılın Satıcısı 2024" Ödülü Adayı
 - 🏅 Instagram "En Hızlı Büyüyen Marka" (Moda Kategorisi)
 
 **Teknoloji Perakende A.Ş.**
+
 - 🏅 "Operasyonel Mükemmellik Ödülü" - Perakende Derneği
 - 🏅 "En İnovatif Teknoloji Kullanımı" - E-Ticaret Zirvesi 2024
 
 **Organik Gıda Evi**
+
 - 🏅 "Startup of the Year" Finalist - E-Ticaret Ödülleri 2024
 - 🏅 "En Yüksek Engagement Oranı" - Instagram Business Awards
 
@@ -437,4 +466,3 @@ Potansiyel müşterilerimiz, aşağıdaki referans müşterilerimizle görüşeb
 **Son Güncelleme:** Ocak 2025  
 **Version:** 1.0  
 **Durum:** ✅ ONAYLANDI
-
