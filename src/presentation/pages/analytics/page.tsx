@@ -7,6 +7,7 @@ import FeatureIntro from '../../components/common/FeatureIntro';
 import AnalyticsKPICards from './components/AnalyticsKPICards';
 import SalesForecastChart from './components/SalesForecastChart';
 import TrendAnalysisChart from './components/TrendAnalysisChart';
+import AnomalyDetection from './components/AnomalyDetection';
 
 export default function AnalyticsPage() {
   return (
@@ -72,24 +73,8 @@ export default function AnalyticsPage() {
           <TrendAnalysisChart />
         </div>
 
-        {/* Anomaly Detection Placeholder */}
-        <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
-          <div className='flex items-center justify-between mb-4'>
-            <h3 className='text-lg font-semibold text-white'>
-              Anomali Tespiti
-            </h3>
-            <span className='text-xs text-gray-400 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full'>
-              Yakında
-            </span>
-          </div>
-          <div className='h-48 flex items-center justify-center text-gray-500'>
-            <div className='text-center'>
-              <i className='ri-alert-line text-4xl mb-2'></i>
-              <p>Anomali tespiti ve uyarılar</p>
-              <p className='text-sm'>GÜN 3'te eklenecek</p>
-            </div>
-          </div>
-        </div>
+        {/* Anomaly Detection */}
+        <AnomalyDetection />
       </div>
     </div>
   );
