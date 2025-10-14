@@ -53,15 +53,22 @@ export const superAdminMenuConfig: MenuGroup[] = [
     ],
   },
   {
-    id: 'system',
-    label: 'Sistem',
+    id: 'intelligence',
+    label: 'AI & Otomasyon',
     items: [
       {
         id: 'analytics',
-        label: 'Analytics',
-        icon: 'BarChart3',
-        path: '/admin',
+        label: 'AI İş Zekası',
+        icon: 'Brain',
+        path: '/analytics',
+        badge: 'new',
       },
+    ],
+  },
+  {
+    id: 'system',
+    label: 'Sistem',
+    items: [
       {
         id: 'settings',
         label: 'Ayarlar',
@@ -191,7 +198,8 @@ export const tenantMenuConfig: MenuGroup[] = [
         id: 'ai-analytics',
         label: 'AI İş Zekası',
         icon: 'Brain',
-        path: '/ai/analytics',
+        path: '/analytics',
+        badge: 'new',
       },
       {
         id: 'visual-automation',
