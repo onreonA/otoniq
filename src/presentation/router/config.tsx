@@ -2,6 +2,9 @@ import { RouteObject } from 'react-router-dom';
 import { lazy } from 'react';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { SuperAdminGuard } from '../components/auth/SuperAdminGuard';
+import { SidebarLayout } from '../components/layout/SidebarLayout';
+import { PublicLayout } from '../components/layout/PublicLayout';
+import { AuthLayout } from '../components/layout/AuthLayout';
 
 // Lazy load components
 const HomePage = lazy(() => import('../pages/home/page'));
@@ -21,70 +24,79 @@ const NotFoundPage = lazy(() => import('../pages/NotFound'));
 import ComponentsLibrary from '../pages/components/page';
 
 const routes: RouteObject[] = [
-  // Public routes
+  // Public routes with PublicLayout
   {
-    path: '/',
-    element: <HomePage />,
-  },
-  {
-    path: '/about',
-    element: <AboutPage />,
-  },
-  {
-    path: '/pricing',
-    element: <PricingPage />,
-  },
-  {
-    path: '/login',
-    element: <LoginPage />,
-  },
-  {
-    path: '/signup',
-    element: <SignupPage />,
-  },
-  {
-    path: '/demo',
-    element: <DemoPage />,
-  },
-  {
-    path: '/components',
-    element: <ComponentsLibrary />,
+    element: <PublicLayout />,
+    children: [
+      {
+        path: '/',
+        element: <HomePage />,
+      },
+      {
+        path: '/about',
+        element: <AboutPage />,
+      },
+      {
+        path: '/pricing',
+        element: <PricingPage />,
+      },
+      {
+        path: '/demo',
+        element: <DemoPage />,
+      },
+      {
+        path: '/components',
+        element: <ComponentsLibrary />,
+      },
+    ],
   },
 
-  // Protected routes (Require authentication)
+  // Auth routes with AuthLayout
   {
-    path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <DashboardPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/products',
-    element: (
-      <ProtectedRoute>
-        <ProductManagementPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/marketplace',
-    element: (
-      <ProtectedRoute>
-        <MarketplaceConnectionsPage />
-      </ProtectedRoute>
-    ),
+    element: <AuthLayout />,
+    children: [
+      {
+        path: '/login',
+        element: <LoginPage />,
+      },
+      {
+        path: '/signup',
+        element: <SignupPage />,
+      },
+    ],
   },
 
-  // Super admin only routes
+  // Protected routes with SidebarLayout
   {
-    path: '/admin',
     element: (
-      <SuperAdminGuard>
-        <AdminPage />
-      </SuperAdminGuard>
+      <ProtectedRoute>
+        <SidebarLayout />
+      </ProtectedRoute>
     ),
+    children: [
+      {
+        path: '/dashboard',
+        element: <DashboardPage />,
+      },
+      {
+        path: '/products',
+        element: <ProductManagementPage />,
+      },
+      {
+        path: '/marketplace',
+        element: <MarketplaceConnectionsPage />,
+      },
+
+      // Super admin only routes (still inside SidebarLayout)
+      {
+        path: '/admin',
+        element: (
+          <SuperAdminGuard>
+            <AdminPage />
+          </SuperAdminGuard>
+        ),
+      },
+    ],
   },
 
   // 404

@@ -10,6 +10,7 @@ import { persist } from 'zustand/middleware';
 import type { AuthState, UserProfile } from './authStore.types';
 import * as authService from '../../../infrastructure/auth/supabase-auth';
 import { supabase } from '../../../infrastructure/database/supabase/client';
+import { usePermissionStore } from './permissionStore';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -60,6 +61,12 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
+
+          // Set permissions based on user role
+          if (profile?.role) {
+            usePermissionStore.getState().setRole(profile.role);
+            console.log('✅ Permissions set for role:', profile.role);
+          }
 
           console.log('✅ Session and profile set together');
           console.log('✅ Login process completed');
@@ -147,6 +154,9 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           });
+
+          // Clear permissions
+          usePermissionStore.getState().setRole(null);
         } catch (error) {
           console.error('Logout error:', error);
           // Clear state anyway
@@ -157,6 +167,9 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             isLoading: false,
           });
+
+          // Clear permissions anyway
+          usePermissionStore.getState().setRole(null);
         }
       },
 
@@ -202,6 +215,12 @@ export const useAuthStore = create<AuthState>()(
           if (profile) {
             set({ userProfile: profile as UserProfile });
             console.log('✅ User profile set in store');
+
+            // Set permissions based on user role
+            if (profile.role) {
+              usePermissionStore.getState().setRole(profile.role);
+              console.log('✅ Permissions set for role:', profile.role);
+            }
           } else {
             console.log('❌ No profile found for user');
           }

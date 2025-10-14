@@ -229,7 +229,6 @@ export class SupabaseProductRepository implements ProductRepository {
     );
   }
 
-
   /**
    * Create new product
    */

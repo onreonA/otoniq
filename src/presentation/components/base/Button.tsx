@@ -1,10 +1,12 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, ReactNode, ElementType } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   children: ReactNode;
   icon?: ReactNode;
+  as?: ElementType;
+  to?: string;
 }
 
 export default function Button({
@@ -13,6 +15,8 @@ export default function Button({
   children,
   icon,
   className = '',
+  as: Component = 'button',
+  to,
   ...props
 }: ButtonProps) {
   const baseClasses =
@@ -35,12 +39,13 @@ export default function Button({
   };
 
   return (
-    <button
+    <Component
       className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+      to={to}
       {...props}
     >
       {icon && <span className='mr-2'>{icon}</span>}
       {children}
-    </button>
+    </Component>
   );
 }

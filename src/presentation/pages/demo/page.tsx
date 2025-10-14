@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import Header from '../../components/feature/Header';
-import Footer from '../../components/feature/Footer';
 import Button from '../../components/base/Button';
 
 export default function Demo() {
@@ -92,8 +90,6 @@ export default function Demo() {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'>
-      <Header />
-
       {/* Animated Background */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <div className='absolute top-0 left-0 w-full h-full'>
@@ -373,8 +369,6 @@ export default function Demo() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import Header from '../../components/feature/Header';
-import Footer from '../../components/feature/Footer';
 
 export default function ComponentsLibrary() {
   const [activeTab, setActiveTab] = useState('buttons');
@@ -83,8 +81,6 @@ export default function ComponentsLibrary() {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 to-blue-50'>
-      <Header />
-
       <main className='pt-20 pb-20'>
         <div className='max-w-7xl mx-auto px-4'>
           {/* Hero Section */}
@@ -1562,8 +1558,6 @@ export default function ComponentsLibrary() {
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

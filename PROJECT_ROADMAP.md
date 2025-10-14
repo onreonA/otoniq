@@ -1,4 +1,4 @@
-# 🚀 OTONIQ.AI - KAPSAMLI PROJE PROJEKSİYONU
+hafta 1 image.pngimage.png# 🚀 OTONIQ.AI - KAPSAMLI PROJE PROJEKSİYONU
 
 ## 📋 **PROJE GENEL BAKIŞ**
 

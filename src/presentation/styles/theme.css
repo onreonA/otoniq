@@ -1,0 +1,182 @@
+/**
+ * Theme System
+ * CSS Custom Properties for theme management
+ */
+
+:root {
+  /* Base Colors - Used across all themes */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
+
+  /* Brand Colors */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+  --color-primary-950: #1e1b4b;
+
+  /* Accent Colors */
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+}
+
+/* Light Theme (Default) */
+.theme-light {
+  /* Background Colors */
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: var(--color-gray-50);
+  --color-bg-tertiary: var(--color-gray-100);
+  --color-bg-sidebar: var(--color-gray-900);
+  --color-bg-sidebar-hover: var(--color-gray-800);
+  --color-bg-card: var(--color-white);
+  --color-bg-card-hover: var(--color-gray-50);
+  --color-bg-input: var(--color-white);
+  --color-bg-dropdown: var(--color-white);
+  --color-bg-tooltip: var(--color-gray-900);
+  --color-bg-modal: var(--color-white);
+  --color-bg-toast: var(--color-white);
+
+  /* Text Colors */
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-tertiary: var(--color-gray-500);
+  --color-text-placeholder: var(--color-gray-400);
+  --color-text-disabled: var(--color-gray-300);
+  --color-text-inverse: var(--color-white);
+  --color-text-link: var(--color-primary-600);
+  --color-text-link-hover: var(--color-primary-700);
+  --color-text-sidebar: var(--color-gray-300);
+  --color-text-sidebar-active: var(--color-white);
+
+  /* Border Colors */
+  --color-border-primary: var(--color-gray-200);
+  --color-border-secondary: var(--color-gray-300);
+  --color-border-input: var(--color-gray-300);
+  --color-border-input-focus: var(--color-primary-500);
+  --color-border-divider: var(--color-gray-200);
+  --color-border-card: var(--color-gray-200);
+  --color-border-sidebar: var(--color-gray-800);
+
+  /* Shadow Colors */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Dark Theme */
+.theme-dark {
+  /* Background Colors */
+  --color-bg-primary: var(--color-gray-900);
+  --color-bg-secondary: var(--color-gray-800);
+  --color-bg-tertiary: var(--color-gray-700);
+  --color-bg-sidebar: var(--color-gray-950);
+  --color-bg-sidebar-hover: var(--color-gray-800);
+  --color-bg-card: var(--color-gray-800);
+  --color-bg-card-hover: var(--color-gray-700);
+  --color-bg-input: var(--color-gray-800);
+  --color-bg-dropdown: var(--color-gray-800);
+  --color-bg-tooltip: var(--color-gray-700);
+  --color-bg-modal: var(--color-gray-800);
+  --color-bg-toast: var(--color-gray-800);
+
+  /* Text Colors */
+  --color-text-primary: var(--color-gray-100);
+  --color-text-secondary: var(--color-gray-300);
+  --color-text-tertiary: var(--color-gray-400);
+  --color-text-placeholder: var(--color-gray-500);
+  --color-text-disabled: var(--color-gray-600);
+  --color-text-inverse: var(--color-gray-900);
+  --color-text-link: var(--color-primary-400);
+  --color-text-link-hover: var(--color-primary-300);
+  --color-text-sidebar: var(--color-gray-400);
+  --color-text-sidebar-active: var(--color-white);
+
+  /* Border Colors */
+  --color-border-primary: var(--color-gray-700);
+  --color-border-secondary: var(--color-gray-600);
+  --color-border-input: var(--color-gray-700);
+  --color-border-input-focus: var(--color-primary-500);
+  --color-border-divider: var(--color-gray-700);
+  --color-border-card: var(--color-gray-700);
+  --color-border-sidebar: var(--color-gray-950);
+
+  /* Shadow Colors */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Minimal Theme */
+.theme-minimal {
+  /* Background Colors */
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: var(--color-gray-50);
+  --color-bg-tertiary: var(--color-gray-100);
+  --color-bg-sidebar: var(--color-white);
+  --color-bg-sidebar-hover: var(--color-gray-100);
+  --color-bg-card: var(--color-white);
+  --color-bg-card-hover: var(--color-gray-50);
+  --color-bg-input: var(--color-white);
+  --color-bg-dropdown: var(--color-white);
+  --color-bg-tooltip: var(--color-gray-900);
+  --color-bg-modal: var(--color-white);
+  --color-bg-toast: var(--color-white);
+
+  /* Text Colors */
+  --color-text-primary: var(--color-gray-800);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-tertiary: var(--color-gray-500);
+  --color-text-placeholder: var(--color-gray-400);
+  --color-text-disabled: var(--color-gray-300);
+  --color-text-inverse: var(--color-white);
+  --color-text-link: var(--color-primary-600);
+  --color-text-link-hover: var(--color-primary-700);
+  --color-text-sidebar: var(--color-gray-600);
+  --color-text-sidebar-active: var(--color-primary-600);
+
+  /* Border Colors */
+  --color-border-primary: var(--color-gray-200);
+  --color-border-secondary: var(--color-gray-300);
+  --color-border-input: var(--color-gray-300);
+  --color-border-input-focus: var(--color-primary-500);
+  --color-border-divider: var(--color-gray-200);
+  --color-border-card: var(--color-gray-200);
+  --color-border-sidebar: var(--color-gray-200);
+
+  /* Shadow Colors */
+  --shadow-sm: none;
+  --shadow-md: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 1px 4px 0 rgba(0, 0, 0, 0.1);
+}

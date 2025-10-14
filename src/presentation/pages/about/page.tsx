@@ -1,6 +1,3 @@
-import Header from '../../components/feature/Header';
-import Footer from '../../components/feature/Footer';
-
 const About = () => {
   const team = [
     {
@@ -83,9 +80,7 @@ const About = () => {
   ];
 
   return (
-    <div className='min-h-screen bg-white'>
-      <Header />
-
+    <>
       {/* Hero Section */}
       <section
         className='pt-32 pb-20 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 relative overflow-hidden'
@@ -295,9 +290,7 @@ const About = () => {
           </button>
         </div>
       </section>
-
-      <Footer />
-    </div>
+    </>
   );
 };
 

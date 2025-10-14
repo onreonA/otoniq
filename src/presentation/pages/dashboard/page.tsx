@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardHeader from './components/DashboardHeader';
 import StatsCards from './components/StatsCards';
 import AIAssistant from './components/AIAssistant';
 import RecentActivity from './components/RecentActivity';
@@ -27,110 +26,97 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900'>
-      {/* Animated Background */}
-      <div className='fixed inset-0 overflow-hidden pointer-events-none'>
-        <div className='absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse'></div>
-        <div className='absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000'></div>
-        <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-2000'></div>
-      </div>
-
-      <div className='relative z-10'>
-        <DashboardHeader user={user} />
-
-        <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-          {/* Welcome Section */}
-          <div className='mb-8'>
-            <div className='bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <h1 className='text-3xl font-bold text-white mb-2'>
-                    {greeting}, {user.name}! 👋
-                  </h1>
-                  <p className='text-gray-300 text-lg'>
-                    Otoniq.ai ile işletmenizin dijital dönüşümünü yönetin
-                  </p>
-                </div>
-                <div className='hidden md:block'>
-                  <div className='w-20 h-20 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-400 to-purple-400'>
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className='w-full h-full object-cover'
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <StatsCards />
-
-          {/* Main Content Grid */}
-          <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8'>
-            {/* Left Column - Charts & Analytics */}
-            <div className='lg:col-span-2 space-y-8'>
-              <PerformanceChart />
-              <RecentActivity />
-            </div>
-
-            {/* Right Column - AI Assistant & Quick Actions */}
-            <div className='space-y-8'>
-              <AIAssistant />
-              <QuickActions />
-            </div>
-          </div>
-
-          {/* AI Insights Section */}
-          <div className='bg-gradient-to-r from-cyan-600/20 to-blue-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-8 mb-8'>
-            <div className='flex items-center mb-6'>
-              <div className='w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center mr-4'>
-                <i className='ri-brain-line text-white text-2xl'></i>
-              </div>
+    <div className='relative z-10'>
+      <main className='max-w-5xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
+        {/* Welcome Section */}
+        <div className='mb-6'>
+          <div className='bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-3'>
+            <div className='flex items-center justify-between'>
               <div>
-                <h3 className='text-2xl font-bold text-white'>AI Öngörüleri</h3>
+                <h1 className='text-2xl font-bold text-white mb-1'>
+                  {greeting}, {user.name}! 👋
+                </h1>
                 <p className='text-gray-300'>
-                  Yapay zeka destekli iş analizleri
+                  Otoniq.ai ile işletmenizin dijital dönüşümünü yönetin
                 </p>
               </div>
-            </div>
-
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              <div className='bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10'>
-                <div className='flex items-center mb-4'>
-                  <i className='ri-trending-up-line text-green-400 text-2xl mr-3'></i>
-                  <h4 className='text-white font-semibold'>Büyüme Tahmini</h4>
+              <div className='hidden md:block'>
+                <div className='w-16 h-16 rounded-full overflow-hidden border-4 border-gradient-to-r from-blue-400 to-purple-400'>
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className='w-full h-full object-cover'
+                  />
                 </div>
-                <p className='text-3xl font-bold text-green-400 mb-2'>+24%</p>
-                <p className='text-gray-300 text-sm'>
-                  Gelecek ay için öngörülen büyüme
-                </p>
-              </div>
-
-              <div className='bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10'>
-                <div className='flex items-center mb-4'>
-                  <i className='ri-user-heart-line text-blue-400 text-2xl mr-3'></i>
-                  <h4 className='text-white font-semibold'>
-                    Müşteri Memnuniyeti
-                  </h4>
-                </div>
-                <p className='text-3xl font-bold text-blue-400 mb-2'>94%</p>
-                <p className='text-gray-300 text-sm'>AI analizi sonucu</p>
-              </div>
-
-              <div className='bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10'>
-                <div className='flex items-center mb-4'>
-                  <i className='ri-lightbulb-line text-yellow-400 text-2xl mr-3'></i>
-                  <h4 className='text-white font-semibold'>Optimizasyon</h4>
-                </div>
-                <p className='text-3xl font-bold text-yellow-400 mb-2'>12</p>
-                <p className='text-gray-300 text-sm'>İyileştirme önerisi</p>
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+
+        {/* Stats Cards */}
+        <StatsCards />
+
+        {/* Main Content Grid */}
+        <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8'>
+          {/* Left Column - Charts & Analytics */}
+          <div className='lg:col-span-2 space-y-8'>
+            <PerformanceChart />
+            <RecentActivity />
+          </div>
+
+          {/* Right Column - AI Assistant & Quick Actions */}
+          <div className='space-y-8'>
+            <AIAssistant />
+            <QuickActions />
+          </div>
+        </div>
+
+        {/* AI Insights Section */}
+        <div className='bg-gradient-to-r from-cyan-600/20 to-blue-600/20 backdrop-blur-sm border border-white/10 rounded-2xl p-8 mb-8'>
+          <div className='flex items-center mb-6'>
+            <div className='w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center mr-4'>
+              <i className='ri-brain-line text-white text-2xl'></i>
+            </div>
+            <div>
+              <h3 className='text-2xl font-bold text-white'>AI Öngörüleri</h3>
+              <p className='text-gray-300'>Yapay zeka destekli iş analizleri</p>
+            </div>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            <div className='bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10'>
+              <div className='flex items-center mb-4'>
+                <i className='ri-trending-up-line text-green-400 text-2xl mr-3'></i>
+                <h4 className='text-white font-semibold'>Büyüme Tahmini</h4>
+              </div>
+              <p className='text-3xl font-bold text-green-400 mb-2'>+24%</p>
+              <p className='text-gray-300 text-sm'>
+                Gelecek ay için öngörülen büyüme
+              </p>
+            </div>
+
+            <div className='bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10'>
+              <div className='flex items-center mb-4'>
+                <i className='ri-user-heart-line text-blue-400 text-2xl mr-3'></i>
+                <h4 className='text-white font-semibold'>
+                  Müşteri Memnuniyeti
+                </h4>
+              </div>
+              <p className='text-3xl font-bold text-blue-400 mb-2'>94%</p>
+              <p className='text-gray-300 text-sm'>AI analizi sonucu</p>
+            </div>
+
+            <div className='bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10'>
+              <div className='flex items-center mb-4'>
+                <i className='ri-lightbulb-line text-yellow-400 text-2xl mr-3'></i>
+                <h4 className='text-white font-semibold'>Optimizasyon</h4>
+              </div>
+              <p className='text-3xl font-bold text-yellow-400 mb-2'>12</p>
+              <p className='text-gray-300 text-sm'>İyileştirme önerisi</p>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

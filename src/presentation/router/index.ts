@@ -18,13 +18,13 @@ export const navigatePromise = new Promise<NavigateFunction>(resolve => {
 export function AppRoutes() {
   const navigate = useNavigate();
   const element = useRoutes(routes);
-  
+
   useEffect(() => {
     if (!window.REACT_APP_NAVIGATE) {
       window.REACT_APP_NAVIGATE = navigate;
       navigateResolver(window.REACT_APP_NAVIGATE);
     }
   }, [navigate]);
-  
+
   return element;
 }

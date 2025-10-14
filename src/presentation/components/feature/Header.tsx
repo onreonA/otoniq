@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '../base/Button';
+import { ThemeToggle } from '../theme/ThemeToggle';
 
-export default function Header() {
+export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -80,6 +81,7 @@ export default function Header() {
             </Link>
 
             <div className='flex items-center space-x-4 ml-8'>
+              <ThemeToggle />
               <Link to='/login'>
                 <Button
                   variant='outline'
