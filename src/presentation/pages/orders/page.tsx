@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   ShoppingCart,
   Clock,
@@ -10,48 +10,115 @@ import {
   Download,
   Printer,
 } from 'lucide-react';
-import {
-  mockOrders,
-  mockOrderStats,
-  getOrderStatusColor,
-  getOrderStatusLabel,
-  getPaymentStatusColor,
-  getPaymentStatusLabel,
-  getChannelLabel,
-  type Order,
-  type OrderStatus,
-} from './mocks/ordersMockData';
-import { MockBadge } from '../../components/common/MockBadge';
+import { useOrders } from '../../hooks/useOrders';
+import type { OrderStatus } from '../../../domain/entities/Order';
 
 const OrdersPage = () => {
   const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const { orders, stats, loading, error } = useOrders();
 
-  const filteredOrders = mockOrders.filter(order => {
-    if (filterStatus !== 'all' && order.status !== filterStatus) return false;
-    if (
-      searchTerm &&
-      !order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-      return false;
-    return true;
-  });
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      if (filterStatus !== 'all' && order.status !== filterStatus) return false;
+      if (
+        searchTerm &&
+        !order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !order.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+        return false;
+      return true;
+    });
+  }, [orders, filterStatus, searchTerm]);
 
-  const statusCounts = {
-    all: mockOrders.length,
-    pending: mockOrders.filter(o => o.status === 'pending').length,
-    confirmed: mockOrders.filter(o => o.status === 'confirmed').length,
-    preparing: mockOrders.filter(o => o.status === 'preparing').length,
-    shipped: mockOrders.filter(o => o.status === 'shipped').length,
-    delivered: mockOrders.filter(o => o.status === 'delivered').length,
-    cancelled: mockOrders.filter(o => o.status === 'cancelled').length,
+  const statusCounts = useMemo(() => ({
+    all: orders.length,
+    pending: stats?.pending || 0,
+    confirmed: stats?.confirmed || 0,
+    preparing: stats?.preparing || 0,
+    shipped: stats?.shipped || 0,
+    delivered: stats?.delivered || 0,
+    cancelled: stats?.cancelled || 0,
+  }), [orders.length, stats]);
+
+  // Helper functions
+  const getOrderStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'confirmed': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'preparing': return 'bg-purple-100 text-purple-800 border-purple-300';
+      case 'shipped': return 'bg-orange-100 text-orange-800 border-orange-300';
+      case 'delivered': return 'bg-green-100 text-green-800 border-green-300';
+      case 'cancelled': return 'bg-red-100 text-red-800 border-red-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
   };
+
+  const getOrderStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Beklemede';
+      case 'confirmed': return 'Onaylandı';
+      case 'preparing': return 'Hazırlanıyor';
+      case 'shipped': return 'Kargoda';
+      case 'delivered': return 'Teslim Edildi';
+      case 'cancelled': return 'İptal';
+      default: return status;
+    }
+  };
+
+  const getPaymentStatusColor = (status: string) => {
+    switch (status) {
+      case 'paid': return 'bg-green-100 text-green-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'partial': return 'bg-orange-100 text-orange-800';
+      case 'refunded': return 'bg-purple-100 text-purple-800';
+      case 'failed': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPaymentStatusLabel = (status: string) => {
+    switch (status) {
+      case 'paid': return 'Ödendi';
+      case 'pending': return 'Bekliyor';
+      case 'partial': return 'Kısmi';
+      case 'refunded': return 'İade';
+      case 'failed': return 'Başarısız';
+      default: return status;
+    }
+  };
+
+  const getChannelLabel = (channel: string) => {
+    switch (channel) {
+      case 'web': return 'Web';
+      case 'mobile': return 'Mobil';
+      case 'marketplace': return 'Pazaryeri';
+      case 'phone': return 'Telefon';
+      case 'store': return 'Mağaza';
+      default: return channel;
+    }
+  };
+
+  if (loading && orders.length === 0) {
+    return (
+      <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
+        <div className='flex items-center justify-center h-64'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
-      {/* Mock Badge */}
-      <MockBadge storageKey='mock-badge-orders' />
+      {/* Error Display */}
+      {error && (
+        <div className='mb-6 bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-center gap-3'>
+          <AlertCircle className='w-5 h-5 text-red-400' />
+          <p className='text-red-200'>{error}</p>
+        </div>
+      )}
 
       {/* Page Header */}
       <div className='mb-6 bg-gradient-to-r from-red-600/20 to-pink-600/20 backdrop-blur-sm rounded-2xl p-6 border border-red-500/20'>
@@ -69,7 +136,7 @@ const OrdersPage = () => {
             <ShoppingCart className='w-5 h-5 text-blue-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockOrderStats.totalOrders}
+            {stats?.total || 0}
           </p>
         </div>
 
@@ -79,7 +146,7 @@ const OrdersPage = () => {
             <Clock className='w-5 h-5 text-yellow-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockOrderStats.pendingOrders}
+            {stats?.pending || 0}
           </p>
         </div>
 
@@ -89,7 +156,7 @@ const OrdersPage = () => {
             <DollarSign className='w-5 h-5 text-green-400' />
           </div>
           <p className='text-2xl font-bold text-white'>
-            ₺{(mockOrderStats.totalRevenue / 1000000).toFixed(1)}M
+            ₺{((stats?.totalRevenue || 0) / 1000000).toFixed(1)}M
           </p>
         </div>
 
@@ -99,7 +166,7 @@ const OrdersPage = () => {
             <TrendingUp className='w-5 h-5 text-purple-400' />
           </div>
           <p className='text-2xl font-bold text-white'>
-            ₺{mockOrderStats.averageOrderValue.toLocaleString('tr-TR')}
+            ₺{(stats?.averageOrderValue || 0).toLocaleString('tr-TR')}
           </p>
         </div>
 
@@ -109,7 +176,7 @@ const OrdersPage = () => {
             <Package className='w-5 h-5 text-orange-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockOrderStats.todayOrders}
+            {stats?.total || 0}
           </p>
         </div>
 
@@ -119,7 +186,7 @@ const OrdersPage = () => {
             <AlertCircle className='w-5 h-5 text-red-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockOrderStats.cancelledRate}%
+            {stats?.total && stats?.cancelled ? ((stats.cancelled / stats.total) * 100).toFixed(1) : 0}%
           </p>
         </div>
       </div>
@@ -242,20 +309,20 @@ const OrdersPage = () => {
                   <td className='px-6 py-4 whitespace-nowrap text-right'>
                     <div className='text-sm font-semibold text-white'>
                       ₺
-                      {order.total.toLocaleString('tr-TR', {
+                      {(order.totalAmount || 0).toLocaleString('tr-TR', {
                         minimumFractionDigits: 2,
                       })}
                     </div>
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-center'>
                     <div className='text-sm text-white/70'>
-                      {order.createdAt.toLocaleDateString('tr-TR')}
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString('tr-TR') : 'N/A'}
                     </div>
                     <div className='text-xs text-white/50'>
-                      {order.createdAt.toLocaleTimeString('tr-TR', {
+                      {order.createdAt ? new Date(order.createdAt).toLocaleTimeString('tr-TR', {
                         hour: '2-digit',
                         minute: '2-digit',
-                      })}
+                      }) : 'N/A'}
                     </div>
                   </td>
                   <td className='px-6 py-4 whitespace-nowrap text-center'>

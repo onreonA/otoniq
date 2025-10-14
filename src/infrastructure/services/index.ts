@@ -4,3 +4,4 @@
 
 export * from './CategoryService';
 export * from './InventoryService';
+export * from './OrderService';
