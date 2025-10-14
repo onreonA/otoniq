@@ -70,6 +70,13 @@ export const superAdminMenuConfig: MenuGroup[] = [
         path: '/automation',
         badge: 'new',
       },
+      {
+        id: 'creative',
+        label: 'Görsel Otomasyon',
+        icon: 'Palette',
+        path: '/creative',
+        badge: 'new',
+      },
     ],
   },
   {

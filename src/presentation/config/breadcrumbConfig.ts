@@ -48,6 +48,7 @@ export const breadcrumbLabels: BreadcrumbConfig = {
   '/ai/analytics': 'AI İş Zekası',
   '/ai/visual': 'Görsel Otomasyon',
   '/analytics': 'AI İş Zekası',
+  '/creative': 'Görsel Otomasyon Stüdyosu',
 
   // Settings
   '/profile': 'Profil',
