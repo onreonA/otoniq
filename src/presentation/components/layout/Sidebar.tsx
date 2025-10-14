@@ -26,6 +26,11 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronRight,
+  Zap,
+  Palette,
+  MessageSquare,
+  Glasses,
+  Activity,
 } from 'lucide-react';
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { useUIStore } from '../../store/ui/uiStore';
@@ -57,6 +62,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   FolderTree,
   ShoppingBag,
   TrendingUp,
+  Zap,
+  Palette,
+  MessageSquare,
+  Glasses,
+  Activity,
 };
 
 /**
@@ -117,27 +127,28 @@ function MenuItemComponent({
         <Link
           to={item.path}
           className={`
-            flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+            flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200
             ${activeStyle}
             ${collapsed ? 'justify-center' : ''}
-            ${paddingLeft}
           `}
           title={collapsed ? item.label : undefined}
         >
-          <Icon className='w-5 h-5 flex-shrink-0' />
+          <Icon className='w-4 h-4 flex-shrink-0' />
           <div
             className={`
-              flex-1 flex items-center justify-between ml-3
+              flex-1 flex items-center justify-between
               transition-all duration-300 ease-in-out overflow-hidden
               ${collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}
             `}
           >
-            <span className='text-sm font-medium whitespace-nowrap'>
+            <span className='text-xs font-medium whitespace-nowrap'>
               {item.label}
             </span>
             {item.badge && (
-              <span className='px-2 py-0.5 text-xs font-semibold bg-indigo-500 text-white rounded-full ml-2'>
-                {item.badge}
+              <span className='px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500 text-white rounded ml-1'>
+                {typeof item.badge === 'string'
+                  ? item.badge.toUpperCase()
+                  : item.badge}
               </span>
             )}
           </div>
@@ -146,35 +157,36 @@ function MenuItemComponent({
         <button
           onClick={handleClick}
           className={`
-            w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+            w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200
             ${isChildActive ? 'bg-gray-800 text-white' : 'text-gray-300 hover:bg-gray-800'}
             ${collapsed ? 'justify-center' : ''}
-            ${paddingLeft}
           `}
           title={collapsed ? item.label : undefined}
         >
-          <Icon className='w-5 h-5 flex-shrink-0' />
+          <Icon className='w-4 h-4 flex-shrink-0' />
           <div
             className={`
-              flex-1 flex items-center justify-between ml-3
+              flex-1 flex items-center justify-between
               transition-all duration-300 ease-in-out overflow-hidden
               ${collapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}
             `}
           >
-            <span className='flex-1 text-sm font-medium text-left whitespace-nowrap'>
+            <span className='flex-1 text-xs font-medium text-left whitespace-nowrap'>
               {item.label}
             </span>
             {item.badge && (
-              <span className='px-2 py-0.5 text-xs font-semibold bg-indigo-500 text-white rounded-full ml-2'>
-                {item.badge}
+              <span className='px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500 text-white rounded ml-1'>
+                {typeof item.badge === 'string'
+                  ? item.badge.toUpperCase()
+                  : item.badge}
               </span>
             )}
             {hasChildren && (
-              <div className='ml-2'>
+              <div className='ml-1'>
                 {isExpanded ? (
-                  <ChevronDown className='w-4 h-4' />
+                  <ChevronDown className='w-3 h-3' />
                 ) : (
-                  <ChevronRight className='w-4 h-4' />
+                  <ChevronRight className='w-3 h-3' />
                 )}
               </div>
             )}
@@ -220,10 +232,10 @@ function MenuGroupComponent({
   collapsed: boolean;
 }) {
   return (
-    <div className='mb-6'>
+    <div className='mb-4'>
       <h3
         className={`
-          px-4 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider
+          px-3 mb-1.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider
           transition-all duration-300 ease-in-out
           ${
             collapsed
@@ -234,7 +246,7 @@ function MenuGroupComponent({
       >
         {group.label}
       </h3>
-      <div className='space-y-1'>
+      <div className='space-y-0.5'>
         {group.items.map(item => (
           <MenuItemComponent key={item.id} item={item} collapsed={collapsed} />
         ))}
@@ -274,20 +286,20 @@ const Sidebar = memo(function Sidebar() {
     <aside
       className={`
         fixed left-0 top-0 h-screen bg-gray-900 border-r border-gray-800
-        transition-all duration-300 ease-in-out z-30
+        transition-all duration-300 ease-in-out z-30 flex flex-col
         ${sidebarCollapsed ? 'w-16' : 'w-64'}
-        hidden md:block
+        hidden md:flex
       `}
     >
       {/* Logo */}
-      <div className='h-16 flex items-center justify-center border-b border-gray-800'>
+      <div className='h-14 flex items-center justify-center border-b border-gray-800 flex-shrink-0'>
         <div className='flex items-center gap-2'>
-          <div className='w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0'>
-            <span className='text-white font-bold text-lg'>O</span>
+          <div className='w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0'>
+            <span className='text-white font-bold text-base'>O</span>
           </div>
           <span
             className={`
-              text-white font-bold text-xl whitespace-nowrap
+              text-white font-bold text-lg whitespace-nowrap
               transition-all duration-300 ease-in-out
               ${sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'}
             `}
@@ -297,8 +309,8 @@ const Sidebar = memo(function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className='flex-1 overflow-y-auto py-6 px-3'>
+      {/* Navigation - Scrollable */}
+      <nav className='flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900'>
         {filteredMenuGroups.map(group => (
           <MenuGroupComponent
             key={group.id}
@@ -308,22 +320,22 @@ const Sidebar = memo(function Sidebar() {
         ))}
       </nav>
 
-      {/* User Profile (Bottom) */}
+      {/* User Profile (Bottom) - Fixed */}
       <div
         className={`
-          absolute bottom-0 left-0 right-0 border-t border-gray-800 bg-gray-900
+          flex-shrink-0 border-t border-gray-800 bg-gray-900
           transition-all duration-300 ease-in-out
-          ${sidebarCollapsed ? 'p-2 flex justify-center' : 'p-4'}
+          ${sidebarCollapsed ? 'p-2' : 'p-3'}
         `}
       >
         <div
           className={`
-          flex items-center gap-3
+          flex items-center gap-2
           ${sidebarCollapsed ? 'justify-center' : ''}
         `}
         >
-          <div className='w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0'>
-            <span className='text-white font-semibold text-sm'>
+          <div className='w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0'>
+            <span className='text-white font-semibold text-xs'>
               {userProfile?.email?.[0]?.toUpperCase() || 'U'}
             </span>
           </div>
@@ -334,10 +346,10 @@ const Sidebar = memo(function Sidebar() {
               ${sidebarCollapsed ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}
             `}
           >
-            <p className='text-sm font-medium text-white truncate'>
+            <p className='text-xs font-medium text-white truncate'>
               {userProfile?.email || 'User'}
             </p>
-            <p className='text-xs text-gray-400 truncate'>
+            <p className='text-[10px] text-gray-400 truncate'>
               {role === 'super_admin' ? 'Super Admin' : 'Tenant Admin'}
             </p>
           </div>
