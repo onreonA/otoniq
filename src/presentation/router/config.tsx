@@ -25,6 +25,9 @@ const ChatAutomationPage = lazy(() => import('../pages/chat-automation/page'));
 const ARVRPage = lazy(() => import('../pages/ar-vr/page'));
 const IoTPage = lazy(() => import('../pages/iot/page'));
 const AdminPage = lazy(() => import('../pages/admin/page'));
+const PitchDeckPage = lazy(() => import('../pages/pitch-deck/page'));
+const OnePagerPage = lazy(() => import('../pages/one-pager/page'));
+const SalesToolkitPage = lazy(() => import('../pages/sales-toolkit/page'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
 import ComponentsLibrary from '../pages/components/page';
@@ -53,6 +56,18 @@ const routes: RouteObject[] = [
       {
         path: '/components',
         element: <ComponentsLibrary />,
+      },
+      {
+        path: '/pitch-deck',
+        element: <PitchDeckPage />,
+      },
+      {
+        path: '/one-pager',
+        element: <OnePagerPage />,
+      },
+      {
+        path: '/sales-toolkit',
+        element: <SalesToolkitPage />,
       },
     ],
   },

@@ -7,6 +7,7 @@ Pitch deck, one-pager, email templates ve satış dokümanları.
 ## 🎤 **PITCH DECK** (10 Slayt)
 
 ### **Slayt 1: Kapak**
+
 ```
 🚀 OTONIQ.AI
 AI Destekli E-Ticaret & E-İhracat Otomasyonu
@@ -20,6 +21,7 @@ www.otoniq.ai
 ---
 
 ### **Slayt 2: Problem**
+
 ```
 ❌ E-TİCARET SAHİPLERİNİN EN BÜYÜK SORUNLARI
 
@@ -47,6 +49,7 @@ büyümeye odaklanamıyor."
 ---
 
 ### **Slayt 3: Çözüm**
+
 ```
 ✅ OTONIQ.AI: AI DESTEKLI OTOMASYON PLATFORMU
 
@@ -76,6 +79,7 @@ büyümeye odaklanamıyor."
 ---
 
 ### **Slayt 4: Nasıl Çalışır?**
+
 ```
 🔄 3 ADIMDA BAŞLAYIN
 
@@ -98,6 +102,7 @@ büyümeye odaklanamıyor."
 ---
 
 ### **Slayt 5: Özellikler**
+
 ```
 🎯 TEMEL ÖZELLİKLER
 
@@ -135,6 +140,7 @@ IoT & AR/VR (Enterprise)
 ---
 
 ### **Slayt 6: ROI & Tasarruf**
+
 ```
 💰 YATIRIM GETİRİSİ (ROI)
 
@@ -166,6 +172,7 @@ TASARRUF KALEMLERİ:
 ---
 
 ### **Slayt 7: Müşteri Hikayeleri**
+
 ```
 🌟 BAŞARI HİKAYELERİ
 
@@ -193,6 +200,7 @@ Plan: Starter
 ---
 
 ### **Slayt 8: Rekabet Avantajı**
+
 ```
 🏆 NEDEN OTONIQ.AI?
 
@@ -220,6 +228,7 @@ otomasyon platformu"
 ---
 
 ### **Slayt 9: Fiyatlandırma**
+
 ```
 💳 FİYATLANDIRMA
 
@@ -254,6 +263,7 @@ ENTERPRISE - ₺10,000/ay
 ---
 
 ### **Slayt 10: Call to Action**
+
 ```
 🚀 HEMEN BAŞLAYIN!
 
@@ -383,12 +393,12 @@ Organik Gıda Evi (Starter)
 ```
 Merhaba [İsim],
 
-[Şirket Adı]'nın [Trendyol/Shopify/vb.] üzerinde başarılı bir e-ticaret işletmesi 
+[Şirket Adı]'nın [Trendyol/Shopify/vb.] üzerinde başarılı bir e-ticaret işletmesi
 olduğunu görüyorum. Tebrikler!
 
 Sizin gibi e-ticaret sahiplerine bir soru soruyorum:
 
-"Ürün listeleme, stok güncelleme ve müşteri sorularını yanıtlamak için 
+"Ürün listeleme, stok güncelleme ve müşteri sorularını yanıtlamak için
 günde kaç saat harcıyorsunuz?"
 
 Çoğu müşterimiz "4-6 saat" diyor. 😓
@@ -424,7 +434,7 @@ Otoniq.ai - Sales Team
 ```
 Merhaba [İsim],
 
-Bugünkü demo için teşekkürler! [Şirket Adı] için Otoniq.ai'nin nasıl 
+Bugünkü demo için teşekkürler! [Şirket Adı] için Otoniq.ai'nin nasıl
 değer katacağını göstermek harika bir deneyimdi.
 
 📊 DEMO ÖZETİ:
@@ -469,9 +479,9 @@ Otoniq.ai - Sales Team
 ```
 Merhaba [İsim],
 
-Otoniq.ai ücretsiz denemeniz 3 gün sonra sona eriyor. 
+Otoniq.ai ücretsiz denemeniz 3 gün sonra sona eriyor.
 
-Şimdiye kadar platformumuzu nasıl buldunuz? 
+Şimdiye kadar platformumuzu nasıl buldunuz?
 
 📊 SON 14 GÜNDE:
 ✓ [X] ürün senkronize ettiniz
@@ -491,7 +501,7 @@ Planınızı seçin: [Link]
 
 ❓ SORULARINIZ MI VAR?
 
-Platformla ilgili herhangi bir sorunuz varsa, 15 dakikalık 
+Platformla ilgili herhangi bir sorunuz varsa, 15 dakikalık
 bir görüşme ayarlayabiliriz: [Calendly Link]
 
 Veya bu emaile yanıt verin, hemen yardımcı olalım.
@@ -510,12 +520,12 @@ Otoniq.ai - Customer Success
 ```
 Merhaba [İsim],
 
-Otoniq.ai'yi denediğiniz için teşekkürler. Platformumuzdan 
+Otoniq.ai'yi denediğiniz için teşekkürler. Platformumuzdan
 ayrıldığınızı görüyoruz ve nedenini merak ediyoruz.
 
 🤔 BİR SORUN MU YAŞADINIZ?
 
-Eğer bir sorun yaşadıysanız, çözmek için elimizden geleni 
+Eğer bir sorun yaşadıysanız, çözmek için elimizden geleni
 yapmak isteriz. Bize bildirin:
 [Feedback Form Link]
 
@@ -551,7 +561,7 @@ Otoniq.ai - Customer Success
 ```
 Merhaba [İsim],
 
-Otoniq.ai ile [X] aydır çalışıyorsunuz ve harika sonuçlar 
+Otoniq.ai ile [X] aydır çalışıyorsunuz ve harika sonuçlar
 görüyoruz:
 
 📊 BAŞARILARINIZ:
@@ -589,16 +599,16 @@ Otoniq.ai - Marketing Team
 ```
 Merhaba [İsim],
 
-[Şirket]'daki çalışmalarınızı LinkedIn'de takip ediyorum. 
+[Şirket]'daki çalışmalarınızı LinkedIn'de takip ediyorum.
 E-ticaret alanındaki başarınız etkileyici!
 
-Kısa bir sorum var: Ürün listeleme ve stok yönetimi için 
+Kısa bir sorum var: Ürün listeleme ve stok yönetimi için
 günde kaç saat harcıyorsunuz?
 
-Bizim müşterilerimiz (Fashion Store Turkey, Teknoloji Perakende) 
+Bizim müşterilerimiz (Fashion Store Turkey, Teknoloji Perakende)
 bu süreçleri AI ile otomatikleştirerek günde 4-6 saat kazanıyor.
 
-5 dakikalık bir görüşme ile nasıl yardımcı olabileceğimizi 
+5 dakikalık bir görüşme ile nasıl yardımcı olabileceğimizi
 anlatabilir miyim?
 
 [Calendly Link]
@@ -613,31 +623,31 @@ anlatabilir miyim?
 
 ```
 AÇILIŞ:
-"Merhaba, ben [İsim], Otoniq.ai'den arıyorum. [İsim Bey/Hanım] 
+"Merhaba, ben [İsim], Otoniq.ai'den arıyorum. [İsim Bey/Hanım]
 ile görüşebilir miyim?"
 
 [Bağlandıktan sonra]
 
-"Merhaba [İsim Bey/Hanım], ben [İsim], Otoniq.ai'den arıyorum. 
-E-ticaret operasyonlarınızı otomatikleştiren bir AI platformu 
+"Merhaba [İsim Bey/Hanım], ben [İsim], Otoniq.ai'den arıyorum.
+E-ticaret operasyonlarınızı otomatikleştiren bir AI platformu
 geliştirdik. 2 dakikanızı alabilir miyim?"
 
 [Evet derse]
 
-"Harika! Kısaca anlatayım: Otoniq.ai ile müşterilerimiz ürün 
-listeleme süresini %90 azaltıyor. Örneğin Fashion Store Turkey, 
+"Harika! Kısaca anlatayım: Otoniq.ai ile müşterilerimiz ürün
+listeleme süresini %90 azaltıyor. Örneğin Fashion Store Turkey,
 4 saat süren işlemi 20 dakikaya indirdi.
 
-Sizin için de 30 dakikalık ücretsiz bir demo ayarlayabilir miyim? 
+Sizin için de 30 dakikalık ücretsiz bir demo ayarlayabilir miyim?
 Hangi gün uygun?"
 
 [Hayır derse]
 
-"Anlıyorum. O zaman size bir email göndereyim, uygun olduğunuzda 
+"Anlıyorum. O zaman size bir email göndereyim, uygun olduğunuzda
 bakarsınız. Email adresiniz neydi?"
 
 KAPANIŞ:
-"Teşekkürler [İsim Bey/Hanım], demo linkini emailinize gönderdim. 
+"Teşekkürler [İsim Bey/Hanım], demo linkini emailinize gönderdim.
 İyi çalışmalar!"
 ```
 
@@ -647,29 +657,29 @@ KAPANIŞ:
 
 ```
 İTİRAZ: "Çok pahalı"
-CEVAP: "Anlıyorum. Aylık ₺5,000 ilk başta yüksek görünebilir. 
-Ama şöyle düşünün: Tasarımcı ₺3,500, müşteri destek ₺2,500, 
-marketplace yönetimi ₺2,000... Toplam ₺8,000. Otoniq.ai ile 
-₺5,000'e hepsini alıyorsunuz. Artı, zaman tasarrufunuzu 
+CEVAP: "Anlıyorum. Aylık ₺5,000 ilk başta yüksek görünebilir.
+Ama şöyle düşünün: Tasarımcı ₺3,500, müşteri destek ₺2,500,
+marketplace yönetimi ₺2,000... Toplam ₺8,000. Otoniq.ai ile
+₺5,000'e hepsini alıyorsunuz. Artı, zaman tasarrufunuzu
 saymıyoruz bile."
 
 İTİRAZ: "Şu an bütçemiz yok"
-CEVAP: "Anlıyorum. Pilot programımız var, ilk 3 ay ücretsiz. 
+CEVAP: "Anlıyorum. Pilot programımız var, ilk 3 ay ücretsiz.
 Sonuçları görün, sonra karar verin. Kabul eder misiniz?"
 
 İTİRAZ: "Mevcut sistemimiz var"
-CEVAP: "Harika! Mevcut sistemlerinizle entegre çalışır. Odoo 
-kullanıyorsanız, Otoniq.ai direkt bağlanır. Değiştirmenize 
+CEVAP: "Harika! Mevcut sistemlerinizle entegre çalışır. Odoo
+kullanıyorsanız, Otoniq.ai direkt bağlanır. Değiştirmenize
 gerek yok, üstüne ekliyorsunuz."
 
 İTİRAZ: "AI'dan anlamıyoruz"
-CEVAP: "Hiç sorun değil! Zaten anlamanıza gerek yok. Bizim 
-ekibimiz her şeyi kuruyor, siz sadece kullanıyorsunuz. 
+CEVAP: "Hiç sorun değil! Zaten anlamanıza gerek yok. Bizim
+ekibimiz her şeyi kuruyor, siz sadece kullanıyorsunuz.
 Tıpkı Instagram kullanmak gibi basit."
 
 İTİRAZ: "Düşünmem lazım"
-CEVAP: "Tabii ki! Karar vermeden önce 14 gün ücretsiz deneyin. 
-Kredi kartı bile gerektirmiyor. Beğenmezseniz iptal edersiniz. 
+CEVAP: "Tabii ki! Karar vermeden önce 14 gün ücretsiz deneyin.
+Kredi kartı bile gerektirmiyor. Beğenmezseniz iptal edersiniz.
 Link göndereyim mi?"
 ```
 
@@ -678,4 +688,3 @@ Link göndereyim mi?"
 **Son Güncelleme:** Ocak 2025  
 **Version:** 1.0  
 **Durum:** ✅ ONAYLANDI
-
