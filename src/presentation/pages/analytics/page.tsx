@@ -5,6 +5,8 @@
 
 import FeatureIntro from '../../components/common/FeatureIntro';
 import AnalyticsKPICards from './components/AnalyticsKPICards';
+import SalesForecastChart from './components/SalesForecastChart';
+import TrendAnalysisChart from './components/TrendAnalysisChart';
 
 export default function AnalyticsPage() {
   return (
@@ -61,45 +63,13 @@ export default function AnalyticsPage() {
         {/* KPI Cards */}
         <AnalyticsKPICards />
 
-        {/* Coming Soon - Placeholder for other components */}
+        {/* Charts */}
         <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
-          {/* Sales Forecast Placeholder */}
-          <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-lg font-semibold text-white'>
-                Satış Tahminleri
-              </h3>
-              <span className='text-xs text-gray-400 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full'>
-                Yakında
-              </span>
-            </div>
-            <div className='h-64 flex items-center justify-center text-gray-500'>
-              <div className='text-center'>
-                <i className='ri-line-chart-line text-4xl mb-2'></i>
-                <p>Satış tahmin grafiği</p>
-                <p className='text-sm'>GÜN 2'de eklenecek</p>
-              </div>
-            </div>
-          </div>
+          {/* Sales Forecast */}
+          <SalesForecastChart />
 
-          {/* Trend Analysis Placeholder */}
-          <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
-            <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-lg font-semibold text-white'>
-                Trend Analizi
-              </h3>
-              <span className='text-xs text-gray-400 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full'>
-                Yakında
-              </span>
-            </div>
-            <div className='h-64 flex items-center justify-center text-gray-500'>
-              <div className='text-center'>
-                <i className='ri-bar-chart-grouped-line text-4xl mb-2'></i>
-                <p>Trend analizi grafiği</p>
-                <p className='text-sm'>GÜN 2'de eklenecek</p>
-              </div>
-            </div>
-          </div>
+          {/* Trend Analysis */}
+          <TrendAnalysisChart />
         </div>
 
         {/* Anomaly Detection Placeholder */}
