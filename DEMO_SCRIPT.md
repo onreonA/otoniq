@@ -16,6 +16,7 @@ Detaylı demo rehberi ve feature highlights.
 ## 🎯 **SENARYO 1: E-TİCARET SAHİBİ (Ayşe Yılmaz)**
 
 ### **Hedef Kitle:**
+
 - E-ticaret site sahipleri
 - Online mağaza yöneticileri
 - Küçük-orta ölçekli işletmeler
@@ -25,9 +26,11 @@ Detaylı demo rehberi ve feature highlights.
 #### **1. Giriş & Dashboard (2 dk)**
 
 **Açılış:**
+
 > "Merhaba! Ben Ayşe, Fashion Store Turkey'in sahibiyim. Shopify kullanıyorum ve 5 farklı pazaryerinde satış yapıyorum. Günde yüzlerce ürün, sipariş ve müşteriyle uğraşmak gerçekten yorucu olabiliyor. Otoniq.ai ile bu süreci nasıl otomatikleştirdiğimi göstereyim."
 
 **Dashboard Turu:**
+
 1. **Stats Cards:** Bugünkü satışlar, sipariş durumu
 2. **AI Assistant:** AI asistanın önerilerini göster
    - "Stok kritik ürünler" uyarısı
@@ -35,6 +38,7 @@ Detaylı demo rehberi ve feature highlights.
 3. **Recent Activity:** Son işlemler
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Tüm kanalların tek panelden görünürlüğü
 - ✅ AI destekli akıllı öneriler
 - ✅ Gerçek zamanlı veri güncellemeleri
@@ -44,9 +48,11 @@ Detaylı demo rehberi ve feature highlights.
 #### **2. Ürün Yönetimi & Senkronizasyon (3 dk)**
 
 **Geçiş:**
+
 > "Şimdi yeni ürün ekleme sürecimi göstereyim. Geleneksel yöntemle her pazaryerine tek tek ürün yüklemek saatler alabiliyor. Otoniq.ai ile bu süreç dakikalar..."
 
 **Adımlar:**
+
 1. **Ürünler Sayfasına Git** (`/products`)
 2. **Shopify Sync'i Göster:**
    - "Shopify Sync" butonuna tıkla
@@ -60,6 +66,7 @@ Detaylı demo rehberi ve feature highlights.
    - Trendyol, Hepsiburada, N11'e tek tıkla gönder
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Shopify'dan otomatik ürün çekme
 - ✅ Tek tıkla çoklu pazaryerine listeleme
 - ✅ Stok senkronizasyonu otomatik
@@ -70,9 +77,11 @@ Detaylı demo rehberi ve feature highlights.
 #### **3. Görsel Otomasyon (3 dk)**
 
 **Geçiş:**
+
 > "Yeni ürünlerim için sosyal medya içeriği oluşturmak da çok vakit alıyordu. Otoniq.ai'nin AI'ı bunu da hallediyor..."
 
 **Adımlar:**
+
 1. **Görsel Otomasyon Sayfasına Git** (`/creative`)
 2. **Instagram Post Oluştur:**
    - Ürün seç: "Kadın Oversize Triko Kazak"
@@ -84,6 +93,7 @@ Detaylı demo rehberi ve feature highlights.
    - "Her gün 09:00'da otomatik paylaş" ayarını göster
 
 **Vurgulanacak Noktalar:**
+
 - ✅ AI ile otomatik görsel ve metin oluşturma
 - ✅ Farklı platformlar için optimize içerik
 - ✅ Zamanlanmış paylaşım
@@ -94,9 +104,11 @@ Detaylı demo rehberi ve feature highlights.
 #### **4. Müşteri Destek Otomasyonu (3 dk)**
 
 **Geçiş:**
+
 > "WhatsApp'tan sürekli 'Kargom nerede?', 'Stokta var mı?' gibi sorular geliyor. AI botum artık bunları otomatik yanıtlıyor..."
 
 **Adımlar:**
+
 1. **Chat Otomasyonu Sayfasına Git** (`/chat-automation`)
 2. **Canlı Konuşmaları Göster:**
    - Müşteri: "Siparişimi takip etmek istiyorum"
@@ -109,6 +121,7 @@ Detaylı demo rehberi ve feature highlights.
    - Ortalama yanıt süresi: 5 saniye
 
 **Vurgulanacak Noktalar:**
+
 - ✅ 7/24 otomatik müşteri desteği
 - ✅ Ortalama yanıt süresi 5 saniye
 - ✅ %85 sorular AI tarafından çözülüyor
@@ -119,9 +132,11 @@ Detaylı demo rehberi ve feature highlights.
 #### **5. AI İş Zekası (2 dk)**
 
 **Geçiş:**
+
 > "Hangi ürünlerin ne zaman sattığını, hangi kanallarda daha iyi performans gösterdiğini AI analiz ediyor..."
 
 **Adımlar:**
+
 1. **AI Analytics Sayfasına Git** (`/analytics`)
 2. **KPI'ları Göster:**
    - Toplam gelir, sipariş sayısı, dönüşüm oranı
@@ -132,6 +147,7 @@ Detaylı demo rehberi ve feature highlights.
    - AI'ın önerisini oku: "Web sitesi hızını kontrol edin"
 
 **Vurgulanacak Noktalar:**
+
 - ✅ AI destekli satış tahminleri
 - ✅ Otomatik anomali tespiti
 - ✅ Actionable insights (eyleme geçirilebilir öneriler)
@@ -142,7 +158,9 @@ Detaylı demo rehberi ve feature highlights.
 #### **6. Kapanış & ROI**
 
 **Özet:**
+
 > "Otoniq.ai ile:
+>
 > - Ürün listeleme süremi %90 azalttım (4 saat → 20 dakika)
 > - Sosyal medya içerik maliyetimi %70 düşürdüm (tasarımcı ihtiyacı yok)
 > - Müşteri destek maliyetimi %50 azalttım (bot otomatik yanıtlıyor)
@@ -155,6 +173,7 @@ Detaylı demo rehberi ve feature highlights.
 ## 🏢 **SENARYO 2: PERAKENDE MÜDÜRÜ (Mehmet Demir)**
 
 ### **Hedef Kitle:**
+
 - Zincir mağaza yöneticileri
 - Operasyon müdürleri
 - Lojistik yöneticileri
@@ -164,9 +183,11 @@ Detaylı demo rehberi ve feature highlights.
 #### **1. Dashboard & IoT Monitoring (3 dk)**
 
 **Açılış:**
+
 > "Merhaba! Ben Mehmet, Teknoloji Perakende'nin operasyon müdürüyüm. 12 şubedeki stok, satış ve depo koşullarını tek platformdan izliyorum."
 
 **Adımlar:**
+
 1. **Dashboard Turu**
 2. **IoT Monitoring'e Git** (`/iot`)
 3. **Sensör Durumlarını Göster:**
@@ -178,6 +199,7 @@ Detaylı demo rehberi ve feature highlights.
    - Otomatik bildirim gönderildiğini göster
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Gerçek zamanlı IoT sensor izleme
 - ✅ Kritik uyarılar ve otomatik bildirimler
 - ✅ Ürün hasarını önleme
@@ -187,6 +209,7 @@ Detaylı demo rehberi ve feature highlights.
 #### **2. Stok Yönetimi & Otomatik Transfer (4 dk)**
 
 **Adımlar:**
+
 1. **Stok Durumu Analizi:**
    - Hangi ürünler hangi şubelerde kritik?
    - AI'ın transfer önerisi
@@ -199,6 +222,7 @@ Detaylı demo rehberi ve feature highlights.
    - Gelişmeli: Kartal (₺180K/ay)
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Akıllı stok dağıtımı
 - ✅ Otomatik transfer önerileri
 - ✅ Şube performans analizi
@@ -208,6 +232,7 @@ Detaylı demo rehberi ve feature highlights.
 #### **3. AR Ürün Görüntüleme (2 dk)**
 
 **Adımlar:**
+
 1. **AR/VR Sayfasına Git** (`/ar-vr`)
 2. **3D Modelleri Göster:**
    - iPhone 15 Pro modelini 360° döndür
@@ -215,6 +240,7 @@ Detaylı demo rehberi ve feature highlights.
    - Telefon kamerası ile AR görüntüleme simülasyonu
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Müşteriler ürünü mağazaya gelmeden AR ile görebilir
 - ✅ İade oranını %40 azalttı
 - ✅ Müşteri memnuniyetini artırdı
@@ -224,7 +250,9 @@ Detaylı demo rehberi ve feature highlights.
 #### **4. Kapanış & ROI**
 
 **Özet:**
+
 > "Otoniq.ai ile:
+>
 > - Stok kayıplarını %60 azalttık (IoT monitoring)
 > - Şubeler arası transfer verimliliğini %45 artırdık
 > - İade oranını %40 düşürdük (AR deneme)
@@ -237,6 +265,7 @@ Detaylı demo rehberi ve feature highlights.
 ## 👩‍💻 **SENARYO 3: SİSTEM YÖNETİCİSİ (Zeynep Kaya)**
 
 ### **Hedef Kitle:**
+
 - SaaS platform sahipleri
 - Super admin'ler
 - CTO'lar
@@ -246,9 +275,11 @@ Detaylı demo rehberi ve feature highlights.
 #### **1. Admin Dashboard (2 dk)**
 
 **Açılış:**
+
 > "Merhaba! Ben Zeynep, Otoniq.ai'ın CTO'suyum. Tüm tenant'ları (müşterileri) ve sistem sağlığını tek panelden yönetiyorum."
 
 **Adımlar:**
+
 1. **Admin Panel Turu** (`/admin`)
 2. **Tenant İstatistikleri:**
    - 45 aktif tenant
@@ -259,6 +290,7 @@ Detaylı demo rehberi ve feature highlights.
    - Müşteri bazında MRR
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Multi-tenant architecture
 - ✅ Gerçek zamanlı gelir takibi
 - ✅ Müşteri bazında analiz
@@ -268,6 +300,7 @@ Detaylı demo rehberi ve feature highlights.
 #### **2. Tenant Yönetimi (3 dk)**
 
 **Adımlar:**
+
 1. **Tenant Listesi:**
    - Fashion Store Turkey - Professional Plan
    - Teknoloji Perakende - Enterprise Plan
@@ -278,6 +311,7 @@ Detaylı demo rehberi ve feature highlights.
    - API kullanımı, storage, feature flags
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Kolay tenant onboarding
 - ✅ Flexible plan yönetimi
 - ✅ Usage tracking
@@ -287,6 +321,7 @@ Detaylı demo rehberi ve feature highlights.
 #### **3. Sistem Monitoring & AI Model Status (4 dk)**
 
 **Adımlar:**
+
 1. **System Health:**
    - API response time: 120ms (hedef < 200ms) ✅
    - Error rate: 0.02% ✅
@@ -301,6 +336,7 @@ Detaylı demo rehberi ve feature highlights.
    - Net kar: ₺180,000/ay
 
 **Vurgulanacak Noktalar:**
+
 - ✅ Sistem sağlığı real-time
 - ✅ AI model kullanımı ve maliyetleri
 - ✅ Profitability tracking
@@ -310,7 +346,9 @@ Detaylı demo rehberi ve feature highlights.
 #### **4. Kapanış**
 
 **Özet:**
+
 > "Otoniq.ai multi-tenant mimarisi ile:
+>
 > - 45 müşteriyi tek platformdan yönetiyoruz
 > - %99.9 uptime garantisi
 > - AI maliyetlerini %40 optimize ettik
@@ -323,6 +361,7 @@ Detaylı demo rehberi ve feature highlights.
 ## 🎯 **FEATURE HIGHLIGHTS**
 
 ### **Core Features:**
+
 1. **Multi-Tenant Architecture**
    - İzole veri
    - Esnek plan yönetimi
@@ -354,6 +393,7 @@ Detaylı demo rehberi ve feature highlights.
 ## 📊 **ROI HESAPLAMtakip etLARI**
 
 ### **E-ticaret Sahibi (Küçük İşletme):**
+
 - **Maliyet:** ₺2,000/ay (Starter Plan)
 - **Tasarruf:**
   - Zaman: 20 saat/ay × ₺150/saat = ₺3,000
@@ -363,6 +403,7 @@ Detaylı demo rehberi ve feature highlights.
 - **Net ROI:** ₺4,500 tasarruf + %20 gelir artışı
 
 ### **Perakende Zinciri (Orta Ölçek):**
+
 - **Maliyet:** ₺10,000/ay (Enterprise Plan)
 - **Tasarruf:**
   - Stok kaybı: ₺15,000/ay
@@ -404,4 +445,3 @@ Detaylı demo rehberi ve feature highlights.
 
 **Son Güncelleme:** Ocak 2025
 **Version:** 1.0
-

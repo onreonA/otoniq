@@ -5,56 +5,72 @@ const Pricing = () => {
 
   const plans = [
     {
-      name: 'Başlangıç',
-      description: 'Küçük işletmeler için ideal',
-      monthlyPrice: 299,
-      annualPrice: 2990,
+      name: 'Starter',
+      description: 'Yeni başlayan e-ticaret siteleri için',
+      monthlyPrice: 2000,
+      annualPrice: 19200,
       features: [
-        '1 Pazaryeri Entegrasyonu',
-        '100 Ürün Yönetimi',
-        'Temel AI Otomasyonu',
-        'Sipariş Takibi',
-        'Email Desteği',
-        'Temel Raporlama',
+        '1 kullanıcı hesabı',
+        '500 ürün limiti',
+        '2 marketplace entegrasyonu',
+        'Stok senkronizasyonu (günde 2x)',
+        'AI Asistan (100 sorgu/ay)',
+        'Sosyal medya içerik (20 post/ay)',
+        'WhatsApp bot (100 konuşma/ay)',
+        'Email destek (48 saat)',
       ],
       popular: false,
       color: 'from-blue-500 to-cyan-500',
+      targetRevenue: '₺50K - ₺200K/ay',
+      roi: '1.87x',
     },
     {
-      name: 'Profesyonel',
-      description: 'Büyüyen işletmeler için',
-      monthlyPrice: 599,
-      annualPrice: 5990,
+      name: 'Professional',
+      description: 'Büyüyen e-ticaret şirketleri için',
+      monthlyPrice: 5000,
+      annualPrice: 48000,
       features: [
-        '5 Pazaryeri Entegrasyonu',
-        'Sınırsız Ürün Yönetimi',
-        'Gelişmiş AI Otomasyonu',
-        'Akıllı Fiyatlandırma',
-        'Stok Optimizasyonu',
-        'Müşteri Segmentasyonu',
-        'Öncelikli Destek',
-        'Detaylı Analitik',
+        '5 kullanıcı hesabı',
+        '5,000 ürün limiti',
+        '5 marketplace entegrasyonu',
+        'Stok senkronizasyonu (saatlik)',
+        'AI Asistan (500 sorgu/ay)',
+        'Gelişmiş AI analytics + Satış tahminleri',
+        'Sosyal medya içerik (100 post/ay)',
+        'WhatsApp + Telegram bot (500 konuşma)',
+        'Odoo ERP + N8N entegrasyonu',
+        'API erişimi (Basic)',
+        'Chat + Telefon desteği',
       ],
       popular: true,
       color: 'from-purple-500 to-pink-500',
+      targetRevenue: '₺200K - ₺1M/ay',
+      roi: '3.1x',
     },
     {
-      name: 'Kurumsal',
-      description: 'Büyük ölçekli operasyonlar için',
-      monthlyPrice: 1299,
-      annualPrice: 12990,
+      name: 'Enterprise',
+      description: 'Büyük işletmeler ve perakende zincirleri için',
+      monthlyPrice: 10000,
+      annualPrice: 96000,
       features: [
-        'Sınırsız Pazaryeri Entegrasyonu',
-        'Özel AI Modelleri',
-        'API Erişimi',
-        'Özel Entegrasyonlar',
-        'Dedicated Account Manager',
-        'SLA Garantisi',
-        '7/24 Telefon Desteği',
-        'Özel Eğitim ve Onboarding',
+        'Sınırsız kullanıcı & ürün',
+        'Sınırsız marketplace entegrasyonu',
+        'Real-time stok senkronizasyonu',
+        'AI Asistan (Sınırsız)',
+        'IoT & Sensor monitoring',
+        'AR/VR özellikleri',
+        'Voice command support',
+        'Sınırsız sosyal medya & video içerik',
+        'Tüm ERP sistemleri + Custom API',
+        'SLA garantisi (%99.9 uptime)',
+        'Dedicated account manager',
+        '7/24 öncelikli destek',
+        'White-label seçeneği',
       ],
       popular: false,
       color: 'from-orange-500 to-red-500',
+      targetRevenue: '₺1M+/ay',
+      roi: '5.6x',
     },
   ];
 
@@ -103,7 +119,7 @@ const Pricing = () => {
             </span>
             {isAnnual && (
               <span className='ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'>
-                %17 İndirim
+                %20 İndirim
               </span>
             )}
           </div>
@@ -135,19 +151,32 @@ const Pricing = () => {
                   <h3 className='text-2xl font-bold text-gray-900 mb-2'>
                     {plan.name}
                   </h3>
-                  <p className='text-gray-600 mb-6'>{plan.description}</p>
+                  <p className='text-gray-600 mb-4'>{plan.description}</p>
+
+                  {/* Target Revenue & ROI Badges */}
+                  <div className='flex items-center justify-center gap-2 mb-6'>
+                    <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
+                      Ciro: {plan.targetRevenue}
+                    </span>
+                    <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800'>
+                      ROI: {plan.roi}
+                    </span>
+                  </div>
 
                   <div className='mb-6'>
                     <span className='text-5xl font-bold text-gray-900'>
                       ₺
                       {isAnnual
-                        ? Math.floor(plan.annualPrice / 12)
-                        : plan.monthlyPrice}
+                        ? Math.floor(plan.annualPrice / 12).toLocaleString(
+                            'tr-TR'
+                          )
+                        : plan.monthlyPrice.toLocaleString('tr-TR')}
                     </span>
                     <span className='text-gray-600 ml-2'>/ay</span>
                     {isAnnual && (
                       <div className='text-sm text-gray-500 mt-1'>
-                        Yıllık ₺{plan.annualPrice} faturalandırılır
+                        Yıllık ₺{plan.annualPrice.toLocaleString('tr-TR')}{' '}
+                        faturalandırılır
                       </div>
                     )}
                   </div>
