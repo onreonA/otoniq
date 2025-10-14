@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Package,
   TrendingUp,
@@ -10,24 +10,62 @@ import {
   ArrowDownCircle,
   RefreshCw,
   Edit2,
+  AlertCircle,
 } from 'lucide-react';
-import {
-  mockInventoryStats,
-  mockWarehouses,
-  mockStockLevels,
-  mockStockMovements,
-  getStockStatusColor,
-  getStockStatusLabel,
-  getMovementTypeColor,
-  getMovementTypeLabel,
-  type StockLevel,
-} from './mocks/inventoryMockData';
-import { MockBadge } from '../../components/common/MockBadge';
+import { useInventory } from '../../hooks/useInventory';
+import type { StockLevel, StockMovement, Warehouse } from '../../../domain/entities/Inventory';
 
 type TabType = 'stock' | 'movements' | 'warehouses';
 
 const InventoryPage = () => {
+  const { warehouses, stockLevels, stockMovements, loading, error } = useInventory();
   const [activeTab, setActiveTab] = useState<TabType>('stock');
+
+  // Calculate stats from real data
+  const stats = useMemo(() => {
+    const totalProducts = stockLevels.length;
+    const lowStock = stockLevels.filter(s => s.available <= s.reorderPoint).length;
+    const outOfStock = stockLevels.filter(s => s.available === 0).length;
+    const totalValue = stockLevels.reduce((sum, s) => sum + (s.available * (s.averageCost || 0)), 0);
+
+    return {
+      totalProducts,
+      lowStock,
+      outOfStock,
+      totalValue,
+    };
+  }, [stockLevels]);
+
+  // Helper functions
+  const getStockStatusColor = (available: number, reorderPoint: number) => {
+    if (available === 0) return 'bg-red-100 text-red-800 border-red-300';
+    if (available <= reorderPoint) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    return 'bg-green-100 text-green-800 border-green-300';
+  };
+
+  const getStockStatusLabel = (available: number, reorderPoint: number) => {
+    if (available === 0) return 'Stok Yok';
+    if (available <= reorderPoint) return 'Az Stok';
+    return 'Stokta';
+  };
+
+  const getMovementTypeColor = (type: string) => {
+    switch (type) {
+      case 'in': return 'bg-green-100 text-green-800 border-green-300';
+      case 'out': return 'bg-red-100 text-red-800 border-red-300';
+      case 'transfer': return 'bg-blue-100 text-blue-800 border-blue-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getMovementTypeLabel = (type: string) => {
+    switch (type) {
+      case 'in': return 'Giriş';
+      case 'out': return 'Çıkış';
+      case 'transfer': return 'Transfer';
+      default: return 'Bilinmeyen';
+    }
+  };
   const [filterWarehouse, setFilterWarehouse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -37,17 +75,32 @@ const InventoryPage = () => {
     { id: 'warehouses' as TabType, label: 'Depolar', icon: Warehouse },
   ];
 
-  const filteredStockLevels = mockStockLevels.filter(stock => {
+  const filteredStockLevels = stockLevels.filter(stock => {
     if (filterWarehouse !== 'all' && stock.warehouseId !== filterWarehouse)
       return false;
     if (filterStatus !== 'all' && stock.status !== filterStatus) return false;
     return true;
   });
 
+  if (loading && stockLevels.length === 0) {
+    return (
+      <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
+        <div className='flex items-center justify-center h-64'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
-      {/* Mock Badge */}
-      <MockBadge storageKey='mock-badge-inventory' />
+      {/* Error Display */}
+      {error && (
+        <div className='mb-6 bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-center gap-3'>
+          <AlertCircle className='w-5 h-5 text-red-400' />
+          <p className='text-red-200'>{error}</p>
+        </div>
+      )}
 
       {/* Page Header */}
       <div className='mb-6 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 backdrop-blur-sm rounded-2xl p-6 border border-yellow-500/20'>
@@ -65,17 +118,17 @@ const InventoryPage = () => {
             <Package className='w-5 h-5 text-blue-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockInventoryStats.totalProducts}
+            {stats.totalProducts}
           </p>
         </div>
 
         <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
           <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>Toplam Stok</span>
+            <span className='text-sm text-white/60'>Depolar</span>
             <TrendingUp className='w-5 h-5 text-green-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockInventoryStats.totalStock.toLocaleString('tr-TR')}
+            {warehouses.length}
           </p>
         </div>
 
@@ -85,7 +138,7 @@ const InventoryPage = () => {
             <AlertTriangle className='w-5 h-5 text-yellow-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockInventoryStats.lowStockItems}
+            {stats.lowStock}
           </p>
         </div>
 
@@ -95,7 +148,7 @@ const InventoryPage = () => {
             <XCircle className='w-5 h-5 text-red-400' />
           </div>
           <p className='text-3xl font-bold text-white'>
-            {mockInventoryStats.outOfStockItems}
+            {stats.outOfStock}
           </p>
         </div>
 
@@ -105,7 +158,7 @@ const InventoryPage = () => {
             <DollarSign className='w-5 h-5 text-purple-400' />
           </div>
           <p className='text-2xl font-bold text-white'>
-            ₺{(mockInventoryStats.totalValue / 1000).toFixed(0)}K
+            ₺{(stats.totalValue / 1000).toFixed(0)}K
           </p>
         </div>
       </div>
@@ -145,7 +198,7 @@ const InventoryPage = () => {
                     className='w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white'
                   >
                     <option value='all'>Tüm Depolar</option>
-                    {mockWarehouses.map(wh => (
+                    {warehouses.map(wh => (
                       <option key={wh.id} value={wh.id}>
                         {wh.name}
                       </option>
@@ -254,6 +307,13 @@ const InventoryPage = () => {
                   </tbody>
                 </table>
               </div>
+              {filteredStockLevels.length === 0 && (
+                <div className='text-center py-12'>
+                  <Package className='w-12 h-12 text-white/30 mx-auto mb-3' />
+                  <p className='text-white/60'>Stok verisi bulunamadı</p>
+                  <p className='text-white/40 text-sm mt-1'>Filtreleri kontrol edin veya yeni stok ekleyin</p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -264,7 +324,7 @@ const InventoryPage = () => {
               Stok Hareketleri
             </h2>
             <div className='space-y-3'>
-              {mockStockMovements.map(movement => (
+              {stockMovements.map(movement => (
                 <div
                   key={movement.id}
                   className='flex items-start justify-between p-4 bg-white/5 rounded-lg border border-white/10'
@@ -333,13 +393,20 @@ const InventoryPage = () => {
                   </div>
                 </div>
               ))}
+              {stockMovements.length === 0 && (
+                <div className='text-center py-12'>
+                  <RefreshCw className='w-12 h-12 text-white/30 mx-auto mb-3' />
+                  <p className='text-white/60'>Stok hareketi bulunamadı</p>
+                  <p className='text-white/40 text-sm mt-1'>Henüz stok hareketi kaydedilmemiş</p>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {activeTab === 'warehouses' && (
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {mockWarehouses.map(warehouse => (
+            {warehouses.map(warehouse => (
               <div
                 key={warehouse.id}
                 className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6'
@@ -408,6 +475,13 @@ const InventoryPage = () => {
                 </div>
               </div>
             ))}
+            {warehouses.length === 0 && (
+              <div className='col-span-full text-center py-12'>
+                <Warehouse className='w-12 h-12 text-white/30 mx-auto mb-3' />
+                <p className='text-white/60'>Depo bulunamadı</p>
+                <p className='text-white/40 text-sm mt-1'>İlk depoyu oluşturun</p>
+              </div>
+            )}
           </div>
         )}
       </div>
