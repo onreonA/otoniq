@@ -37,6 +37,9 @@ const AutomationPage = lazy(() => import('../pages/automation/page'));
 const AutomationOutputsPage = lazy(
   () => import('../pages/automation/outputs/page')
 );
+const WorkflowDetailPage = lazy(
+  () => import('../pages/automation/workflow-detail/[id]/page')
+);
 const CreativePage = lazy(() => import('../pages/creative/page'));
 const ChatAutomationPage = lazy(() => import('../pages/chat-automation/page'));
 const ARVRPage = lazy(() => import('../pages/ar-vr/page'));
@@ -167,6 +170,10 @@ const routes: RouteObject[] = [
       {
         path: '/automation/outputs',
         element: <AutomationOutputsPage />,
+      },
+      {
+        path: '/automation/workflow/:id',
+        element: <WorkflowDetailPage />,
       },
       {
         path: '/creative',
