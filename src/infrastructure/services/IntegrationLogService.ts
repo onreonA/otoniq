@@ -18,7 +18,10 @@ import {
 export class IntegrationLogService {
   constructor(private repository: IIntegrationLogRepository) {}
 
-  async getAll(tenantId: string, filters?: LogFilters): Promise<IntegrationLog[]> {
+  async getAll(
+    tenantId: string,
+    filters?: LogFilters
+  ): Promise<IntegrationLog[]> {
     return this.repository.getAll(tenantId, filters);
   }
 
@@ -125,7 +128,11 @@ export class IntegrationLogService {
     tenantId: string,
     limit?: number
   ): Promise<IntegrationLog[]> {
-    return this.repository.getByIntegrationType(integrationType, tenantId, limit);
+    return this.repository.getByIntegrationType(
+      integrationType,
+      tenantId,
+      limit
+    );
   }
 
   async getRecentLogs(
@@ -136,7 +143,10 @@ export class IntegrationLogService {
     return this.repository.getRecentLogs(tenantId, hours, limit);
   }
 
-  async getFailedLogs(tenantId: string, limit?: number): Promise<IntegrationLog[]> {
+  async getFailedLogs(
+    tenantId: string,
+    limit?: number
+  ): Promise<IntegrationLog[]> {
     return this.repository.getFailedLogs(tenantId, limit);
   }
 
@@ -201,4 +211,3 @@ export class IntegrationLogService {
     }
   }
 }
-

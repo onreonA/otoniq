@@ -2,13 +2,21 @@
  * Customer Repository Interface
  */
 
-import { Customer, CreateCustomerDTO, UpdateCustomerDTO } from '../entities/Customer';
+import {
+  Customer,
+  CreateCustomerDTO,
+  UpdateCustomerDTO,
+} from '../entities/Customer';
 
 export interface ICustomerRepository {
   // Customer operations
   getAll(tenantId: string, filters?: CustomerFilters): Promise<Customer[]>;
   getById(id: string, tenantId: string): Promise<Customer | null>;
-  create(data: CreateCustomerDTO, tenantId: string, userId: string): Promise<Customer>;
+  create(
+    data: CreateCustomerDTO,
+    tenantId: string,
+    userId: string
+  ): Promise<Customer>;
   update(
     id: string,
     data: UpdateCustomerDTO,
@@ -47,4 +55,3 @@ export interface CustomerStats {
   totalLifetimeValue: number;
   averageLifetimeValue: number;
 }
-

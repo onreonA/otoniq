@@ -34,7 +34,9 @@ export const useCategories = () => {
       const data = await service.getAll(tenantId);
       setCategories(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch categories');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch categories'
+      );
       console.error('Error fetching categories:', err);
     } finally {
       setLoading(false);
@@ -51,14 +53,18 @@ export const useCategories = () => {
       const tree = await service.getTree(tenantId);
       setCategoryTree(tree);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch category tree');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch category tree'
+      );
       console.error('Error fetching category tree:', err);
     } finally {
       setLoading(false);
     }
   }, [tenantId]);
 
-  const createCategory = async (data: CreateCategoryDTO): Promise<Category | null> => {
+  const createCategory = async (
+    data: CreateCategoryDTO
+  ): Promise<Category | null> => {
     if (!tenantId || !user) return null;
 
     setLoading(true);
@@ -70,7 +76,9 @@ export const useCategories = () => {
       await fetchCategoryTree();
       return category;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create category');
+      setError(
+        err instanceof Error ? err.message : 'Failed to create category'
+      );
       console.error('Error creating category:', err);
       return null;
     } finally {
@@ -93,7 +101,9 @@ export const useCategories = () => {
       await fetchCategoryTree();
       return category;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update category');
+      setError(
+        err instanceof Error ? err.message : 'Failed to update category'
+      );
       console.error('Error updating category:', err);
       return null;
     } finally {
@@ -113,7 +123,9 @@ export const useCategories = () => {
       await fetchCategoryTree();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete category');
+      setError(
+        err instanceof Error ? err.message : 'Failed to delete category'
+      );
       console.error('Error deleting category:', err);
       return false;
     } finally {
@@ -164,4 +176,3 @@ export const useCategories = () => {
     moveCategory,
   };
 };
-

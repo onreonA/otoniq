@@ -32,7 +32,7 @@ const InventoryPage = () => {
     const uniqueProductIds = new Set(stockLevels.map(s => s.productId));
     const totalProducts = uniqueProductIds.size;
     const totalStockRecords = stockLevels.length;
-    
+
     const lowStock = stockLevels.filter(
       s => s.availableQuantity <= s.minimumQuantity
     ).length;

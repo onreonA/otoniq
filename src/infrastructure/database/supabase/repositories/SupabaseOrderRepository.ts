@@ -8,14 +8,15 @@ import {
   OrderFilters,
   OrderStats,
 } from '../../../../domain/repositories/IOrderRepository';
-import { Order, CreateOrderDTO, UpdateOrderDTO } from '../../../../domain/entities/Order';
+import {
+  Order,
+  CreateOrderDTO,
+  UpdateOrderDTO,
+} from '../../../../domain/entities/Order';
 
 export class SupabaseOrderRepository implements IOrderRepository {
   async getAll(tenantId: string, filters: OrderFilters = {}): Promise<Order[]> {
-    let query = supabase
-      .from('orders')
-      .select('*')
-      .eq('tenant_id', tenantId);
+    let query = supabase.from('orders').select('*').eq('tenant_id', tenantId);
 
     // Apply filters
     if (filters.status) {
@@ -52,10 +53,15 @@ export class SupabaseOrderRepository implements IOrderRepository {
     }
 
     if (filters.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
+      query = query.range(
+        filters.offset,
+        filters.offset + (filters.limit || 50) - 1
+      );
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', {
+      ascending: false,
+    });
 
     if (error) throw error;
     return data || [];
@@ -188,7 +194,8 @@ export class SupabaseOrderRepository implements IOrderRepository {
     const stats = orders.reduce(
       (acc, order) => {
         acc.total++;
-        acc[order.status as keyof OrderStats] = (acc[order.status as keyof OrderStats] as number || 0) + 1;
+        acc[order.status as keyof OrderStats] =
+          ((acc[order.status as keyof OrderStats] as number) || 0) + 1;
         acc.totalRevenue += order.total_amount || 0;
         return acc;
       },
@@ -205,12 +212,16 @@ export class SupabaseOrderRepository implements IOrderRepository {
       } as OrderStats
     );
 
-    stats.averageOrderValue = stats.total > 0 ? stats.totalRevenue / stats.total : 0;
+    stats.averageOrderValue =
+      stats.total > 0 ? stats.totalRevenue / stats.total : 0;
 
     return stats;
   }
 
-  async getOrdersByCustomer(customerId: string, tenantId: string): Promise<Order[]> {
+  async getOrdersByCustomer(
+    customerId: string,
+    tenantId: string
+  ): Promise<Order[]> {
     const { data, error } = await supabase
       .from('orders')
       .select('*')
@@ -222,4 +233,3 @@ export class SupabaseOrderRepository implements IOrderRepository {
     return data || [];
   }
 }
-

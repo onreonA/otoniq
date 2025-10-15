@@ -1,0 +1,189 @@
+{
+  "name": "Low Stock Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "low-stock-alert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "low-stock-alert"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst webhookData = items[0].json.body;\n\nreturn {\n  json: {\n    productId: webhookData.product_id,\n    productName: webhookData.product_name,\n    productSku: webhookData.product_sku,\n    currentStock: webhookData.current_stock,\n    threshold: webhookData.threshold,\n    warehouseName: webhookData.warehouse_name,\n    tenantId: webhookData.tenant_id,\n    alertLevel: webhookData.current_stock === 0 ? 'critical' : 'warning'\n  }\n};"
+      },
+      "name": "Process Alert Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.currentStock}}",
+              "operation": "equal",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "Check Critical Level",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_tenant_notification_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"p_tenant_id\": \"{{$json.tenantId}}\"}"
+      },
+      "name": "Get Notification Preferences",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "alerts@otoniq.ai",
+        "toEmail": "={{$node['Get Notification Preferences'].json.email}}",
+        "subject": "🚨 KRİTİK STOK UYARISI: {{$node['Process Alert Data'].json.productName}}",
+        "text": "⚠️ STOK BİTTİ!\n\nÜrün: {{$node['Process Alert Data'].json.productName}} ({{$node['Process Alert Data'].json.productSku}})\nDepo: {{$node['Process Alert Data'].json.warehouseName}}\nMevcut Stok: 0\nEşik Değer: {{$node['Process Alert Data'].json.threshold}}\n\nAcil tedarik gerekiyor!",
+        "options": {
+          "priority": "high"
+        }
+      },
+      "name": "Send Critical Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1050, 100],
+      "credentials": {
+        "smtp": {
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phoneNumber": "={{$node['Get Notification Preferences'].json.whatsapp_number}}",
+        "message": "🚨 *KRİTİK STOK UYARISI*\n\n*Ürün:* {{$node['Process Alert Data'].json.productName}}\n*SKU:* {{$node['Process Alert Data'].json.productSku}}\n*Depo:* {{$node['Process Alert Data'].json.warehouseName}}\n*Stok:* 0 ⚠️\n\nAcil tedarik gerekiyor!"
+      },
+      "name": "Send WhatsApp (Critical)",
+      "type": "n8n-nodes-base.whatsapp",
+      "typeVersion": 1,
+      "position": [1050, 200],
+      "credentials": {
+        "whatsappApi": {
+          "name": "WhatsApp Business"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "alerts@otoniq.ai",
+        "toEmail": "={{$node['Get Notification Preferences'].json.email}}",
+        "subject": "⚠️ Düşük Stok Uyarısı: {{$node['Process Alert Data'].json.productName}}",
+        "text": "Ürün: {{$node['Process Alert Data'].json.productName}} ({{$node['Process Alert Data'].json.productSku}})\nDepo: {{$node['Process Alert Data'].json.warehouseName}}\nMevcut Stok: {{$node['Process Alert Data'].json.currentStock}}\nEşik Değer: {{$node['Process Alert Data'].json.threshold}}\n\nYakında tedarik gerekebilir."
+      },
+      "name": "Send Warning Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1050, 400],
+      "credentials": {
+        "smtp": {
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/notifications",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"tenant_id\": \"{{$node['Process Alert Data'].json.tenantId}}\",\n  \"type\": \"stock_alert\",\n  \"title\": \"Düşük Stok Uyarısı\",\n  \"message\": \"{{$node['Process Alert Data'].json.productName}} için stok seviyesi düştü\",\n  \"priority\": \"{{$node['Process Alert Data'].json.alertLevel === 'critical' ? 'high' : 'medium'}}\",\n  \"metadata\": {{$node['Process Alert Data'].json}}\n}"
+      },
+      "name": "Save In-App Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Alert sent successfully\", \"alertLevel\": \"{{$node['Process Alert Data'].json.alertLevel}}\"}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Process Alert Data", "type": "main", "index": 0 }]]
+    },
+    "Process Alert Data": {
+      "main": [[{ "node": "Check Critical Level", "type": "main", "index": 0 }]]
+    },
+    "Check Critical Level": {
+      "main": [
+        [
+          { "node": "Get Notification Preferences", "type": "main", "index": 0 }
+        ],
+        [{ "node": "Get Notification Preferences", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Notification Preferences": {
+      "main": [
+        [
+          { "node": "Send Critical Email", "type": "main", "index": 0 },
+          { "node": "Send WhatsApp (Critical)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Send Critical Email": {
+      "main": [
+        [{ "node": "Save In-App Notification", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send WhatsApp (Critical)": {
+      "main": [
+        [{ "node": "Save In-App Notification", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Warning Email": {
+      "main": [
+        [{ "node": "Save In-App Notification", "type": "main", "index": 0 }]
+      ]
+    },
+    "Save In-App Notification": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "tags": []
+}

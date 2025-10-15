@@ -37,7 +37,11 @@ export const useIntegrationLogs = (
       let data: IntegrationLog[];
 
       if (integrationType) {
-        data = await service.getByIntegrationType(integrationType, tenantId, filters?.limit);
+        data = await service.getByIntegrationType(
+          integrationType,
+          tenantId,
+          filters?.limit
+        );
       } else {
         data = await service.getAll(tenantId, filters);
       }
@@ -105,4 +109,3 @@ export const useIntegrationLogs = (
     service, // Expose service for direct operations
   };
 };
-

@@ -116,7 +116,7 @@ export default function OdooSyncModal({
           if (result.success) {
             toast.success(`${result.syncedCount} ürün senkronize edildi`);
             onSuccess();
-            
+
             return {
               success: true,
               successCount: result.syncedCount,
@@ -129,7 +129,7 @@ export default function OdooSyncModal({
             };
           } else {
             toast.error(`Senkronizasyon hatası: ${result.errors.join(', ')}`);
-            
+
             return {
               success: false,
               successCount: result.syncedCount,

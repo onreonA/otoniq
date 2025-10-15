@@ -1,0 +1,119 @@
+{
+  "name": "Daily Sales Report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_daily_sales_summary",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "name": "Fetch Sales Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all();\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\n\nconst summary = data[0].json;\n\nreturn {\n  json: {\n    title: `📊 Günlük Satış Raporu - ${yesterday.toLocaleDateString('tr-TR')}`,\n    totalSales: summary.total_sales || 0,\n    totalOrders: summary.total_orders || 0,\n    averageOrderValue: summary.average_order_value || 0,\n    topProducts: summary.top_products || [],\n    generatedAt: new Date().toISOString()\n  }\n};"
+      },
+      "name": "Process Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "generateDocument",
+        "templateType": "html",
+        "html": "<html><body><h1>{{$json.title}}</h1><h2>Özet</h2><p>Toplam Satış: {{$json.totalSales}} TL</p><p>Toplam Sipariş: {{$json.totalOrders}}</p><p>Ortalama Sepet: {{$json.averageOrderValue}} TL</p><h2>En Çok Satan Ürünler</h2><ul>{{#each topProducts}}<li>{{this.name}} - {{this.count}} adet</li>{{/each}}</ul></body></html>",
+        "options": {
+          "format": "pdf"
+        }
+      },
+      "name": "Generate PDF",
+      "type": "n8n-nodes-base.htmlToPdf",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/workflow_outputs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"workflow_id\": \"{{$workflow.id}}\",\n  \"tenant_id\": \"{{$workflow.tags[0]}}\",\n  \"output_type\": \"report\",\n  \"output_data\": {{$json}},\n  \"file_name\": \"daily-report-{{$now.format('YYYY-MM-DD')}}.pdf\",\n  \"file_size\": {{$binary.data.length}}\n}"
+      },
+      "name": "Save to Database",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "reports@otoniq.ai",
+        "toEmail": "={{$workflow.tags[1]}}",
+        "subject": "={{$node['Process Data'].json.title}}",
+        "text": "Günlük satış raporunuz ekte yer almaktadır.",
+        "attachments": "data:application/pdf;base64,={{$node['Generate PDF'].binary.data}}"
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1050, 450],
+      "credentials": {
+        "smtp": {
+          "name": "SMTP Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{ "node": "Fetch Sales Data", "type": "main", "index": 0 }]]
+    },
+    "Fetch Sales Data": {
+      "main": [[{ "node": "Process Data", "type": "main", "index": 0 }]]
+    },
+    "Process Data": {
+      "main": [[{ "node": "Generate PDF", "type": "main", "index": 0 }]]
+    },
+    "Generate PDF": {
+      "main": [
+        [
+          { "node": "Save to Database", "type": "main", "index": 0 },
+          { "node": "Send Email", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "tags": []
+}

@@ -8,10 +8,17 @@ import {
   CustomerFilters,
   CustomerStats,
 } from '../../../../domain/repositories/ICustomerRepository';
-import { Customer, CreateCustomerDTO, UpdateCustomerDTO } from '../../../../domain/entities/Customer';
+import {
+  Customer,
+  CreateCustomerDTO,
+  UpdateCustomerDTO,
+} from '../../../../domain/entities/Customer';
 
 export class SupabaseCustomerRepository implements ICustomerRepository {
-  async getAll(tenantId: string, filters: CustomerFilters = {}): Promise<Customer[]> {
+  async getAll(
+    tenantId: string,
+    filters: CustomerFilters = {}
+  ): Promise<Customer[]> {
     let query = supabase
       .from('customers')
       .select('*')
@@ -42,10 +49,15 @@ export class SupabaseCustomerRepository implements ICustomerRepository {
     }
 
     if (filters.offset) {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1);
+      query = query.range(
+        filters.offset,
+        filters.offset + (filters.limit || 50) - 1
+      );
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', {
+      ascending: false,
+    });
 
     if (error) throw error;
     return data || [];
@@ -153,19 +165,19 @@ export class SupabaseCustomerRepository implements ICustomerRepository {
     const stats = customers.reduce(
       (acc, customer) => {
         acc.total++;
-        
+
         // Status counts
         if (customer.status === 'active') acc.active++;
         if (customer.status === 'inactive') acc.inactive++;
         if (customer.status === 'blocked') acc.blocked++;
-        
+
         // Segment counts
         if (customer.segment === 'new') acc.new++;
         if (customer.segment === 'vip') acc.vip++;
         if (customer.segment === 'b2b') acc.b2b++;
         if (customer.segment === 'repeat') acc.repeat++;
         if (customer.segment === 'at_risk') acc.atRisk++;
-        
+
         acc.totalLifetimeValue += customer.lifetime_value || 0;
         return acc;
       },
@@ -184,7 +196,8 @@ export class SupabaseCustomerRepository implements ICustomerRepository {
       } as CustomerStats
     );
 
-    stats.averageLifetimeValue = stats.total > 0 ? stats.totalLifetimeValue / stats.total : 0;
+    stats.averageLifetimeValue =
+      stats.total > 0 ? stats.totalLifetimeValue / stats.total : 0;
 
     return stats;
   }
@@ -194,11 +207,12 @@ export class SupabaseCustomerRepository implements ICustomerRepository {
       .from('customers')
       .select('*')
       .eq('tenant_id', tenantId)
-      .or(`email.ilike.%${query}%,full_name.ilike.%${query}%,phone.ilike.%${query}%`)
+      .or(
+        `email.ilike.%${query}%,full_name.ilike.%${query}%,phone.ilike.%${query}%`
+      )
       .limit(20);
 
     if (error) throw error;
     return data || [];
   }
 }
-

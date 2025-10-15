@@ -8,7 +8,11 @@ export interface IOrderRepository {
   // Order operations
   getAll(tenantId: string, filters?: OrderFilters): Promise<Order[]>;
   getById(id: string, tenantId: string): Promise<Order | null>;
-  create(data: CreateOrderDTO, tenantId: string, userId: string): Promise<Order>;
+  create(
+    data: CreateOrderDTO,
+    tenantId: string,
+    userId: string
+  ): Promise<Order>;
   update(
     id: string,
     data: UpdateOrderDTO,
@@ -58,4 +62,3 @@ export interface OrderStats {
   totalRevenue: number;
   averageOrderValue: number;
 }
-

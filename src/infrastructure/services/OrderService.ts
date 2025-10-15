@@ -8,7 +8,11 @@ import {
   OrderFilters,
   OrderStats,
 } from '../../domain/repositories/IOrderRepository';
-import { Order, CreateOrderDTO, UpdateOrderDTO } from '../../domain/entities/Order';
+import {
+  Order,
+  CreateOrderDTO,
+  UpdateOrderDTO,
+} from '../../domain/entities/Order';
 
 export class OrderService {
   constructor(private repository: IOrderRepository) {}
@@ -55,7 +59,7 @@ export class OrderService {
   async delete(id: string, tenantId: string): Promise<void> {
     // Check if order can be deleted (e.g., only pending orders)
     const order = await this.repository.getById(id, tenantId);
-    
+
     if (!order) {
       throw new Error('Order not found');
     }
@@ -74,15 +78,22 @@ export class OrderService {
     userId: string
   ): Promise<Order> {
     // Validate status
-    const validStatuses = ['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'];
-    
+    const validStatuses = [
+      'pending',
+      'confirmed',
+      'preparing',
+      'shipped',
+      'delivered',
+      'cancelled',
+    ];
+
     if (!validStatuses.includes(status)) {
       throw new Error(`Invalid status: ${status}`);
     }
 
     // Get current order
     const order = await this.repository.getById(id, tenantId);
-    
+
     if (!order) {
       throw new Error('Order not found');
     }
@@ -111,7 +122,10 @@ export class OrderService {
     return this.repository.getOrderStats(tenantId);
   }
 
-  async getOrdersByCustomer(customerId: string, tenantId: string): Promise<Order[]> {
+  async getOrdersByCustomer(
+    customerId: string,
+    tenantId: string
+  ): Promise<Order[]> {
     return this.repository.getOrdersByCustomer(customerId, tenantId);
   }
 
@@ -135,4 +149,3 @@ export class OrderService {
     return results;
   }
 }
-

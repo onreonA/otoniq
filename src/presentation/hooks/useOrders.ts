@@ -6,8 +6,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { SupabaseOrderRepository } from '../../infrastructure/database/supabase/repositories/SupabaseOrderRepository';
 import { OrderService } from '../../infrastructure/services/OrderService';
-import { Order, CreateOrderDTO, UpdateOrderDTO } from '../../domain/entities/Order';
-import { OrderFilters, OrderStats } from '../../domain/repositories/IOrderRepository';
+import {
+  Order,
+  CreateOrderDTO,
+  UpdateOrderDTO,
+} from '../../domain/entities/Order';
+import {
+  OrderFilters,
+  OrderStats,
+} from '../../domain/repositories/IOrderRepository';
 import { useAuth } from './useAuth';
 
 const repository = new SupabaseOrderRepository();
@@ -120,7 +127,9 @@ export const useOrders = (filters?: OrderFilters) => {
       await fetchStats();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update order status');
+      setError(
+        err instanceof Error ? err.message : 'Failed to update order status'
+      );
       console.error('Error updating order status:', err);
       return false;
     } finally {
@@ -163,7 +172,9 @@ export const useOrders = (filters?: OrderFilters) => {
       await fetchStats();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to bulk update orders');
+      setError(
+        err instanceof Error ? err.message : 'Failed to bulk update orders'
+      );
       console.error('Error bulk updating orders:', err);
       return false;
     } finally {
@@ -192,4 +203,3 @@ export const useOrders = (filters?: OrderFilters) => {
     bulkUpdateStatus,
   };
 };
-

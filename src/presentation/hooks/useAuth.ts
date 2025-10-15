@@ -2,13 +2,15 @@
  * useAuth Hook
  *
  * Authentication işlemleri için custom hook.
- * Auth store'u wrap eder ve kolay kullanım sağlar.
+ * Enhanced with session management and 2FA support.
  */
 
 import { useAuthStore, initializeAuthListener } from '../store/auth/authStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { AuthService } from '../../infrastructure/auth/AuthService';
+import { SessionService } from '../../infrastructure/services/SessionService';
 
 export function useAuth() {
   const {
@@ -26,6 +28,8 @@ export function useAuth() {
   } = useAuthStore();
 
   const navigate = useNavigate();
+  const [userSessions, setUserSessions] = useState<any[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
 
   // Initialize auth listener on mount
   useEffect(() => {
@@ -78,6 +82,52 @@ export function useAuth() {
     navigate(redirectTo);
   };
 
+  // Session management functions
+  const loadUserSessions = async () => {
+    if (!isAuthenticated) return;
+
+    setSessionsLoading(true);
+    try {
+      const sessions = await SessionService.getUserActiveSessions(
+        user?.id || ''
+      );
+      setUserSessions(sessions);
+    } catch (error) {
+      console.error('Error loading user sessions:', error);
+      toast.error('Oturumlar yüklenirken hata oluştu');
+    } finally {
+      setSessionsLoading(false);
+    }
+  };
+
+  const invalidateSession = async (sessionId: string) => {
+    try {
+      const success = await SessionService.invalidateSession(sessionId);
+      if (success) {
+        toast.success('Oturum sonlandırıldı');
+        await loadUserSessions();
+      } else {
+        toast.error('Oturum sonlandırılamadı');
+      }
+    } catch (error) {
+      console.error('Error invalidating session:', error);
+      toast.error('Oturum sonlandırılırken hata oluştu');
+    }
+  };
+
+  const invalidateAllSessions = async () => {
+    if (!user) return;
+
+    try {
+      const count = await SessionService.invalidateAllUserSessions(user.id);
+      toast.success(`${count} oturum sonlandırıldı`);
+      await loadUserSessions();
+    } catch (error) {
+      console.error('Error invalidating all sessions:', error);
+      toast.error('Oturumlar sonlandırılırken hata oluştu');
+    }
+  };
+
   // Computed values
   const isSuperAdmin = userProfile?.role === 'super_admin';
   const isTenantAdmin = userProfile?.role === 'tenant_admin';
@@ -100,6 +150,13 @@ export function useAuth() {
     isTenantUser,
     tenantId,
     hasActiveTenant,
+
+    // Session Management
+    userSessions,
+    sessionsLoading,
+    loadUserSessions,
+    invalidateSession,
+    invalidateAllSessions,
 
     // Actions
     login,

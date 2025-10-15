@@ -1,0 +1,184 @@
+{
+  "name": "New Order Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-order",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "new-order"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst order = items[0].json.body;\n\nreturn {\n  json: {\n    orderId: order.id,\n    orderNumber: order.order_number,\n    customerName: order.customer_name,\n    customerEmail: order.customer_email,\n    customerPhone: order.customer_phone,\n    totalAmount: order.total_amount,\n    itemCount: order.items?.length || 0,\n    items: order.items || [],\n    shippingAddress: order.shipping_address,\n    tenantId: order.tenant_id,\n    marketplace: order.marketplace || 'direct',\n    createdAt: order.created_at || new Date().toISOString()\n  }\n};"
+      },
+      "name": "Process Order Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_tenant_notification_settings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"p_tenant_id\": \"{{$json.tenantId}}\"}"
+      },
+      "name": "Get Notification Preferences",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "orders@otoniq.ai",
+        "toEmail": "={{$node['Get Notification Preferences'].json.email}}",
+        "subject": "🎉 Yeni Sipariş Alındı - #{{$node['Process Order Data'].json.orderNumber}}",
+        "emailFormat": "html",
+        "html": "<html><body style=\"font-family: Arial, sans-serif;\"><div style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; border-radius: 10px 10px 0 0;\"><h1 style=\"margin: 0;\">🎉 Yeni Sipariş!</h1></div><div style=\"padding: 20px; background: #f9fafb;\"><h2 style=\"color: #333;\">Sipariş Detayları</h2><p><strong>Sipariş No:</strong> #{{$node['Process Order Data'].json.orderNumber}}</p><p><strong>Müşteri:</strong> {{$node['Process Order Data'].json.customerName}}</p><p><strong>Tutar:</strong> {{$node['Process Order Data'].json.totalAmount}} TL</p><p><strong>Ürün Adedi:</strong> {{$node['Process Order Data'].json.itemCount}}</p><p><strong>Kanal:</strong> {{$node['Process Order Data'].json.marketplace}}</p><h3 style=\"color: #333;\">Ürünler:</h3><ul>{{#each $node['Process Order Data'].json.items}}<li>{{this.product_name}} - {{this.quantity}} adet - {{this.price}} TL</li>{{/each}}</ul><p style=\"margin-top: 20px;\"><a href=\"{{$env.VITE_APP_URL}}/orders/{{$node['Process Order Data'].json.orderId}}\" style=\"background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;\">Siparişi Görüntüle</a></p></div><div style=\"padding: 10px; background: #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;\">Otoniq.ai - E-Ticaret Otomasyon Platformu</div></body></html>"
+      },
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [850, 200],
+      "credentials": {
+        "smtp": {
+          "name": "SMTP Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phoneNumber": "={{$node['Get Notification Preferences'].json.whatsapp_number}}",
+        "message": "🎉 *YENİ SİPARİŞ ALINDI!*\n\n*Sipariş No:* #{{$node['Process Order Data'].json.orderNumber}}\n*Müşteri:* {{$node['Process Order Data'].json.customerName}}\n*Tutar:* {{$node['Process Order Data'].json.totalAmount}} TL\n*Ürün Adedi:* {{$node['Process Order Data'].json.itemCount}}\n*Kanal:* {{$node['Process Order Data'].json.marketplace}}\n\n📦 Sipariş hazırlanmaya başlayabilirsiniz!"
+      },
+      "name": "Send WhatsApp Notification",
+      "type": "n8n-nodes-base.whatsapp",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "credentials": {
+        "whatsappApi": {
+          "name": "WhatsApp Business"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/notifications",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"tenant_id\": \"{{$node['Process Order Data'].json.tenantId}}\",\n  \"type\": \"new_order\",\n  \"title\": \"Yeni Sipariş Alındı\",\n  \"message\": \"#{{$node['Process Order Data'].json.orderNumber}} - {{$node['Process Order Data'].json.customerName}} - {{$node['Process Order Data'].json.totalAmount}} TL\",\n  \"priority\": \"medium\",\n  \"metadata\": {{$node['Process Order Data'].json}},\n  \"action_url\": \"/orders/{{$node['Process Order Data'].json.orderId}}\"\n}"
+      },
+      "name": "Save In-App Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 400],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/n8n_executions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"workflow_id\": \"{{$workflow.id}}\",\n  \"tenant_id\": \"{{$node['Process Order Data'].json.tenantId}}\",\n  \"n8n_execution_id\": \"{{$execution.id}}\",\n  \"trigger_type\": \"webhook\",\n  \"trigger_data\": {{$node['Process Order Data'].json}},\n  \"status\": \"success\",\n  \"steps_completed\": 5,\n  \"steps_total\": 5\n}"
+      },
+      "name": "Log Execution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Order notifications sent\", \"orderId\": \"{{$node['Process Order Data'].json.orderId}}\", \"notificationsSent\": 3}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "orders@otoniq.ai",
+        "toEmail": "={{$node['Process Order Data'].json.customerEmail}}",
+        "subject": "Siparişiniz Alındı - #{{$node['Process Order Data'].json.orderNumber}}",
+        "emailFormat": "html",
+        "html": "<html><body style=\"font-family: Arial, sans-serif;\"><div style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; color: white; border-radius: 10px 10px 0 0;\"><h1 style=\"margin: 0;\">✅ Siparişiniz Alındı!</h1></div><div style=\"padding: 20px; background: #f9fafb;\"><p>Sayın {{$node['Process Order Data'].json.customerName}},</p><p>Siparişiniz başarıyla alındı ve işleme konuldu.</p><h3 style=\"color: #333;\">Sipariş Detayları</h3><p><strong>Sipariş No:</strong> #{{$node['Process Order Data'].json.orderNumber}}</p><p><strong>Toplam Tutar:</strong> {{$node['Process Order Data'].json.totalAmount}} TL</p><p><strong>Ürün Adedi:</strong> {{$node['Process Order Data'].json.itemCount}}</p><h3 style=\"color: #333;\">Sipariş İçeriği:</h3><ul>{{#each $node['Process Order Data'].json.items}}<li>{{this.product_name}} - {{this.quantity}} adet - {{this.price}} TL</li>{{/each}}</ul><p style=\"margin-top: 20px;\">Siparişiniz en kısa sürede kargoya verilecektir.</p><p>Teşekkür ederiz!</p></div></body></html>"
+      },
+      "name": "Send Customer Confirmation",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [850, 500],
+      "credentials": {
+        "smtp": {
+          "name": "SMTP Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Process Order Data", "type": "main", "index": 0 }]]
+    },
+    "Process Order Data": {
+      "main": [
+        [{ "node": "Get Notification Preferences", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Notification Preferences": {
+      "main": [
+        [
+          { "node": "Send Email Notification", "type": "main", "index": 0 },
+          { "node": "Send WhatsApp Notification", "type": "main", "index": 0 },
+          { "node": "Save In-App Notification", "type": "main", "index": 0 },
+          { "node": "Send Customer Confirmation", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Send Email Notification": {
+      "main": [[{ "node": "Log Execution", "type": "main", "index": 0 }]]
+    },
+    "Send WhatsApp Notification": {
+      "main": [[{ "node": "Log Execution", "type": "main", "index": 0 }]]
+    },
+    "Save In-App Notification": {
+      "main": [[{ "node": "Log Execution", "type": "main", "index": 0 }]]
+    },
+    "Send Customer Confirmation": {
+      "main": [[{ "node": "Log Execution", "type": "main", "index": 0 }]]
+    },
+    "Log Execution": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "tags": []
+}

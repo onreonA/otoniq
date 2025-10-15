@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../../components/base/Button';
+import PasswordStrengthMeter from '../../components/base/PasswordStrengthMeter';
+import {
+  generateSecurePassword,
+  meetsMinimumRequirements,
+} from '../../../shared/utils/passwordValidation';
+import { toast } from 'react-hot-toast';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -16,6 +22,7 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [passwordValidation, setPasswordValidation] = useState<any>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -26,6 +33,19 @@ export default function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate password strength
+    if (!meetsMinimumRequirements(formData.password)) {
+      toast.error('Şifre güvenlik gereksinimlerini karşılamıyor');
+      return;
+    }
+
+    // Check password confirmation
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Şifreler eşleşmiyor');
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulated registration process
@@ -33,6 +53,16 @@ export default function SignUp() {
       setIsLoading(false);
       setCurrentStep(3);
     }, 2000);
+  };
+
+  const handleGeneratePassword = () => {
+    const newPassword = generateSecurePassword(16);
+    setFormData(prev => ({
+      ...prev,
+      password: newPassword,
+      confirmPassword: newPassword,
+    }));
+    toast.success('Güvenli şifre oluşturuldu');
   };
 
   const nextStep = () => {
@@ -213,29 +243,13 @@ export default function SignUp() {
                 <label className='block text-base font-medium text-gray-200 mb-2'>
                   Şifre
                 </label>
-                <div className='relative'>
-                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                    <i className='ri-lock-line text-gray-400'></i>
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name='password'
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className='w-full pl-10 pr-12 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all'
-                    placeholder='••••••••'
-                    required
-                  />
-                  <button
-                    type='button'
-                    onClick={() => setShowPassword(!showPassword)}
-                    className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer'
-                  >
-                    <i
-                      className={`ri-${showPassword ? 'eye-off' : 'eye'}-line`}
-                    ></i>
-                  </button>
-                </div>
+                <PasswordStrengthMeter
+                  password={formData.password}
+                  onChange={setPasswordValidation}
+                  onGeneratePassword={handleGeneratePassword}
+                  showSuggestions={true}
+                  showGenerateButton={true}
+                />
               </div>
 
               <div>

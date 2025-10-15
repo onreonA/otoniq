@@ -33,7 +33,11 @@ export interface IIntegrationLogRepository {
     tenantId: string,
     limit?: number
   ): Promise<IntegrationLog[]>;
-  getRecentLogs(tenantId: string, hours?: number, limit?: number): Promise<IntegrationLog[]>;
+  getRecentLogs(
+    tenantId: string,
+    hours?: number,
+    limit?: number
+  ): Promise<IntegrationLog[]>;
   getFailedLogs(tenantId: string, limit?: number): Promise<IntegrationLog[]>;
 
   // Statistics
@@ -66,4 +70,3 @@ export interface IntegrationHealthSummary {
   lastSyncAt?: Date;
   successRate: number;
 }
-

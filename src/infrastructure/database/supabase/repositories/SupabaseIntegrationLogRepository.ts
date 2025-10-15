@@ -16,7 +16,9 @@ import {
   IntegrationType,
 } from '../../../../domain/entities/IntegrationLog';
 
-export class SupabaseIntegrationLogRepository implements IIntegrationLogRepository {
+export class SupabaseIntegrationLogRepository
+  implements IIntegrationLogRepository
+{
   private mapToEntity(data: any): IntegrationLog {
     return {
       id: data.id,
@@ -46,8 +48,14 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
     };
   }
 
-  async getAll(tenantId: string, filters: LogFilters = {}): Promise<IntegrationLog[]> {
-    let query = supabase.from('integration_logs').select('*').eq('tenant_id', tenantId);
+  async getAll(
+    tenantId: string,
+    filters: LogFilters = {}
+  ): Promise<IntegrationLog[]> {
+    let query = supabase
+      .from('integration_logs')
+      .select('*')
+      .eq('tenant_id', tenantId);
 
     // Apply filters
     if (filters.integrationType) {
@@ -86,10 +94,12 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
       );
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', {
+      ascending: false,
+    });
 
     if (error) throw error;
-    return (data || []).map((item) => this.mapToEntity(item));
+    return (data || []).map(item => this.mapToEntity(item));
   }
 
   async getById(id: string, tenantId: string): Promise<IntegrationLog | null> {
@@ -142,9 +152,11 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
     };
 
     if (data.status) updateData.status = data.status;
-    if (data.successCount !== undefined) updateData.success_count = data.successCount;
+    if (data.successCount !== undefined)
+      updateData.success_count = data.successCount;
     if (data.errorCount !== undefined) updateData.error_count = data.errorCount;
-    if (data.warningCount !== undefined) updateData.warning_count = data.warningCount;
+    if (data.warningCount !== undefined)
+      updateData.warning_count = data.warningCount;
     if (data.completedAt) {
       updateData.completed_at = data.completedAt.toISOString();
     }
@@ -190,7 +202,7 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
       .limit(limit);
 
     if (error) throw error;
-    return (data || []).map((item) => this.mapToEntity(item));
+    return (data || []).map(item => this.mapToEntity(item));
   }
 
   async getRecentLogs(
@@ -210,10 +222,13 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
       .limit(limit);
 
     if (error) throw error;
-    return (data || []).map((item) => this.mapToEntity(item));
+    return (data || []).map(item => this.mapToEntity(item));
   }
 
-  async getFailedLogs(tenantId: string, limit: number = 20): Promise<IntegrationLog[]> {
+  async getFailedLogs(
+    tenantId: string,
+    limit: number = 20
+  ): Promise<IntegrationLog[]> {
     const { data, error } = await supabase
       .from('integration_logs')
       .select('*')
@@ -223,7 +238,7 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
       .limit(limit);
 
     if (error) throw error;
-    return (data || []).map((item) => this.mapToEntity(item));
+    return (data || []).map(item => this.mapToEntity(item));
   }
 
   async getStats(
@@ -264,7 +279,9 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
     };
   }
 
-  async getHealthSummary(tenantId: string): Promise<IntegrationHealthSummary[]> {
+  async getHealthSummary(
+    tenantId: string
+  ): Promise<IntegrationHealthSummary[]> {
     const { data, error } = await supabase
       .from('integration_health_summary')
       .select('*')
@@ -272,7 +289,7 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
 
     if (error) throw error;
 
-    return (data || []).map((item) => ({
+    return (data || []).map(item => ({
       integrationType: item.integration_type,
       totalOperations: parseInt(item.total_operations) || 0,
       successful: parseInt(item.successful) || 0,
@@ -284,4 +301,3 @@ export class SupabaseIntegrationLogRepository implements IIntegrationLogReposito
     }));
   }
 }
-

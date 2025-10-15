@@ -8,12 +8,19 @@ import {
   CustomerFilters,
   CustomerStats,
 } from '../../domain/repositories/ICustomerRepository';
-import { Customer, CreateCustomerDTO, UpdateCustomerDTO } from '../../domain/entities/Customer';
+import {
+  Customer,
+  CreateCustomerDTO,
+  UpdateCustomerDTO,
+} from '../../domain/entities/Customer';
 
 export class CustomerService {
   constructor(private repository: ICustomerRepository) {}
 
-  async getAll(tenantId: string, filters?: CustomerFilters): Promise<Customer[]> {
+  async getAll(
+    tenantId: string,
+    filters?: CustomerFilters
+  ): Promise<Customer[]> {
     return this.repository.getAll(tenantId, filters);
   }
 
@@ -78,4 +85,3 @@ export class CustomerService {
     return emailRegex.test(email);
   }
 }
-

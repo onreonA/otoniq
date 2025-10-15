@@ -40,14 +40,18 @@ export const useInventory = () => {
       const data = await service.getAllWarehouses(tenantId);
       setWarehouses(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch warehouses');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch warehouses'
+      );
       console.error('Error fetching warehouses:', err);
     } finally {
       setLoading(false);
     }
   }, [tenantId]);
 
-  const createWarehouse = async (data: CreateWarehouseDTO): Promise<Warehouse | null> => {
+  const createWarehouse = async (
+    data: CreateWarehouseDTO
+  ): Promise<Warehouse | null> => {
     if (!tenantId || !user) return null;
 
     setLoading(true);
@@ -58,7 +62,9 @@ export const useInventory = () => {
       await fetchWarehouses();
       return warehouse;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create warehouse');
+      setError(
+        err instanceof Error ? err.message : 'Failed to create warehouse'
+      );
       console.error('Error creating warehouse:', err);
       return null;
     } finally {
@@ -76,11 +82,18 @@ export const useInventory = () => {
     setError(null);
 
     try {
-      const warehouse = await service.updateWarehouse(id, data, tenantId, user.id);
+      const warehouse = await service.updateWarehouse(
+        id,
+        data,
+        tenantId,
+        user.id
+      );
       await fetchWarehouses();
       return warehouse;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update warehouse');
+      setError(
+        err instanceof Error ? err.message : 'Failed to update warehouse'
+      );
       console.error('Error updating warehouse:', err);
       return null;
     } finally {
@@ -99,7 +112,9 @@ export const useInventory = () => {
       await fetchWarehouses();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete warehouse');
+      setError(
+        err instanceof Error ? err.message : 'Failed to delete warehouse'
+      );
       console.error('Error deleting warehouse:', err);
       return false;
     } finally {
@@ -108,22 +123,27 @@ export const useInventory = () => {
   };
 
   // Stock Level operations
-  const fetchStockLevels = useCallback(async (warehouseId?: string) => {
-    if (!tenantId) return;
+  const fetchStockLevels = useCallback(
+    async (warehouseId?: string) => {
+      if (!tenantId) return;
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const data = await service.getStockLevels(tenantId, warehouseId);
-      setStockLevels(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch stock levels');
-      console.error('Error fetching stock levels:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [tenantId]);
+      try {
+        const data = await service.getStockLevels(tenantId, warehouseId);
+        setStockLevels(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to fetch stock levels'
+        );
+        console.error('Error fetching stock levels:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [tenantId]
+  );
 
   const updateStockLevel = async (
     id: string,
@@ -135,11 +155,18 @@ export const useInventory = () => {
     setError(null);
 
     try {
-      const stockLevel = await service.updateStockLevel(id, data, tenantId, user.id);
+      const stockLevel = await service.updateStockLevel(
+        id,
+        data,
+        tenantId,
+        user.id
+      );
       await fetchStockLevels();
       return stockLevel;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update stock level');
+      setError(
+        err instanceof Error ? err.message : 'Failed to update stock level'
+      );
       console.error('Error updating stock level:', err);
       return null;
     } finally {
@@ -148,44 +175,53 @@ export const useInventory = () => {
   };
 
   // Stock Movement operations
-  const fetchStockMovements = useCallback(async (
-    warehouseId?: string,
-    productId?: string,
-    limit = 100
-  ) => {
-    if (!tenantId) return;
+  const fetchStockMovements = useCallback(
+    async (warehouseId?: string, productId?: string, limit = 100) => {
+      if (!tenantId) return;
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const data = await service.getStockMovements(tenantId, {
-        warehouseId,
-        productId,
-        limit,
-      });
-      setStockMovements(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch stock movements');
-      console.error('Error fetching stock movements:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [tenantId]);
+      try {
+        const data = await service.getStockMovements(tenantId, {
+          warehouseId,
+          productId,
+          limit,
+        });
+        setStockMovements(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to fetch stock movements'
+        );
+        console.error('Error fetching stock movements:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [tenantId]
+  );
 
-  const createStockMovement = async (data: CreateStockMovementDTO): Promise<StockMovement | null> => {
+  const createStockMovement = async (
+    data: CreateStockMovementDTO
+  ): Promise<StockMovement | null> => {
     if (!tenantId || !user) return null;
 
     setLoading(true);
     setError(null);
 
     try {
-      const movement = await service.createStockMovement(data, tenantId, user.id);
+      const movement = await service.createStockMovement(
+        data,
+        tenantId,
+        user.id
+      );
       await fetchStockMovements();
       await fetchStockLevels();
       return movement;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create stock movement');
+      setError(
+        err instanceof Error ? err.message : 'Failed to create stock movement'
+      );
       console.error('Error creating stock movement:', err);
       return null;
     } finally {

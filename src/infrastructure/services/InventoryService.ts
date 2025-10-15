@@ -23,7 +23,10 @@ export class InventoryService {
     return this.repository.getAllWarehouses(tenantId);
   }
 
-  async getWarehouseById(id: string, tenantId: string): Promise<Warehouse | null> {
+  async getWarehouseById(
+    id: string,
+    tenantId: string
+  ): Promise<Warehouse | null> {
     return this.repository.getWarehouseById(id, tenantId);
   }
 
@@ -73,11 +76,17 @@ export class InventoryService {
   }
 
   // Stock Level operations
-  async getStockLevels(tenantId: string, warehouseId?: string): Promise<StockLevel[]> {
+  async getStockLevels(
+    tenantId: string,
+    warehouseId?: string
+  ): Promise<StockLevel[]> {
     return this.repository.getStockLevels(tenantId, warehouseId);
   }
 
-  async getStockLevelById(id: string, tenantId: string): Promise<StockLevel | null> {
+  async getStockLevelById(
+    id: string,
+    tenantId: string
+  ): Promise<StockLevel | null> {
     return this.repository.getStockLevelById(id, tenantId);
   }
 
@@ -108,14 +117,17 @@ export class InventoryService {
     }
 
     // Check if stock level already exists for this product and warehouse
-    const existingStock = await this.repository.getStockLevelByProductAndWarehouse(
-      data.productId,
-      data.warehouseId,
-      tenantId
-    );
+    const existingStock =
+      await this.repository.getStockLevelByProductAndWarehouse(
+        data.productId,
+        data.warehouseId,
+        tenantId
+      );
 
     if (existingStock) {
-      throw new Error('Stock level already exists for this product and warehouse');
+      throw new Error(
+        'Stock level already exists for this product and warehouse'
+      );
     }
 
     return this.repository.createStockLevel(data, tenantId, userId);
@@ -190,7 +202,10 @@ export class InventoryService {
       throw new Error('Warehouse is required for stock out movement');
     }
 
-    if (data.type === 'transfer' && (!data.fromWarehouseId || !data.toWarehouseId)) {
+    if (
+      data.type === 'transfer' &&
+      (!data.fromWarehouseId || !data.toWarehouseId)
+    ) {
       throw new Error('Both from and to warehouses are required for transfer');
     }
 
@@ -199,7 +214,11 @@ export class InventoryService {
     }
 
     // Create the stock movement
-    const movement = await this.repository.createStockMovement(data, tenantId, userId);
+    const movement = await this.repository.createStockMovement(
+      data,
+      tenantId,
+      userId
+    );
 
     // Update stock levels based on movement type
     await this.updateStockLevelsFromMovement(data, tenantId, userId);
@@ -224,31 +243,62 @@ export class InventoryService {
   ): Promise<void> {
     switch (data.type) {
       case 'in':
-        await this.adjustStockLevel(data.productId, data.warehouseId!, data.quantity, tenantId, userId);
+        await this.adjustStockLevel(
+          data.productId,
+          data.warehouseId!,
+          data.quantity,
+          tenantId,
+          userId
+        );
         break;
 
       case 'out':
-        await this.adjustStockLevel(data.productId, data.warehouseId!, -data.quantity, tenantId, userId);
+        await this.adjustStockLevel(
+          data.productId,
+          data.warehouseId!,
+          -data.quantity,
+          tenantId,
+          userId
+        );
         break;
 
       case 'transfer':
         // Reduce from source warehouse
-        await this.adjustStockLevel(data.productId, data.fromWarehouseId!, -data.quantity, tenantId, userId);
+        await this.adjustStockLevel(
+          data.productId,
+          data.fromWarehouseId!,
+          -data.quantity,
+          tenantId,
+          userId
+        );
         // Increase in destination warehouse
-        await this.adjustStockLevel(data.productId, data.toWarehouseId!, data.quantity, tenantId, userId);
+        await this.adjustStockLevel(
+          data.productId,
+          data.toWarehouseId!,
+          data.quantity,
+          tenantId,
+          userId
+        );
         break;
 
       case 'adjustment':
         // Calculate adjustment quantity (new quantity - current quantity)
-        const currentStock = await this.repository.getStockLevelByProductAndWarehouse(
-          data.productId,
-          data.warehouseId!,
-          tenantId
-        );
-        
+        const currentStock =
+          await this.repository.getStockLevelByProductAndWarehouse(
+            data.productId,
+            data.warehouseId!,
+            tenantId
+          );
+
         if (currentStock) {
           const adjustmentQuantity = data.quantity - currentStock.quantity;
-          await this.adjustStockLevel(data.productId, data.warehouseId!, adjustmentQuantity, tenantId, userId);
+          await this.adjustStockLevel(
+            data.productId,
+            data.warehouseId!,
+            adjustmentQuantity,
+            tenantId,
+            userId
+          );
         }
         break;
     }
@@ -261,11 +311,12 @@ export class InventoryService {
     tenantId: string,
     userId: string
   ): Promise<void> {
-    const currentStock = await this.repository.getStockLevelByProductAndWarehouse(
-      productId,
-      warehouseId,
-      tenantId
-    );
+    const currentStock =
+      await this.repository.getStockLevelByProductAndWarehouse(
+        productId,
+        warehouseId,
+        tenantId
+      );
 
     if (currentStock) {
       // Update existing stock level

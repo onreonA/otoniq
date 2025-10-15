@@ -20,15 +20,16 @@ const CategoriesPage = () => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
-  const [selectedCategory, setSelectedCategory] = useState<CategoryEntity | null>(
-    null
-  );
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryEntity | null>(null);
 
   // Calculate stats from real data
   const stats = useMemo(() => {
-    const allCategories = categoryTree.flatMap(function flatten(cat): CategoryEntity[] {
-      return [cat, ...cat.children.flatMap(flatten)];
-    });
+    const allCategories = categoryTree.flatMap(
+      function flatten(cat): CategoryEntity[] {
+        return [cat, ...cat.children.flatMap(flatten)];
+      }
+    );
 
     return {
       total: allCategories.length,
@@ -50,7 +51,10 @@ const CategoriesPage = () => {
     });
   };
 
-  const renderCategoryTree = (categories: CategoryEntity[], level: number = 0) => {
+  const renderCategoryTree = (
+    categories: CategoryEntity[],
+    level: number = 0
+  ) => {
     return categories.map(category => {
       const hasChildren = category.children && category.children.length > 0;
       const isExpanded = expandedCategories.has(category.id);
@@ -137,7 +141,7 @@ const CategoriesPage = () => {
   // Handle delete
   const handleDelete = async (id: string) => {
     if (!confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) return;
-    
+
     const success = await deleteCategory(id);
     if (success) {
       alert('Kategori başarıyla silindi!');
@@ -189,9 +193,7 @@ const CategoriesPage = () => {
             <span className='text-sm text-white/60'>Toplam Kategori</span>
             <FolderTree className='w-5 h-5 text-purple-400' />
           </div>
-          <p className='text-3xl font-bold text-white'>
-            {stats.total}
-          </p>
+          <p className='text-3xl font-bold text-white'>{stats.total}</p>
         </div>
 
         <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
@@ -199,9 +201,7 @@ const CategoriesPage = () => {
             <span className='text-sm text-white/60'>Aktif Kategori</span>
             <CheckCircle className='w-5 h-5 text-green-400' />
           </div>
-          <p className='text-3xl font-bold text-white'>
-            {stats.active}
-          </p>
+          <p className='text-3xl font-bold text-white'>{stats.active}</p>
         </div>
 
         <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
@@ -209,21 +209,15 @@ const CategoriesPage = () => {
             <span className='text-sm text-white/60'>Öne Çıkanlar</span>
             <Package className='w-5 h-5 text-blue-400' />
           </div>
-          <p className='text-3xl font-bold text-white'>
-            {stats.featured}
-          </p>
+          <p className='text-3xl font-bold text-white'>{stats.featured}</p>
         </div>
 
         <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
           <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>
-              Pasif Kategori
-            </span>
+            <span className='text-sm text-white/60'>Pasif Kategori</span>
             <XCircle className='w-5 h-5 text-orange-400' />
           </div>
-          <p className='text-3xl font-bold text-white'>
-            {stats.inactive}
-          </p>
+          <p className='text-3xl font-bold text-white'>{stats.inactive}</p>
         </div>
       </div>
 
@@ -234,7 +228,9 @@ const CategoriesPage = () => {
           <div className='text-center py-12'>
             <FolderTree className='w-12 h-12 text-white/30 mx-auto mb-3' />
             <p className='text-white/60'>Henüz kategori eklenmemiş</p>
-            <p className='text-white/40 text-sm mt-1'>Başlamak için yeni kategori ekleyin</p>
+            <p className='text-white/40 text-sm mt-1'>
+              Başlamak için yeni kategori ekleyin
+            </p>
           </div>
         ) : (
           <div className='space-y-1'>{renderCategoryTree(categoryTree)}</div>

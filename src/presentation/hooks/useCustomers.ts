@@ -6,8 +6,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { SupabaseCustomerRepository } from '../../infrastructure/database/supabase/repositories/SupabaseCustomerRepository';
 import { CustomerService } from '../../infrastructure/services/CustomerService';
-import { Customer, CreateCustomerDTO, UpdateCustomerDTO } from '../../domain/entities/Customer';
-import { CustomerFilters, CustomerStats } from '../../domain/repositories/ICustomerRepository';
+import {
+  Customer,
+  CreateCustomerDTO,
+  UpdateCustomerDTO,
+} from '../../domain/entities/Customer';
+import {
+  CustomerFilters,
+  CustomerStats,
+} from '../../domain/repositories/ICustomerRepository';
 import { useAuth } from './useAuth';
 
 const repository = new SupabaseCustomerRepository();
@@ -30,7 +37,9 @@ export const useCustomers = (filters?: CustomerFilters) => {
       const data = await service.getAll(tenantId, filters);
       setCustomers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch customers');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch customers'
+      );
       console.error('Error fetching customers:', err);
     } finally {
       setLoading(false);
@@ -65,7 +74,9 @@ export const useCustomers = (filters?: CustomerFilters) => {
     }
   };
 
-  const createCustomer = async (data: CreateCustomerDTO): Promise<Customer | null> => {
+  const createCustomer = async (
+    data: CreateCustomerDTO
+  ): Promise<Customer | null> => {
     if (!tenantId || !user) return null;
 
     setLoading(true);
@@ -77,7 +88,9 @@ export const useCustomers = (filters?: CustomerFilters) => {
       await fetchStats();
       return customer;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create customer');
+      setError(
+        err instanceof Error ? err.message : 'Failed to create customer'
+      );
       console.error('Error creating customer:', err);
       return null;
     } finally {
@@ -100,7 +113,9 @@ export const useCustomers = (filters?: CustomerFilters) => {
       await fetchStats();
       return customer;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update customer');
+      setError(
+        err instanceof Error ? err.message : 'Failed to update customer'
+      );
       console.error('Error updating customer:', err);
       return null;
     } finally {
@@ -120,7 +135,9 @@ export const useCustomers = (filters?: CustomerFilters) => {
       await fetchStats();
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete customer');
+      setError(
+        err instanceof Error ? err.message : 'Failed to delete customer'
+      );
       console.error('Error deleting customer:', err);
       return false;
     } finally {
@@ -159,4 +176,3 @@ export const useCustomers = (filters?: CustomerFilters) => {
     searchCustomers,
   };
 };
-
