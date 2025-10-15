@@ -1,0 +1,260 @@
+{
+  "name": "Email Campaign Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email-campaign",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "email-campaign"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst data = items[0].json.body;\n\nreturn {\n  json: {\n    campaignId: data.campaign_id,\n    tenantId: data.tenant_id,\n    campaignName: data.campaign_name,\n    subjectLine: data.subject_line,\n    previewText: data.preview_text,\n    fromName: data.from_name,\n    fromEmail: data.from_email,\n    replyTo: data.reply_to_email,\n    htmlContent: data.html_content,\n    segmentType: data.segment_type || 'all',\n    segmentFilter: data.segment_filter || {}\n  }\n};"
+      },
+      "name": "Process Campaign Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_campaign_recipients",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"p_tenant_id\": \"{{$json.tenantId}}\",\n  \"p_segment_type\": \"{{$json.segmentType}}\",\n  \"p_segment_filter\": {{$json.segmentFilter}}\n}"
+      },
+      "name": "Get Recipients List",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const recipients = $input.first().json;\nconst campaignData = $node['Process Campaign Data'].json;\n\n// Create recipient records in database\nconst recipientRecords = recipients.map(r => ({\n  campaign_id: campaignData.campaignId,\n  tenant_id: campaignData.tenantId,\n  email: r.email,\n  customer_name: r.name,\n  customer_id: r.customer_id,\n  status: 'pending'\n}));\n\nreturn {\n  json: {\n    campaignData: campaignData,\n    recipients: recipients,\n    recipientRecords: recipientRecords,\n    totalRecipients: recipients.length\n  }\n};"
+      },
+      "name": "Prepare Recipients",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/email_campaign_recipients",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{$json.recipientRecords}}"
+      },
+      "name": "Save Recipients to DB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "name": "Batch Recipients",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const batch = $input.all();\nconst campaignData = $node['Prepare Recipients'].json.campaignData;\n\nreturn batch.map(item => ({\n  json: {\n    to: item.json.email,\n    toName: item.json.name,\n    customerId: item.json.customer_id,\n    subject: campaignData.subjectLine,\n    from: campaignData.fromEmail,\n    fromName: campaignData.fromName,\n    replyTo: campaignData.replyTo,\n    html: campaignData.htmlContent.replace('{{customer_name}}', item.json.name)\n  }\n}));"
+      },
+      "name": "Personalize Emails",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{$json.from}}",
+        "toEmail": "={{$json.to}}",
+        "subject": "={{$json.subject}}",
+        "emailFormat": "html",
+        "html": "={{$json.html}}",
+        "options": {
+          "senderName": "={{$json.fromName}}",
+          "replyTo": "={{$json.replyTo}}"
+        }
+      },
+      "name": "Send Email (SendGrid)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1650, 300],
+      "credentials": {
+        "smtp": {
+          "name": "SendGrid SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/email_campaign_recipients",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "PATCH",
+        "qs": "email=eq.{{$json.to}}&campaign_id=eq.{{$node['Process Campaign Data'].json.campaignId}}",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"status\": \"sent\",\n  \"sent_at\": \"{{$now.toISOString()}}\"\n}"
+      },
+      "name": "Update Recipient Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "seconds"
+      },
+      "name": "Rate Limit Delay",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [2050, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/update_campaign_analytics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"p_campaign_id\": \"{{$node['Process Campaign Data'].json.campaignId}}\"}"
+      },
+      "name": "Update Campaign Stats",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2250, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/email_campaigns",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "PATCH",
+        "qs": "id=eq.{{$node['Process Campaign Data'].json.campaignId}}",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"status\": \"sent\",\n  \"sent_at\": \"{{$now.toISOString()}}\"\n}"
+      },
+      "name": "Mark Campaign as Sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [2450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Email campaign sent successfully\", \"campaign_id\": \"{{$node['Process Campaign Data'].json.campaignId}}\", \"recipients_count\": {{$node['Prepare Recipients'].json.totalRecipients}}}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle send error\nconst error = $input.first().json.error;\nconst recipient = $node['Personalize Emails'].json;\n\nawait $executeWorkflow.webhook({\n  url: $env.VITE_SUPABASE_URL + '/rest/v1/email_campaign_recipients',\n  method: 'PATCH',\n  qs: 'email=eq.' + recipient.to,\n  body: {\n    status: 'failed',\n    error_message: error.message\n  }\n});\n\nreturn { json: { error: error.message, email: recipient.to } };"
+      },
+      "name": "Handle Send Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1650, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [{ "node": "Process Campaign Data", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process Campaign Data": {
+      "main": [[{ "node": "Get Recipients List", "type": "main", "index": 0 }]]
+    },
+    "Get Recipients List": {
+      "main": [[{ "node": "Prepare Recipients", "type": "main", "index": 0 }]]
+    },
+    "Prepare Recipients": {
+      "main": [
+        [{ "node": "Save Recipients to DB", "type": "main", "index": 0 }]
+      ]
+    },
+    "Save Recipients to DB": {
+      "main": [[{ "node": "Batch Recipients", "type": "main", "index": 0 }]]
+    },
+    "Batch Recipients": {
+      "main": [[{ "node": "Personalize Emails", "type": "main", "index": 0 }]]
+    },
+    "Personalize Emails": {
+      "main": [
+        [{ "node": "Send Email (SendGrid)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Email (SendGrid)": {
+      "main": [
+        [{ "node": "Update Recipient Status", "type": "main", "index": 0 }],
+        [{ "node": "Handle Send Error", "type": "main", "index": 0 }]
+      ]
+    },
+    "Update Recipient Status": {
+      "main": [[{ "node": "Rate Limit Delay", "type": "main", "index": 0 }]]
+    },
+    "Rate Limit Delay": {
+      "main": [
+        [{ "node": "Update Campaign Stats", "type": "main", "index": 0 }]
+      ]
+    },
+    "Update Campaign Stats": {
+      "main": [
+        [{ "node": "Mark Campaign as Sent", "type": "main", "index": 0 }]
+      ]
+    },
+    "Mark Campaign as Sent": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "tags": []
+}

@@ -7,6 +7,8 @@ import { N8NService, N8NWorkflow } from '../services/N8NService';
 import dailyReportWorkflow from './daily-report.workflow.json';
 import lowStockAlertWorkflow from './low-stock-alert.workflow.json';
 import newOrderNotificationWorkflow from './new-order-notification.workflow.json';
+import socialMediaPostWorkflow from './social-media-post.workflow.json';
+import emailCampaignWorkflow from './email-campaign.workflow.json';
 
 export interface WorkflowTemplate {
   name: string;
@@ -65,6 +67,34 @@ export class WorkflowInstaller {
         },
         icon: 'ri-shopping-bag-line',
         color: 'green',
+      },
+      {
+        name: 'Sosyal Medya Otomasyonu',
+        description:
+          "Ürün bazlı veya manuel olarak Instagram, Facebook ve Twitter'a otomatik gönderi oluşturur ve yayınlar",
+        category: 'social_media',
+        triggerType: 'webhook',
+        workflowJson: socialMediaPostWorkflow,
+        defaultConfig: {
+          platforms: ['instagram', 'facebook', 'twitter'],
+          aiGenerated: true,
+        },
+        icon: 'ri-share-line',
+        color: 'purple',
+      },
+      {
+        name: 'E-posta Kampanyası',
+        description:
+          'Segmentlenmiş müşteri listelerine kişiselleştirilmiş toplu e-posta kampanyaları gönderir ve analiz sağlar',
+        category: 'email_marketing',
+        triggerType: 'webhook',
+        workflowJson: emailCampaignWorkflow,
+        defaultConfig: {
+          batchSize: 10,
+          rateLimitDelay: 1,
+        },
+        icon: 'ri-mail-send-line',
+        color: 'cyan',
       },
     ];
   }

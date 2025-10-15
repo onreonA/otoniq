@@ -1,0 +1,256 @@
+{
+  "name": "Social Media Post Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "social-media-post",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "social-media-post"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst data = items[0].json.body;\n\nreturn {\n  json: {\n    tenantId: data.tenant_id,\n    productId: data.product_id,\n    productName: data.product_name,\n    productImage: data.product_image,\n    productPrice: data.product_price,\n    productDescription: data.product_description,\n    platforms: data.platforms || ['instagram', 'facebook', 'twitter'],\n    customPrompt: data.custom_prompt || 'Create an engaging social media post',\n    hashtags: data.hashtags || []\n  }\n};"
+      },
+      "name": "Process Input Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_tenant_social_accounts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"p_tenant_id\": \"{{$json.tenantId}}\"}"
+      },
+      "name": "Get Social Media Accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "prompt": "=Create an engaging social media caption for this product:\n\nProduct: {{$node['Process Input Data'].json.productName}}\nPrice: {{$node['Process Input Data'].json.productPrice}} TL\nDescription: {{$node['Process Input Data'].json.productDescription}}\n\nCustom Instructions: {{$node['Process Input Data'].json.customPrompt}}\n\nCreate 3 variations:\n1. Instagram (engaging, use emojis, max 2200 chars)\n2. Facebook (informative, call-to-action, max 500 words)\n3. Twitter (concise, impactful, max 280 chars)\n\nInclude relevant hashtags at the end of each caption.",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 1000
+        }
+      },
+      "name": "AI Caption Generation",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "credentials": {
+        "openAiApi": {
+          "name": "OpenAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json.choices[0].message.content;\nconst inputData = $node['Process Input Data'].json;\n\n// Parse AI response to extract platform-specific captions\nconst lines = response.split('\\n');\nlet instagram = '', facebook = '', twitter = '';\nlet currentPlatform = '';\n\nfor (const line of lines) {\n  if (line.includes('Instagram') || line.includes('1.')) currentPlatform = 'instagram';\n  else if (line.includes('Facebook') || line.includes('2.')) currentPlatform = 'facebook';\n  else if (line.includes('Twitter') || line.includes('3.')) currentPlatform = 'twitter';\n  else {\n    if (currentPlatform === 'instagram') instagram += line + '\\n';\n    else if (currentPlatform === 'facebook') facebook += line + '\\n';\n    else if (currentPlatform === 'twitter') twitter += line + '\\n';\n  }\n}\n\nreturn {\n  json: {\n    tenantId: inputData.tenantId,\n    productId: inputData.productId,\n    productName: inputData.productName,\n    productImage: inputData.productImage,\n    captions: {\n      instagram: instagram.trim(),\n      facebook: facebook.trim(),\n      twitter: twitter.trim()\n    },\n    platforms: inputData.platforms\n  }\n};"
+      },
+      "name": "Parse Captions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Split By Platform",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.platform}}",
+              "operation": "equals",
+              "value2": "instagram"
+            }
+          ]
+        }
+      },
+      "name": "Check Platform",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v18.0/{{$node['Get Social Media Accounts'].json.instagram_account_id}}/media",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{$node['Parse Captions'].json.productImage}}"
+            },
+            {
+              "name": "caption",
+              "value": "={{$node['Parse Captions'].json.captions.instagram}}"
+            }
+          ]
+        }
+      },
+      "name": "Post to Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 200],
+      "credentials": {
+        "oAuth2Api": {
+          "name": "Instagram Business"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v18.0/{{$node['Get Social Media Accounts'].json.facebook_page_id}}/photos",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{$node['Parse Captions'].json.productImage}}"
+            },
+            {
+              "name": "message",
+              "value": "={{$node['Parse Captions'].json.captions.facebook}}"
+            }
+          ]
+        }
+      },
+      "name": "Post to Facebook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 300],
+      "credentials": {
+        "oAuth2Api": {
+          "name": "Facebook Pages"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.twitter.com/2/tweets",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth1Api",
+        "sendBody": true,
+        "jsonParameters": true,
+        "bodyParametersJson": "={\"text\": \"{{$node['Parse Captions'].json.captions.twitter}}\"}"
+      },
+      "name": "Post to Twitter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 400],
+      "credentials": {
+        "oAuth1Api": {
+          "name": "Twitter OAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/social_media_posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"tenant_id\": \"{{$node['Parse Captions'].json.tenantId}}\",\n  \"product_id\": \"{{$node['Parse Captions'].json.productId}}\",\n  \"account_id\": \"{{$node['Get Social Media Accounts'].json[{{$json.platform}}+'_account_id']}}\",\n  \"post_type\": \"image\",\n  \"caption\": \"{{$node['Parse Captions'].json.captions[{{$json.platform}}]}}\",\n  \"media_urls\": [\"{{$node['Parse Captions'].json.productImage}}\"],\n  \"platform_post_id\": \"{{$json.id}}\",\n  \"status\": \"posted\",\n  \"posted_at\": \"{{$now.toISOString()}}\",\n  \"is_ai_generated\": true\n}"
+      },
+      "name": "Save to Database",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Supabase Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Social media posts created successfully\", \"platforms\": {{$node['Process Input Data'].json.platforms}}, \"product_id\": \"{{$node['Process Input Data'].json.productId}}\"}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Process Input Data", "type": "main", "index": 0 }]]
+    },
+    "Process Input Data": {
+      "main": [
+        [{ "node": "Get Social Media Accounts", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Social Media Accounts": {
+      "main": [
+        [{ "node": "AI Caption Generation", "type": "main", "index": 0 }]
+      ]
+    },
+    "AI Caption Generation": {
+      "main": [[{ "node": "Parse Captions", "type": "main", "index": 0 }]]
+    },
+    "Parse Captions": {
+      "main": [[{ "node": "Split By Platform", "type": "main", "index": 0 }]]
+    },
+    "Split By Platform": {
+      "main": [[{ "node": "Check Platform", "type": "main", "index": 0 }]]
+    },
+    "Check Platform": {
+      "main": [
+        [{ "node": "Post to Instagram", "type": "main", "index": 0 }],
+        [{ "node": "Post to Facebook", "type": "main", "index": 0 }],
+        [{ "node": "Post to Twitter", "type": "main", "index": 0 }]
+      ]
+    },
+    "Post to Instagram": {
+      "main": [[{ "node": "Save to Database", "type": "main", "index": 0 }]]
+    },
+    "Post to Facebook": {
+      "main": [[{ "node": "Save to Database", "type": "main", "index": 0 }]]
+    },
+    "Post to Twitter": {
+      "main": [[{ "node": "Save to Database", "type": "main", "index": 0 }]]
+    },
+    "Save to Database": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "tags": []
+}

@@ -34,6 +34,9 @@ const MarketplaceConnectionsPage = lazy(
 );
 const AnalyticsPage = lazy(() => import('../pages/analytics/page'));
 const AutomationPage = lazy(() => import('../pages/automation/page'));
+const AutomationOutputsPage = lazy(
+  () => import('../pages/automation/outputs/page')
+);
 const CreativePage = lazy(() => import('../pages/creative/page'));
 const ChatAutomationPage = lazy(() => import('../pages/chat-automation/page'));
 const ARVRPage = lazy(() => import('../pages/ar-vr/page'));
@@ -160,6 +163,10 @@ const routes: RouteObject[] = [
       {
         path: '/automation',
         element: <AutomationPage />,
+      },
+      {
+        path: '/automation/outputs',
+        element: <AutomationOutputsPage />,
       },
       {
         path: '/creative',
