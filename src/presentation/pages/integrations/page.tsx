@@ -28,6 +28,7 @@ const IntegrationsPage = () => {
     'all',
     'erp',
     'ecommerce',
+    'b2b',
     'marketplace',
     'payment',
     'shipping',

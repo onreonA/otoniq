@@ -26,6 +26,9 @@ const OdooIntegrationPage = lazy(
 const ShopifyIntegrationPage = lazy(
   () => import('../pages/integrations/shopify/page')
 );
+const AlibabaIntegrationPage = lazy(
+  () => import('../pages/integrations/alibaba/page')
+);
 const MarketplaceConnectionsPage = lazy(
   () => import('../pages/marketplace/page')
 );
@@ -141,6 +144,10 @@ const routes: RouteObject[] = [
       {
         path: '/integrations/shopify',
         element: <ShopifyIntegrationPage />,
+      },
+      {
+        path: '/integrations/alibaba',
+        element: <AlibabaIntegrationPage />,
       },
       {
         path: '/marketplace',

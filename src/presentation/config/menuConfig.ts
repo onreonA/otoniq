@@ -141,6 +141,21 @@ export const superAdminMenuConfig: MenuGroup[] = [
         ],
       },
       {
+        id: 'b2b-marketplaces',
+        label: 'B2B Pazaryerleri',
+        icon: 'Globe',
+        path: '/integrations',
+        children: [
+          {
+            id: 'alibaba',
+            label: 'Alibaba.com',
+            icon: 'Building2',
+            path: '/integrations/alibaba',
+            badge: 'new',
+          },
+        ],
+      },
+      {
         id: 'marketplaces',
         label: 'Pazaryerleri',
         icon: 'Store',
@@ -324,6 +339,21 @@ export const tenantMenuConfig: MenuGroup[] = [
             label: 'WooCommerce',
             icon: 'ShoppingCart',
             path: '/integrations/woocommerce',
+          },
+        ],
+      },
+      {
+        id: 'b2b-marketplaces',
+        label: 'B2B Pazaryerleri',
+        icon: 'Globe',
+        path: '/integrations',
+        children: [
+          {
+            id: 'alibaba',
+            label: 'Alibaba.com',
+            icon: 'Building2',
+            path: '/integrations/alibaba',
+            badge: 'new',
           },
         ],
       },

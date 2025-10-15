@@ -37,6 +37,7 @@ export const breadcrumbLabels: BreadcrumbConfig = {
   '/integrations': 'Entegrasyonlar',
   '/integrations/odoo': 'Odoo ERP',
   '/integrations/shopify': 'Shopify',
+  '/integrations/alibaba': 'Alibaba.com',
   '/integrations/sap': 'SAP',
   '/integrations/woocommerce': 'WooCommerce',
   '/automation': 'Otomasyon Merkezi',

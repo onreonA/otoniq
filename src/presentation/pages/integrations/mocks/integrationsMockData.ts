@@ -9,6 +9,7 @@ export interface Integration {
     | 'erp'
     | 'ecommerce'
     | 'marketplace'
+    | 'b2b'
     | 'payment'
     | 'shipping'
     | 'social';
@@ -19,6 +20,7 @@ export interface Integration {
   syncCount?: number;
   errorMessage?: string;
   features: string[];
+  link?: string;
 }
 
 export interface SyncActivity {
@@ -83,6 +85,27 @@ export const mockIntegrations: Integration[] = [
     icon: '🛒',
     description: 'WordPress e-ticaret eklentisi',
     features: ['Ürün Yönetimi', 'Sipariş Senkronizasyonu', 'Stok Kontrolü'],
+  },
+
+  // B2B Marketplaces
+  {
+    id: 'alibaba',
+    name: 'Alibaba.com',
+    category: 'b2b',
+    status: 'connected',
+    icon: '🌐',
+    description: 'Global B2B marketplace platformu',
+    lastSync: new Date(Date.now() - 15 * 60 * 1000),
+    syncCount: 1850,
+    link: '/integrations/alibaba',
+    features: [
+      'B2B Ürün Listeleme',
+      'RFQ Yönetimi',
+      'Sipariş Takibi',
+      'Navlun Hesaplama',
+      'Mesajlaşma Otomasyonu',
+      'Analitik & Raporlama',
+    ],
   },
 
   // Marketplaces
@@ -256,6 +279,7 @@ export const getCategoryLabel = (category: Integration['category']): string => {
     erp: 'ERP Sistemleri',
     ecommerce: 'E-Ticaret Platformları',
     marketplace: 'Pazaryerleri',
+    b2b: 'B2B Pazaryerleri',
     payment: 'Ödeme Sistemleri',
     shipping: 'Kargo Firmaları',
     social: 'Sosyal Medya',
