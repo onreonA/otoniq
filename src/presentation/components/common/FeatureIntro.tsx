@@ -19,7 +19,7 @@ type Props = {
   subtitle: string;
   items: string[];
   actions?: Action[];
-  variant?: 'blue' | 'green' | 'purple' | 'orange' | 'pink';
+  variant?: 'blue' | 'green' | 'purple' | 'orange' | 'pink' | 'indigo';
   dismissible?: boolean;
   icon?: string;
 };
@@ -75,6 +75,11 @@ export default function FeatureIntro({
       gradient: 'from-pink-600/20 to-rose-600/20',
       icon: 'from-pink-500 to-rose-500',
       checkIcon: 'text-rose-400',
+    },
+    indigo: {
+      gradient: 'from-indigo-600/20 to-purple-600/20',
+      icon: 'from-indigo-500 to-purple-500',
+      checkIcon: 'text-indigo-400',
     },
   };
 

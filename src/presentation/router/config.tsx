@@ -59,6 +59,8 @@ const EmailCampaignsPage = lazy(() => import('../pages/email-campaigns/page'));
 const PitchDeckPage = lazy(() => import('../pages/pitch-deck/page'));
 const OnePagerPage = lazy(() => import('../pages/one-pager/page'));
 const SalesToolkitPage = lazy(() => import('../pages/sales-toolkit/page'));
+const ProfilePage = lazy(() => import('../pages/profile/page'));
+const CompanyPage = lazy(() => import('../pages/company/page'));
 const NotFoundPage = lazy(() => import('../pages/NotFound'));
 
 import ComponentsLibrary from '../pages/components/page';
@@ -229,6 +231,14 @@ const routes: RouteObject[] = [
       {
         path: '/settings/notifications',
         element: <NotificationSettingsPage />,
+      },
+      {
+        path: '/profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: '/company',
+        element: <CompanyPage />,
       },
 
       // Super admin only routes (still inside SidebarLayout)

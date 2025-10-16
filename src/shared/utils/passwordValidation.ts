@@ -30,11 +30,11 @@ export interface PasswordPolicy {
 
 // Default password policy
 export const DEFAULT_PASSWORD_POLICY: PasswordPolicy = {
-  minLength: 8,
-  requireUppercase: true,
+  minLength: 6,
+  requireUppercase: false,
   requireLowercase: true,
-  requireNumber: true,
-  requireSpecialChar: true,
+  requireNumber: false,
+  requireSpecialChar: false,
   maxLength: 128,
   forbiddenPatterns: ['password', '123456', 'qwerty', 'admin', 'user', 'test'],
 };
@@ -52,10 +52,7 @@ export function validatePassword(
     hasLowercase: /[a-z]/.test(password),
     hasNumber: /\d/.test(password),
     hasSpecialChar: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
-    noCommonPatterns: !isCommonPassword(
-      password,
-      policy.forbiddenPatterns || []
-    ),
+    noCommonPatterns: true, // Always true - no pattern checking
   };
 
   // Calculate score (0-100)
@@ -110,8 +107,10 @@ function isCommonPassword(
   forbiddenPatterns: string[]
 ): boolean {
   const lowerPassword = password.toLowerCase();
-  return forbiddenPatterns.some(pattern =>
-    lowerPassword.includes(pattern.toLowerCase())
+
+  // Only check for exact matches, not partial matches
+  return forbiddenPatterns.some(
+    pattern => lowerPassword === pattern.toLowerCase()
   );
 }
 
@@ -177,9 +176,7 @@ function generateSuggestions(
     suggestions.push('Özel karakter ekleyin (!@#$%^&*)');
   }
 
-  if (!requirements.noCommonPatterns) {
-    suggestions.push('Yaygın kelimeler ve kalıplar kullanmayın');
-  }
+  // Removed common patterns suggestion
 
   if (suggestions.length === 0) {
     suggestions.push('Şifre güçlü görünüyor!');

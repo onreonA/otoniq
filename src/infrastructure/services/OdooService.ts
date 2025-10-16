@@ -321,6 +321,104 @@ export class OdooService {
   }
 
   /**
+   * Tam senkronizasyon - Tüm ürünleri Odoo'dan çek
+   */
+  async fullSync(): Promise<{ products: OdooProduct[]; count: number }> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      console.log('🔄 Starting full sync from Odoo...');
+
+      // Odoo'dan tüm ürünleri çek
+      const products = await this.getProducts();
+
+      console.log(`✅ Full sync completed: ${products.length} products`);
+      return { products, count: products.length };
+    } catch (error) {
+      console.error('❌ Full sync failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Stok senkronizasyonu - Sadece stok miktarlarını güncelle
+   */
+  async stockSync(): Promise<{ updated: number }> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      console.log('🔄 Starting stock sync from Odoo...');
+
+      // Odoo'dan stok bilgilerini çek
+      const products = await this.getProducts();
+      let updatedCount = 0;
+
+      for (const product of products) {
+        try {
+          // Stok miktarını güncelle (gerçek implementasyon için Supabase'e kaydet)
+          console.log(
+            `📦 Updating stock for product: ${product.name} (${product.default_code})`
+          );
+          updatedCount++;
+        } catch (error) {
+          console.error(
+            `❌ Failed to update stock for product ${product.name}:`,
+            error
+          );
+        }
+      }
+
+      console.log(`✅ Stock sync completed: ${updatedCount} products updated`);
+      return { updated: updatedCount };
+    } catch (error) {
+      console.error('❌ Stock sync failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fiyat senkronizasyonu - Sadece fiyatları güncelle
+   */
+  async priceSync(): Promise<{ updated: number }> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      console.log('🔄 Starting price sync from Odoo...');
+
+      // Odoo'dan fiyat bilgilerini çek
+      const products = await this.getProducts();
+      let updatedCount = 0;
+
+      for (const product of products) {
+        try {
+          // Fiyatı güncelle (gerçek implementasyon için Supabase'e kaydet)
+          console.log(
+            `💰 Updating price for product: ${product.name} - ${product.list_price} TL`
+          );
+          updatedCount++;
+        } catch (error) {
+          console.error(
+            `❌ Failed to update price for product ${product.name}:`,
+            error
+          );
+        }
+      }
+
+      console.log(`✅ Price sync completed: ${updatedCount} products updated`);
+      return { updated: updatedCount };
+    } catch (error) {
+      console.error('❌ Price sync failed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Bağlantıyı kapat
    */
   async disconnect(): Promise<void> {

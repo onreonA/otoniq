@@ -7,8 +7,10 @@ import {
   meetsMinimumRequirements,
 } from '../../../shared/utils/passwordValidation';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function SignUp() {
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -48,11 +50,27 @@ export default function SignUp() {
 
     setIsLoading(true);
 
-    // Simulated registration process
-    setTimeout(() => {
+    try {
+      // Real authentication signup
+      const success = await signup(
+        formData.email,
+        formData.password,
+        `${formData.firstName} ${formData.lastName}`,
+        formData.company
+      );
+
+      if (success) {
+        setCurrentStep(3);
+        toast.success("Kayıt başarılı! Dashboard'a yönlendiriliyorsunuz...");
+      } else {
+        toast.error('Kayıt başarısız. Lütfen tekrar deneyin.');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast.error('Beklenmeyen bir hata oluştu');
+    } finally {
       setIsLoading(false);
-      setCurrentStep(3);
-    }, 2000);
+    }
   };
 
   const handleGeneratePassword = () => {
@@ -243,13 +261,38 @@ export default function SignUp() {
                 <label className='block text-base font-medium text-gray-200 mb-2'>
                   Şifre
                 </label>
-                <PasswordStrengthMeter
-                  password={formData.password}
-                  onChange={setPasswordValidation}
-                  onGeneratePassword={handleGeneratePassword}
-                  showSuggestions={true}
-                  showGenerateButton={true}
-                />
+                <div className='relative'>
+                  <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                    <i className='ri-lock-line text-gray-400'></i>
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name='password'
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className='w-full pl-10 pr-12 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all'
+                    placeholder='••••••••'
+                    required
+                  />
+                  <button
+                    type='button'
+                    onClick={() => setShowPassword(!showPassword)}
+                    className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white cursor-pointer'
+                  >
+                    <i
+                      className={`ri-${showPassword ? 'eye-off' : 'eye'}-line`}
+                    ></i>
+                  </button>
+                </div>
+                <div className='mt-2'>
+                  <PasswordStrengthMeter
+                    password={formData.password}
+                    onChange={setPasswordValidation}
+                    onGeneratePassword={handleGeneratePassword}
+                    showSuggestions={true}
+                    showGenerateButton={true}
+                  />
+                </div>
               </div>
 
               <div>

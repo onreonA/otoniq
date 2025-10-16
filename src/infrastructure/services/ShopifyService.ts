@@ -89,11 +89,49 @@ export interface ShopifyProductsResponse {
 export class ShopifyService {
   private config: ShopifyConfig;
   private baseUrl: string;
+  private isConnected: boolean = false;
+  private httpClient: any;
 
   constructor(config: ShopifyConfig) {
     this.config = config;
     this.config.apiVersion = config.apiVersion || '2023-10';
     this.baseUrl = `https://${config.shop}.myshopify.com/admin/api/${this.config.apiVersion}`;
+
+    // Initialize HTTP client for Supabase Edge Function proxy
+    this.httpClient = {
+      baseURL: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/shopify-proxy`,
+      timeout: 60000, // 60 seconds timeout for Shopify
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+    };
+  }
+
+  /**
+   * Get current user session token for authentication
+   */
+  private async getSessionToken(): Promise<string> {
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      );
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('No active session found');
+      }
+
+      return session.access_token;
+    } catch (error) {
+      console.error('Failed to get session token:', error);
+      throw new Error('Authentication required');
+    }
   }
 
   /**
@@ -104,29 +142,40 @@ export class ShopifyService {
       // Use Supabase Edge Function for real Shopify API calls
       console.log('🚀 Testing Shopify connection via Supabase Edge Function');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/shopify-sync`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+      // Get user session token for authentication
+      const sessionToken = await this.getSessionToken();
+
+      const response = await fetch(this.httpClient.baseURL, {
+        method: 'POST',
+        headers: {
+          ...this.httpClient.headers,
+          Authorization: `Bearer ${sessionToken}`,
+        },
+        body: JSON.stringify({
+          method: 'testConnection',
+          credentials: {
             shop: this.config.shop,
             accessToken: this.config.accessToken,
-            endpoint: 'shop.json',
-            method: 'GET',
-          }),
-        }
-      );
+            apiVersion: this.config.apiVersion,
+          },
+        }),
+      });
 
       if (response.ok) {
-        console.log('✅ Shopify connection successful via Edge Function');
-        return true;
+        const data = await response.json();
+        if (data.success) {
+          console.log('✅ Shopify connection successful:', data.shop.name);
+          this.isConnected = true;
+          return true;
+        } else {
+          console.error('❌ Shopify connection failed:', data.error);
+          this.isConnected = false;
+          return false;
+        }
       } else {
         const errorData = await response.json();
         console.error('❌ Shopify connection failed:', errorData);
+        this.isConnected = false;
         return false;
       }
     } catch (error) {
@@ -143,34 +192,88 @@ export class ShopifyService {
       // Use Supabase Edge Function for real Shopify API calls
       console.log('🚀 Fetching products via Supabase Edge Function');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/shopify-sync`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+      // Get user session token for authentication
+      const sessionToken = await this.getSessionToken();
+
+      const response = await fetch(this.httpClient.baseURL, {
+        method: 'POST',
+        headers: {
+          ...this.httpClient.headers,
+          Authorization: `Bearer ${sessionToken}`,
+        },
+        body: JSON.stringify({
+          method: 'getProducts',
+          credentials: {
             shop: this.config.shop,
             accessToken: this.config.accessToken,
-            endpoint: `products.json?limit=${limit}`,
-            method: 'GET',
-          }),
-        }
-      );
+            apiVersion: this.config.apiVersion,
+          },
+          params: { limit, page: 1 },
+        }),
+      });
 
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          console.log(`📦 Found ${data.products.length} products in Shopify`);
+          return data.products || [];
+        } else {
+          console.error('❌ Failed to fetch products:', data.error);
+          return [];
+        }
+      } else {
         const errorData = await response.json();
         console.error('❌ Error fetching products from Shopify:', errorData);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        return [];
       }
-
-      const data: ShopifyProductsResponse = await response.json();
-      console.log(`📦 Found ${data.products.length} products in Shopify`);
-      return data.products;
     } catch (error) {
       console.error('❌ Error fetching products from Shopify:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Tam senkronizasyon - Tüm ürünleri Shopify'dan çek ve database'e kaydet
+   */
+  async fullSync(): Promise<{ products: ShopifyProduct[]; count: number }> {
+    try {
+      console.log('🔄 Starting full sync from Shopify...');
+
+      // Get user session token for authentication
+      const sessionToken = await this.getSessionToken();
+
+      const response = await fetch(this.httpClient.baseURL, {
+        method: 'POST',
+        headers: {
+          ...this.httpClient.headers,
+          Authorization: `Bearer ${sessionToken}`,
+        },
+        body: JSON.stringify({
+          method: 'syncProducts',
+          credentials: {
+            shop: this.config.shop,
+            accessToken: this.config.accessToken,
+            apiVersion: this.config.apiVersion,
+          },
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          console.log(`✅ Full sync completed: ${data.synced} products synced`);
+          return { products: data.products || [], count: data.synced };
+        } else {
+          console.error('❌ Full sync failed:', data.error);
+          throw new Error(data.error);
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('❌ Full sync failed:', errorData);
+        throw new Error(errorData.error || 'Sync failed');
+      }
+    } catch (error) {
+      console.error('❌ Full sync error:', error);
       throw error;
     }
   }
