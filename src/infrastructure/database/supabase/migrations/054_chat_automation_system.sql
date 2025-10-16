@@ -46,10 +46,7 @@ CREATE TABLE IF NOT EXISTS public.chat_conversations (
   
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  -- Unique constraint per tenant per platform per customer
-  UNIQUE(tenant_id, platform, customer_phone)
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes
@@ -58,6 +55,10 @@ CREATE INDEX idx_chat_conversations_status ON public.chat_conversations(status) 
 CREATE INDEX idx_chat_conversations_assigned_agent ON public.chat_conversations(assigned_agent_id) WHERE assigned_agent_id IS NOT NULL;
 CREATE INDEX idx_chat_conversations_last_message ON public.chat_conversations(last_message_at DESC NULLS LAST);
 CREATE INDEX idx_chat_conversations_unread ON public.chat_conversations(unread_count) WHERE unread_count > 0;
+
+-- Unique constraint: one conversation per tenant per platform per customer
+CREATE UNIQUE INDEX unique_conversation_per_customer 
+  ON public.chat_conversations(tenant_id, platform, customer_phone);
 
 COMMENT ON TABLE public.chat_conversations IS 'WhatsApp and Telegram conversations';
 COMMENT ON COLUMN public.chat_conversations.sentiment_score IS 'AI-calculated sentiment score from 0 (negative) to 1 (positive)';
@@ -336,14 +337,16 @@ CREATE TABLE IF NOT EXISTS public.chat_stats_daily (
   avg_conversations_per_agent DECIMAL(5, 2),
   
   -- Timestamps
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  UNIQUE(tenant_id, stat_date, platform)
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes
 CREATE INDEX idx_chat_stats_date ON public.chat_stats_daily(stat_date DESC);
 CREATE INDEX idx_chat_stats_tenant_platform ON public.chat_stats_daily(tenant_id, platform, stat_date DESC);
+
+-- Unique constraint: one stat record per tenant per date per platform
+CREATE UNIQUE INDEX unique_chat_stats_per_day 
+  ON public.chat_stats_daily(tenant_id, stat_date, platform);
 
 COMMENT ON TABLE public.chat_stats_daily IS 'Daily aggregated chat automation statistics';
 
