@@ -365,87 +365,105 @@ const OdooIntegrationPage = () => {
       const result = await odooService.fullSync();
       console.log('✅ Full sync result:', result);
 
-      // Products'ı Supabase'e kaydet
+      // Transform products
+      const transformedProducts = result.products.map((product: any) => ({
+        tenant_id: userProfile.tenant_id,
+        name: product.name,
+        sku: product.default_code || `ODOO-${product.id}`,
+        barcode: product.barcode || null,
+        vendor: null,
+        description: product.description || product.description_sale || '',
+        price: product.list_price,
+        compare_at_price: null,
+        cost: product.standard_price,
+        categories: Array.isArray(product.categ_id)
+          ? [product.categ_id[1]]
+          : ['Uncategorized'],
+        status: product.active ? 'active' : 'inactive',
+        published_at: product.create_date ? new Date(product.create_date) : null,
+        weight: product.weight || null,
+        volume: product.volume || null,
+        requires_shipping: product.type !== 'service',
+        is_taxable: true,
+        sale_ok: product.sale_ok !== false,
+        purchase_ok: product.purchase_ok !== false,
+        inventory_policy: 'continue',
+        metadata: {
+          odoo_id: product.id,
+          odoo_data: product,
+          source: 'odoo',
+          synced_at: new Date().toISOString(),
+        },
+        updated_at: new Date().toISOString(),
+      }));
+
+      // Split products: with barcode vs without barcode
+      const productsWithBarcode = transformedProducts.filter(p => p.barcode);
+      const productsWithoutBarcode = transformedProducts.filter(p => !p.barcode);
+
       let successCount = 0;
       let failCount = 0;
 
-      for (const product of result.products) {
+      // Upsert products with barcode (use barcode as conflict key)
+      if (productsWithBarcode.length > 0) {
+        const { error: barcodeError } = await supabaseClient
+          .from('products')
+          .upsert(productsWithBarcode, { onConflict: 'tenant_id,barcode' });
+
+        if (barcodeError) {
+          console.error('Error upserting products with barcode:', barcodeError);
+          failCount += productsWithBarcode.length;
+        } else {
+          successCount += productsWithBarcode.length;
+        }
+      }
+
+      // Upsert products without barcode (use SKU as fallback)
+      if (productsWithoutBarcode.length > 0) {
+        const { error: skuError } = await supabaseClient
+          .from('products')
+          .upsert(productsWithoutBarcode, { onConflict: 'tenant_id,sku' });
+
+        if (skuError) {
+          console.error('Error upserting products without barcode:', skuError);
+          failCount += productsWithoutBarcode.length;
+        } else {
+          successCount += productsWithoutBarcode.length;
+        }
+      }
+
+      // Create platform mappings for products with barcode
+      for (const product of result.products.filter((p: any) => p.barcode)) {
         try {
-          const { error } = await supabaseClient.from('products').upsert(
+          await supabaseClient.from('product_platform_mappings').upsert(
             {
               tenant_id: userProfile.tenant_id,
-              name: product.name,
-              sku: product.default_code || `ODOO-${product.id}`,
-              barcode: product.barcode || null, // NEW: Barcode for cross-platform sync
-              vendor: null, // NEW: Will be filled from metadata if available
-              description: product.description || product.description_sale || '',
-              price: product.list_price,
-              compare_at_price: null, // NEW: Odoo doesn't have compare_at_price
-              cost: product.standard_price,
-              categories: Array.isArray(product.categ_id)
-                ? [product.categ_id[1]]
-                : ['Uncategorized'],
-              status: product.active ? 'active' : 'inactive',
-              published_at: product.create_date ? new Date(product.create_date) : null, // NEW: Published date
-              weight: product.weight || null, // NEW: Weight
-              volume: product.volume || null, // NEW: Volume
-              requires_shipping: product.type !== 'service', // NEW: Services don't require shipping
-              is_taxable: true, // NEW: Assume taxable by default
-              sale_ok: product.sale_ok !== false, // NEW: Can be sold
-              purchase_ok: product.purchase_ok !== false, // NEW: Can be purchased
-              inventory_policy: 'continue', // NEW: Default inventory policy
-              metadata: {
+              product_id: null,
+              platform: 'odoo',
+              external_id: product.id.toString(),
+              external_data: {
                 odoo_id: product.id,
                 odoo_data: product,
                 source: 'odoo',
                 synced_at: new Date().toISOString(),
               },
-              updated_at: new Date().toISOString(),
+              sync_status: 'active',
+              platform_stock_quantity: null,
+              platform_price: product.list_price,
+              platform_status: product.active ? 'active' : 'inactive',
+              external_created_at: product.create_date
+                ? new Date(product.create_date)
+                : null,
+              external_updated_at: product.write_date
+                ? new Date(product.write_date)
+                : null,
             },
             {
-              onConflict: 'tenant_id,barcode', // Use barcode as primary key for cross-platform sync
+              onConflict: 'tenant_id,platform,external_id',
             }
           );
-
-          if (error) {
-            console.error('Failed to save product:', product.name, error);
-            failCount++;
-          } else {
-            successCount++;
-            
-            // Create platform mapping if barcode exists
-            if (product.barcode) {
-              try {
-                await supabaseClient
-                  .from('product_platform_mappings')
-                  .upsert({
-                    tenant_id: userProfile.tenant_id,
-                    product_id: null, // Will be filled by trigger or lookup
-                    platform: 'odoo',
-                    external_id: product.id.toString(),
-                    external_data: {
-                      odoo_id: product.id,
-                      odoo_data: product,
-                      source: 'odoo',
-                      synced_at: new Date().toISOString(),
-                    },
-                    sync_status: 'active',
-                    platform_stock_quantity: null, // Will be filled from stock_levels
-                    platform_price: product.list_price,
-                    platform_status: product.active ? 'active' : 'inactive',
-                    external_created_at: product.create_date ? new Date(product.create_date) : null,
-                    external_updated_at: product.write_date ? new Date(product.write_date) : null,
-                  }, {
-                    onConflict: 'tenant_id,platform,external_id'
-                  });
-              } catch (mappingError) {
-                console.error('Failed to create platform mapping:', mappingError);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Failed to save product:', product.name, error);
-          failCount++;
+        } catch (mappingError) {
+          console.error('Failed to create platform mapping:', mappingError);
         }
       }
 
