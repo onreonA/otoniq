@@ -255,7 +255,7 @@ async function syncProductsToDatabase(
     // Transform Shopify products to Otoniq format with new fields
     const transformedProducts = products.map((product: any) => {
       const primaryVariant = product.variants?.[0];
-      
+
       return {
         name: product.title,
         description: product.body_html || '',
@@ -272,14 +272,17 @@ async function syncProductsToDatabase(
           ? product.tags.split(',').map((t: string) => t.trim())
           : [],
         status: product.status === 'active' ? 'active' : 'inactive',
-        published_at: product.published_at ? new Date(product.published_at) : null, // NEW: Published date
+        published_at: product.published_at
+          ? new Date(product.published_at)
+          : null, // NEW: Published date
         weight: primaryVariant?.grams ? primaryVariant.grams / 1000 : null, // Convert grams to kg
         volume: null, // NEW: Will be calculated if needed
         requires_shipping: primaryVariant?.requires_shipping !== false, // NEW: Shipping required
         is_taxable: primaryVariant?.taxable !== false, // NEW: Taxable
         sale_ok: product.status === 'active', // NEW: Can be sold
         purchase_ok: true, // NEW: Can be purchased
-        inventory_policy: primaryVariant?.inventory_policy === 'deny' ? 'deny' : 'continue', // NEW: Inventory policy
+        inventory_policy:
+          primaryVariant?.inventory_policy === 'deny' ? 'deny' : 'continue', // NEW: Inventory policy
         metadata: {
           shopify_id: product.id,
           shopify_handle: product.handle,
@@ -313,13 +316,15 @@ async function syncProductsToDatabase(
 
     // Upsert products with barcode
     if (productsWithBarcode.length > 0) {
-      const { error: barcodeError } = await supabaseClient.from('products').upsert(
-        productsWithBarcode.map(product => ({
-          ...product,
-          tenant_id: profile.tenant_id,
-        })),
-        { onConflict: 'tenant_id,barcode' }
-      );
+      const { error: barcodeError } = await supabaseClient
+        .from('products')
+        .upsert(
+          productsWithBarcode.map(product => ({
+            ...product,
+            tenant_id: profile.tenant_id,
+          })),
+          { onConflict: 'tenant_id,barcode' }
+        );
 
       if (barcodeError) {
         console.error('Error upserting products with barcode:', barcodeError);
@@ -344,25 +349,33 @@ async function syncProductsToDatabase(
     }
 
     // Create platform mappings for each product
-    const mappingPromises = transformedProducts.map(async (product) => {
+    const mappingPromises = transformedProducts.map(async product => {
       if (product.barcode) {
         const { error: mappingError } = await supabaseClient
           .from('product_platform_mappings')
-          .upsert({
-            tenant_id: profile.tenant_id,
-            product_id: null, // Will be filled by trigger or lookup
-            platform: 'shopify',
-            external_id: product.metadata.shopify_id.toString(),
-            external_data: product.metadata,
-            sync_status: 'active',
-            platform_stock_quantity: product.metadata.variants?.[0]?.inventory_quantity || 0,
-            platform_price: product.price,
-            platform_status: product.status,
-            external_created_at: product.metadata.shopify_created_at ? new Date(product.metadata.shopify_created_at) : null,
-            external_updated_at: product.metadata.shopify_updated_at ? new Date(product.metadata.shopify_updated_at) : null,
-          }, {
-            onConflict: 'tenant_id,platform,external_id'
-          });
+          .upsert(
+            {
+              tenant_id: profile.tenant_id,
+              product_id: null, // Will be filled by trigger or lookup
+              platform: 'shopify',
+              external_id: product.metadata.shopify_id.toString(),
+              external_data: product.metadata,
+              sync_status: 'active',
+              platform_stock_quantity:
+                product.metadata.variants?.[0]?.inventory_quantity || 0,
+              platform_price: product.price,
+              platform_status: product.status,
+              external_created_at: product.metadata.shopify_created_at
+                ? new Date(product.metadata.shopify_created_at)
+                : null,
+              external_updated_at: product.metadata.shopify_updated_at
+                ? new Date(product.metadata.shopify_updated_at)
+                : null,
+            },
+            {
+              onConflict: 'tenant_id,platform,external_id',
+            }
+          );
 
         if (mappingError) {
           console.error('Failed to create platform mapping:', mappingError);

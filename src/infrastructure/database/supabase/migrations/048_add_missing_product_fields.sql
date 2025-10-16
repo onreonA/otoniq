@@ -60,9 +60,9 @@ CREATE INDEX IF NOT EXISTS idx_products_sale_ok
   ON public.products(sale_ok);
 
 -- 7. UNIQUE CONSTRAINT ON BARCODE (per tenant)
+-- Note: Cannot use WHERE clause with ON CONFLICT in PostgreSQL
 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_barcode 
-  ON public.products(tenant_id, barcode)
-  WHERE barcode IS NOT NULL AND barcode != '';
+  ON public.products(tenant_id, barcode);
 
 -- 8. COMMENTS
 COMMENT ON COLUMN public.products.barcode IS 'Universal barcode - primary key for multi-platform sync';
