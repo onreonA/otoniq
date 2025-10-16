@@ -306,17 +306,41 @@ async function syncProductsToDatabase(
       throw new Error('User tenant not found');
     }
 
-    // Upsert products to database with barcode conflict resolution
-    const { error: upsertError } = await supabaseClient.from('products').upsert(
-      transformedProducts.map(product => ({
-        ...product,
-        tenant_id: profile.tenant_id,
-      })),
-      { onConflict: 'tenant_id,barcode' } // Use barcode as primary key for cross-platform sync
-    );
+    // Upsert products to database
+    // If barcode exists, use it as conflict key; otherwise use SKU
+    const productsWithBarcode = transformedProducts.filter(p => p.barcode);
+    const productsWithoutBarcode = transformedProducts.filter(p => !p.barcode);
 
-    if (upsertError) {
-      throw new Error(`Database error: ${upsertError.message}`);
+    // Upsert products with barcode
+    if (productsWithBarcode.length > 0) {
+      const { error: barcodeError } = await supabaseClient.from('products').upsert(
+        productsWithBarcode.map(product => ({
+          ...product,
+          tenant_id: profile.tenant_id,
+        })),
+        { onConflict: 'tenant_id,barcode' }
+      );
+
+      if (barcodeError) {
+        console.error('Error upserting products with barcode:', barcodeError);
+        throw new Error(`Database error (barcode): ${barcodeError.message}`);
+      }
+    }
+
+    // Upsert products without barcode (use SKU as fallback)
+    if (productsWithoutBarcode.length > 0) {
+      const { error: skuError } = await supabaseClient.from('products').upsert(
+        productsWithoutBarcode.map(product => ({
+          ...product,
+          tenant_id: profile.tenant_id,
+        })),
+        { onConflict: 'tenant_id,sku' }
+      );
+
+      if (skuError) {
+        console.error('Error upserting products without barcode:', skuError);
+        throw new Error(`Database error (sku): ${skuError.message}`);
+      }
     }
 
     // Create platform mappings for each product
