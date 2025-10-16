@@ -11,6 +11,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { OpenAIService } from './OpenAIService';
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -225,72 +226,127 @@ export class FeedDoctorService {
     const issues: AnalysisIssue[] = [];
     const suggestions: AnalysisSuggestion[] = [];
 
-    // Analyze title
-    const titleAnalysis = this.analyzeTitle(product.name || '', rules);
-    issues.push(...titleAnalysis.issues);
-    suggestions.push(...titleAnalysis.suggestions);
+    // Use OpenAI for intelligent analysis if available
+    let aiAnalysis = null;
+    if (OpenAIService.isConfigured()) {
+      try {
+        aiAnalysis = await OpenAIService.analyzeProduct({
+          productName: product.name || '',
+          description: product.description || '',
+          category: product.category_id,
+          price: product.price,
+          images: product.images || [],
+          currentTags: product.tags || [],
+        });
 
-    // Analyze description
-    const descAnalysis = this.analyzeDescription(
-      product.description || '',
-      rules
-    );
-    issues.push(...descAnalysis.issues);
-    suggestions.push(...descAnalysis.suggestions);
+        // Convert AI issues to our format
+        aiAnalysis.issues.forEach(issue => {
+          issues.push({
+            type: issue.category,
+            severity: issue.severity as 'info' | 'warning' | 'error' | 'critical',
+            message: issue.message,
+            field: issue.category,
+          });
+          suggestions.push({
+            type: issue.category,
+            message: issue.suggestion,
+            autoFixable: false,
+          });
+        });
+      } catch (error) {
+        console.error('AI analysis failed, falling back to rule-based:', error);
+      }
+    }
 
-    // Analyze images
-    const imageAnalysis = this.analyzeImages(product.images || [], rules);
-    issues.push(...imageAnalysis.issues);
-    suggestions.push(...imageAnalysis.suggestions);
+    // Fallback to rule-based analysis or combine with AI
+    if (!aiAnalysis) {
+      // Analyze title
+      const titleAnalysis = this.analyzeTitle(product.name || '', rules);
+      issues.push(...titleAnalysis.issues);
+      suggestions.push(...titleAnalysis.suggestions);
 
-    // Analyze category
-    const categoryAnalysis = this.analyzeCategory(product.category_id, rules);
-    issues.push(...categoryAnalysis.issues);
-    suggestions.push(...categoryAnalysis.suggestions);
+      // Analyze description
+      const descAnalysis = this.analyzeDescription(
+        product.description || '',
+        rules
+      );
+      issues.push(...descAnalysis.issues);
+      suggestions.push(...descAnalysis.suggestions);
 
-    // Analyze price
-    const priceAnalysis = this.analyzePrice(product.price, rules);
-    issues.push(...priceAnalysis.issues);
-    suggestions.push(...priceAnalysis.suggestions);
+      // Analyze images
+      const imageAnalysis = this.analyzeImages(product.images || [], rules);
+      issues.push(...imageAnalysis.issues);
+      suggestions.push(...imageAnalysis.suggestions);
 
-    // Calculate overall score
-    const overallScore = Math.round(
-      (titleAnalysis.score +
-        descAnalysis.score +
-        imageAnalysis.score +
-        categoryAnalysis.score +
-        priceAnalysis.score) /
-        5
-    );
+      // Analyze category
+      const categoryAnalysis = this.analyzeCategory(product.category_id, rules);
+      issues.push(...categoryAnalysis.issues);
+      suggestions.push(...categoryAnalysis.suggestions);
 
-    // Generate optimizations
-    const optimizedTitle = this.generateOptimizedTitle(product.name || '');
-    const optimizedDescription = this.generateOptimizedDescription(
-      product.description || ''
-    );
-    const optimizedKeywords = this.extractKeywords(
-      product.name || '' + ' ' + (product.description || '')
-    );
+      // Analyze price
+      const priceAnalysis = this.analyzePrice(product.price, rules);
+      issues.push(...priceAnalysis.issues);
+      suggestions.push(...priceAnalysis.suggestions);
 
+      // Calculate overall score
+      const overallScore = Math.round(
+        (titleAnalysis.score +
+          descAnalysis.score +
+          imageAnalysis.score +
+          categoryAnalysis.score +
+          priceAnalysis.score) /
+          5
+      );
+
+      return {
+        tenantId: product.tenant_id,
+        productId: product.id,
+        overallScore,
+        titleScore: titleAnalysis.score,
+        descriptionScore: descAnalysis.score,
+        imageScore: imageAnalysis.score,
+        categoryScore: categoryAnalysis.score,
+        priceScore: priceAnalysis.score,
+        analysisData: {
+          productName: product.name,
+          analyzedFields: ['title', 'description', 'images', 'category', 'price'],
+          rulesApplied: rules.length,
+        },
+        issues,
+        suggestions,
+        optimizedTitle: this.generateOptimizedTitle(product.name || ''),
+        optimizedDescription: this.generateOptimizedDescription(
+          product.description || ''
+        ),
+        optimizedKeywords: this.extractKeywords(
+          product.name || '' + ' ' + (product.description || '')
+        ),
+        status: 'completed',
+      };
+    }
+
+    // Use AI analysis results
     return {
       tenantId: product.tenant_id,
       productId: product.id,
-      overallScore,
-      titleScore: titleAnalysis.score,
-      descriptionScore: descAnalysis.score,
-      imageScore: imageAnalysis.score,
-      categoryScore: categoryAnalysis.score,
-      priceScore: priceAnalysis.score,
+      overallScore: aiAnalysis.score,
+      titleScore: aiAnalysis.seoScore.titleScore,
+      descriptionScore: aiAnalysis.seoScore.descriptionScore,
+      imageScore: product.images?.length >= 3 ? 85 : 50,
+      categoryScore: product.category_id ? 90 : 40,
+      priceScore: product.price ? 80 : 30,
       analysisData: {
         productName: product.name,
         analyzedFields: ['title', 'description', 'images', 'category', 'price'],
         rulesApplied: rules.length,
+        aiPowered: true,
+        marketInsights: aiAnalysis.marketInsights,
       },
       issues,
       suggestions,
-      optimizedTitle,
-      optimizedDescription,
-      optimizedKeywords,
+      optimizedTitle: aiAnalysis.optimizations.suggestedTitle,
+      optimizedDescription: aiAnalysis.optimizations.suggestedDescription,
+      optimizedKeywords: aiAnalysis.optimizations.suggestedKeywords || [],
       status: 'completed',
     };
   }

@@ -1,0 +1,148 @@
+{
+  "name": "Feed Doctor Auto Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */12 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Sync Every 12 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/products",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "qs": {
+            "select": "id,tenant_id,name,description,price,category_id,images,tags",
+            "limit": "50"
+          }
+        }
+      },
+      "name": "Get Products",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "name": "Split into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_APP_URL}}/api/feed-doctor/analyze",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tenantId",
+              "value": "={{$json.tenant_id}}"
+            },
+            {
+              "name": "productId",
+              "value": "={{$json.id}}"
+            }
+          ]
+        }
+      },
+      "name": "Analyze Product",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/feed_analysis",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tenant_id",
+              "value": "={{$json.tenant_id}}"
+            },
+            {
+              "name": "product_id",
+              "value": "={{$json.product_id}}"
+            },
+            {
+              "name": "overall_score",
+              "value": "={{$json.score}}"
+            },
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "analyzed_at",
+              "value": "={{new Date().toISOString()}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "name": "Save Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "name": "Wait 2s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Sync Every 12 Hours": {
+      "main": [[{"node": "Get Products", "type": "main", "index": 0}]]
+    },
+    "Get Products": {
+      "main": [[{"node": "Split into Batches", "type": "main", "index": 0}]]
+    },
+    "Split into Batches": {
+      "main": [
+        [{"node": "Analyze Product", "type": "main", "index": 0}]
+      ]
+    },
+    "Analyze Product": {
+      "main": [[{"node": "Save Analysis", "type": "main", "index": 0}]]
+    },
+    "Save Analysis": {
+      "main": [[{"node": "Wait 2s", "type": "main", "index": 0}]]
+    },
+    "Wait 2s": {
+      "main": [[{"node": "Split into Batches", "type": "main", "index": 0}]]
+    }
+  }
+}
+
