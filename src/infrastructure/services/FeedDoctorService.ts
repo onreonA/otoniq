@@ -578,16 +578,20 @@ export class FeedDoctorService {
   static async getAnalysisStats(tenantId: string): Promise<AnalysisStats> {
     try {
       // Total products
-      const { count: totalProducts } = await supabase
+      const { count: totalProducts, error: countError } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', tenantId);
 
+      if (countError) throw countError;
+
       // Analyzed products
-      const { data: analyses } = await supabase
+      const { data: analyses, error: analysesError } = await supabase
         .from('feed_analysis')
         .select('overall_score, status')
         .eq('tenant_id', tenantId);
+
+      if (analysesError) throw analysesError;
 
       const analyzedCount = analyses?.length || 0;
       const averageScore =

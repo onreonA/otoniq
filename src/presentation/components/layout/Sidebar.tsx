@@ -35,6 +35,8 @@ import {
   Server,
   Building,
   Bell,
+  Share2,
+  Mail,
 } from 'lucide-react';
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { useUIStore } from '../../store/ui/uiStore';
@@ -75,6 +77,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Glasses,
   Activity,
   Bell,
+  Share2,
+  Mail,
 };
 
 /**

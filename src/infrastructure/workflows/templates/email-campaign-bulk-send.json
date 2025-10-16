@@ -1,0 +1,162 @@
+{
+  "name": "Bulk Email Campaign",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "email-campaign-trigger",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "email-campaign-bulk"
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/email_campaigns",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "qs": {
+            "id": "eq.{{$json.campaign_id}}"
+          }
+        }
+      },
+      "name": "Get Campaign Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/email_recipients",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "qs": {
+            "campaign_id": "eq.{{$json.campaign_id}}",
+            "status": "eq.pending"
+          }
+        }
+      },
+      "name": "Get Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 100,
+        "options": {}
+      },
+      "name": "Split Recipients into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "operation": "sendEmail",
+        "fromEmail": "={{$node['Get Campaign Details'].json[0].from_email}}",
+        "toEmail": "={{$json.email}}",
+        "subject": "={{$node['Get Campaign Details'].json[0].subject_line}}",
+        "message": "={{$node['Get Campaign Details'].json[0].html_content}}",
+        "options": {
+          "replyTo": "={{$node['Get Campaign Details'].json[0].reply_to_email}}",
+          "html": true
+        }
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/email_recipients",
+        "method": "PATCH",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "sent"
+            },
+            {
+              "name": "sent_at",
+              "value": "={{new Date().toISOString()}}"
+            }
+          ]
+        },
+        "options": {
+          "qs": {
+            "id": "eq.{{$json.id}}"
+          }
+        }
+      },
+      "name": "Update Recipient Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/email_campaigns",
+        "method": "PATCH",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "sent"
+            },
+            {
+              "name": "sent_at",
+              "value": "={{new Date().toISOString()}}"
+            },
+            {
+              "name": "sent_count",
+              "value": "={{$node['Get Recipients'].json.length}}"
+            }
+          ]
+        },
+        "options": {
+          "qs": {
+            "id": "eq.{{$json.campaign_id}}"
+          }
+        }
+      },
+      "name": "Update Campaign Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{"node": "Get Campaign Details", "type": "main", "index": 0}]]
+    },
+    "Get Campaign Details": {
+      "main": [[{"node": "Get Recipients", "type": "main", "index": 0}]]
+    },
+    "Get Recipients": {
+      "main": [[{"node": "Split Recipients into Batches", "type": "main", "index": 0}]]
+    },
+    "Split Recipients into Batches": {
+      "main": [
+        [{"node": "Send Email", "type": "main", "index": 0}],
+        [{"node": "Update Campaign Status", "type": "main", "index": 0}]
+      ]
+    },
+    "Send Email": {
+      "main": [[{"node": "Update Recipient Status", "type": "main", "index": 0}]]
+    },
+    "Update Recipient Status": {
+      "main": [[{"node": "Split Recipients into Batches", "type": "main", "index": 0}]]
+    }
+  }
+}
+

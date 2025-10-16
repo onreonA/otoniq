@@ -202,6 +202,20 @@ export const superAdminMenuConfig: MenuGroup[] = [
         badge: 'new',
       },
       {
+        id: 'social-media',
+        label: 'Sosyal Medya',
+        icon: 'Share2',
+        path: '/social-media',
+        badge: 'new',
+      },
+      {
+        id: 'email-campaigns',
+        label: 'E-posta Kampanyaları',
+        icon: 'Mail',
+        path: '/email-campaigns',
+        badge: 'new',
+      },
+      {
         id: 'chat-automation',
         label: 'Chat Otomasyonu',
         icon: 'MessageSquare',
@@ -439,6 +453,20 @@ export const tenantMenuConfig: MenuGroup[] = [
         label: 'Görsel Otomasyon',
         icon: 'Image',
         path: '/creative',
+        badge: 'new',
+      },
+      {
+        id: 'social-media-tenant',
+        label: 'Sosyal Medya',
+        icon: 'Share2',
+        path: '/social-media',
+        badge: 'new',
+      },
+      {
+        id: 'email-campaigns-tenant',
+        label: 'E-posta Kampanyaları',
+        icon: 'Mail',
+        path: '/email-campaigns',
         badge: 'new',
       },
       {

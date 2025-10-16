@@ -1,0 +1,115 @@
+{
+  "name": "Instagram Auto-Post",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10,14,18 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Posts (10 AM, 2 PM, 6 PM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/social_media_posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "qs": {
+            "status": "eq.scheduled",
+            "platform": "eq.instagram",
+            "scheduled_at": "lte.{{new Date().toISOString()}}"
+          }
+        }
+      },
+      "name": "Get Scheduled Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.length}}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "Has Posts to Publish",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "caption": "={{$json.caption}}",
+        "imageUrl": "={{$json.media_urls[0]}}"
+      },
+      "name": "Post to Instagram",
+      "type": "n8n-nodes-base.instagram",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/social_media_posts",
+        "method": "PATCH",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "published"
+            },
+            {
+              "name": "published_at",
+              "value": "={{new Date().toISOString()}}"
+            },
+            {
+              "name": "platform_post_id",
+              "value": "={{$json.id}}"
+            }
+          ]
+        },
+        "options": {
+          "qs": {
+            "id": "eq.{{$node['Get Scheduled Posts'].json.id}}"
+          }
+        }
+      },
+      "name": "Update Post Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Posts (10 AM, 2 PM, 6 PM)": {
+      "main": [[{"node": "Get Scheduled Posts", "type": "main", "index": 0}]]
+    },
+    "Get Scheduled Posts": {
+      "main": [[{"node": "Has Posts to Publish", "type": "main", "index": 0}]]
+    },
+    "Has Posts to Publish": {
+      "main": [[{"node": "Post to Instagram", "type": "main", "index": 0}]]
+    },
+    "Post to Instagram": {
+      "main": [[{"node": "Update Post Status", "type": "main", "index": 0}]]
+    }
+  }
+}
+

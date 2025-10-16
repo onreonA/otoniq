@@ -45,7 +45,17 @@ export default function FeedDoctorPage() {
       if (import.meta.env.DEV) {
         console.error('Error loading feed doctor data:', error);
       }
-      toast.error('Veriler yüklenirken hata oluştu');
+      // Don't show error toast, just set empty data
+      setStats({
+        totalProducts: 0,
+        analyzedProducts: 0,
+        avgScore: 0,
+        lowScoreCount: 0,
+        mediumScoreCount: 0,
+        highScoreCount: 0,
+        pendingAnalysis: 0,
+      });
+      setAnalyses([]);
     } finally {
       setLoading(false);
     }

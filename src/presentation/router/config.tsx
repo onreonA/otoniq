@@ -53,6 +53,11 @@ const NotificationsPage = lazy(() => import('../pages/notifications/page'));
 const NotificationSettingsPage = lazy(
   () => import('../pages/settings/notifications/page')
 );
+const AuditLogsPage = lazy(() => import('../pages/settings/audit-logs/page'));
+const SocialMediaPage = lazy(() => import('../pages/social-media/page'));
+const EmailCampaignsPage = lazy(
+  () => import('../pages/email-campaigns/page')
+);
 const PitchDeckPage = lazy(() => import('../pages/pitch-deck/page'));
 const OnePagerPage = lazy(() => import('../pages/one-pager/page'));
 const SalesToolkitPage = lazy(() => import('../pages/sales-toolkit/page'));
@@ -180,6 +185,14 @@ const routes: RouteObject[] = [
         element: <FeedDoctorPage />,
       },
       {
+        path: '/social-media',
+        element: <SocialMediaPage />,
+      },
+      {
+        path: '/email-campaigns',
+        element: <EmailCampaignsPage />,
+      },
+      {
         path: '/automation/outputs',
         element: <AutomationOutputsPage />,
       },
@@ -206,6 +219,10 @@ const routes: RouteObject[] = [
       {
         path: '/settings/security',
         element: <SecuritySettingsPage />,
+      },
+      {
+        path: '/settings/audit-logs',
+        element: <AuditLogsPage />,
       },
       {
         path: '/notifications',

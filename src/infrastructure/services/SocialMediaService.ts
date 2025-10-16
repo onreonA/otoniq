@@ -1,8 +1,3 @@
-/**
- * SocialMediaService
- * Service for managing social media accounts, posts, and automation
- */
-
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -11,385 +6,336 @@ const supabase = createClient(
 );
 
 export interface SocialMediaAccount {
-  id?: string;
-  tenantId: string;
-  platform:
-    | 'instagram'
-    | 'facebook'
-    | 'twitter'
-    | 'linkedin'
-    | 'tiktok'
-    | 'youtube';
-  accountName: string;
-  accountHandle: string;
-  accessToken?: string;
-  refreshToken?: string;
-  tokenExpiresAt?: string;
-  accountMetadata?: any;
-  isActive?: boolean;
-  createdBy?: string;
+  id: string;
+  tenant_id: string;
+  platform: 'instagram' | 'facebook' | 'twitter' | 'linkedin' | 'tiktok' | 'youtube';
+  account_name: string;
+  account_username: string;
+  account_id: string;
+  access_token: string;
+  refresh_token?: string;
+  token_expires_at?: string;
+  is_connected: boolean;
+  profile_picture_url?: string;
+  followers_count?: number;
+  following_count?: number;
+  posts_count?: number;
+  last_synced_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SocialMediaPost {
-  id?: string;
-  tenantId: string;
-  accountId: string;
-  productId?: string;
-  workflowId?: string;
-  postType: 'image' | 'video' | 'carousel' | 'story' | 'reel' | 'text';
+  id: string;
+  tenant_id: string;
+  account_id: string;
+  platform: string;
+  post_type: 'feed' | 'story' | 'reel' | 'video' | 'carousel';
   caption?: string;
-  mediaUrls?: string[];
+  media_urls?: string[];
   hashtags?: string[];
-  scheduledAt?: string;
-  postedAt?: string;
-  status?: 'draft' | 'scheduled' | 'posted' | 'failed' | 'deleted';
-  platformPostId?: string;
-  likesCount?: number;
-  commentsCount?: number;
-  sharesCount?: number;
-  viewsCount?: number;
-  reach?: number;
-  engagementRate?: number;
-  isAiGenerated?: boolean;
-  aiPrompt?: string;
-  errorMessage?: string;
-  metadata?: any;
+  mentions?: string[];
+  scheduled_at?: string;
+  published_at?: string;
+  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  platform_post_id?: string;
+  likes_count?: number;
+  comments_count?: number;
+  shares_count?: number;
+  views_count?: number;
+  engagement_rate?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PostAnalytics {
+  id: string;
+  post_id: string;
+  likes_count: number;
+  comments_count: number;
+  shares_count: number;
+  saves_count: number;
+  views_count: number;
+  reach_count: number;
+  engagement_rate: number;
+  top_countries?: any;
+  top_cities?: any;
+  audience_demographics?: any;
+  tracked_at: string;
+  created_at: string;
 }
 
 export class SocialMediaService {
   /**
-   * Create social media account
+   * Get all social media accounts for a tenant
    */
-  static async createAccount(account: SocialMediaAccount): Promise<string> {
-    try {
-      const { data, error } = await supabase
-        .from('social_media_accounts')
-        .insert({
-          tenant_id: account.tenantId,
-          platform: account.platform,
-          account_name: account.accountName,
-          account_handle: account.accountHandle,
-          access_token: account.accessToken,
-          refresh_token: account.refreshToken,
-          token_expires_at: account.tokenExpiresAt,
-          account_metadata: account.accountMetadata,
-          is_active: account.isActive ?? true,
-          created_by: account.createdBy,
-        })
-        .select('id')
-        .single();
-
-      if (error) {
-        throw new Error(
-          `Failed to create social media account: ${error.message}`
-        );
-      }
-
-      return data.id;
-    } catch (error) {
-      console.error('Error creating social media account:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get tenant's social media accounts
-   */
-  static async getTenantAccounts(
-    tenantId: string
-  ): Promise<SocialMediaAccount[]> {
+  static async getAccounts(tenantId: string): Promise<SocialMediaAccount[]> {
     try {
       const { data, error } = await supabase
         .from('social_media_accounts')
         .select('*')
         .eq('tenant_id', tenantId)
-        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw new Error(
-          `Failed to get social media accounts: ${error.message}`
-        );
-      }
-
-      return data.map(row => this.mapAccountFromDb(row));
+      if (error) throw error;
+      return data || [];
     } catch (error) {
-      console.error('Error getting social media accounts:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Update social media account
-   */
-  static async updateAccount(
-    accountId: string,
-    updates: Partial<SocialMediaAccount>
-  ): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('social_media_accounts')
-        .update({
-          account_name: updates.accountName,
-          account_handle: updates.accountHandle,
-          access_token: updates.accessToken,
-          refresh_token: updates.refreshToken,
-          token_expires_at: updates.tokenExpiresAt,
-          account_metadata: updates.accountMetadata,
-          is_active: updates.isActive,
-        })
-        .eq('id', accountId);
-
-      if (error) {
-        throw new Error(`Failed to update account: ${error.message}`);
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error updating account:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Delete social media account
-   */
-  static async deleteAccount(accountId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from('social_media_accounts')
-        .delete()
-        .eq('id', accountId);
-
-      if (error) {
-        throw new Error(`Failed to delete account: ${error.message}`);
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Error deleting account:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Create social media post
-   */
-  static async createPost(post: SocialMediaPost): Promise<string> {
-    try {
-      const { data, error } = await supabase
-        .from('social_media_posts')
-        .insert({
-          tenant_id: post.tenantId,
-          account_id: post.accountId,
-          product_id: post.productId,
-          workflow_id: post.workflowId,
-          post_type: post.postType,
-          caption: post.caption,
-          media_urls: post.mediaUrls,
-          hashtags: post.hashtags,
-          scheduled_at: post.scheduledAt,
-          posted_at: post.postedAt,
-          status: post.status || 'draft',
-          platform_post_id: post.platformPostId,
-          is_ai_generated: post.isAiGenerated || false,
-          ai_prompt: post.aiPrompt,
-          metadata: post.metadata,
-        })
-        .select('id')
-        .single();
-
-      if (error) {
-        throw new Error(`Failed to create post: ${error.message}`);
-      }
-
-      return data.id;
-    } catch (error) {
-      console.error('Error creating post:', error);
+      console.error('Error fetching social media accounts:', error);
       throw error;
     }
   }
 
   /**
-   * Get tenant's social media posts
+   * Connect a new social media account
    */
-  static async getTenantPosts(
+  static async connectAccount(
+    tenantId: string,
+    accountData: Partial<SocialMediaAccount>
+  ): Promise<SocialMediaAccount> {
+    try {
+      const { data, error } = await supabase
+        .from('social_media_accounts')
+        .insert({
+          tenant_id: tenantId,
+          ...accountData,
+          is_connected: true,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error connecting social media account:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Disconnect a social media account
+   */
+  static async disconnectAccount(accountId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('social_media_accounts')
+        .update({ is_connected: false })
+        .eq('id', accountId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error disconnecting social media account:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all posts for a tenant
+   */
+  static async getPosts(
     tenantId: string,
     filters?: {
       platform?: string;
       status?: string;
-      limit?: number;
-      offset?: number;
+      accountId?: string;
     }
   ): Promise<SocialMediaPost[]> {
     try {
       let query = supabase
         .from('social_media_posts')
-        .select('*, social_media_accounts(platform, account_name)')
+        .select('*')
         .eq('tenant_id', tenantId);
 
+      if (filters?.platform) {
+        query = query.eq('platform', filters.platform);
+      }
       if (filters?.status) {
         query = query.eq('status', filters.status);
       }
-
-      query = query
-        .order('created_at', { ascending: false })
-        .limit(filters?.limit || 50);
-
-      if (filters?.offset) {
-        query = query.range(
-          filters.offset,
-          filters.offset + (filters.limit || 50) - 1
-        );
+      if (filters?.accountId) {
+        query = query.eq('account_id', filters.accountId);
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        throw new Error(`Failed to get posts: ${error.message}`);
-      }
-
-      return data.map(row => this.mapPostFromDb(row));
-    } catch (error) {
-      console.error('Error getting posts:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Update post analytics
-   */
-  static async updatePostAnalytics(
-    postId: string,
-    analytics: {
-      likes: number;
-      comments: number;
-      shares: number;
-      views: number;
-      reach: number;
-    }
-  ): Promise<boolean> {
-    try {
-      const { error } = await supabase.rpc('update_post_analytics', {
-        p_post_id: postId,
-        p_likes: analytics.likes,
-        p_comments: analytics.comments,
-        p_shares: analytics.shares,
-        p_views: analytics.views,
-        p_reach: analytics.reach,
+      const { data, error } = await query.order('created_at', {
+        ascending: false,
       });
 
-      if (error) {
-        throw new Error(`Failed to update post analytics: ${error.message}`);
-      }
-
-      return true;
+      if (error) throw error;
+      return data || [];
     } catch (error) {
-      console.error('Error updating post analytics:', error);
-      return false;
+      console.error('Error fetching social media posts:', error);
+      throw error;
     }
   }
 
   /**
-   * Get social media analytics summary
+   * Create a new post
    */
-  static async getAnalyticsSummary(
+  static async createPost(
     tenantId: string,
-    platform?: string,
-    days: number = 30
-  ) {
+    postData: Partial<SocialMediaPost>
+  ): Promise<SocialMediaPost> {
     try {
-      const { data, error } = await supabase.rpc('get_social_media_analytics', {
-        p_tenant_id: tenantId,
-        p_platform: platform || null,
-        p_days: days,
-      });
+      const { data, error } = await supabase
+        .from('social_media_posts')
+        .insert({
+          tenant_id: tenantId,
+          ...postData,
+          status: postData.status || 'draft',
+        })
+        .select()
+        .single();
 
-      if (error) {
-        throw new Error(`Failed to get analytics: ${error.message}`);
-      }
-
+      if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error getting analytics:', error);
-      return null;
+      console.error('Error creating social media post:', error);
+      throw error;
     }
   }
 
   /**
-   * Schedule post
+   * Update a post
    */
-  static async schedulePost(
+  static async updatePost(
     postId: string,
-    scheduledAt: string
-  ): Promise<boolean> {
+    updates: Partial<SocialMediaPost>
+  ): Promise<SocialMediaPost> {
+    try {
+      const { data, error } = await supabase
+        .from('social_media_posts')
+        .update(updates)
+        .eq('id', postId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating social media post:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a post
+   */
+  static async deletePost(postId: string): Promise<void> {
     try {
       const { error } = await supabase
         .from('social_media_posts')
-        .update({
-          scheduled_at: scheduledAt,
-          status: 'scheduled',
-        })
+        .delete()
         .eq('id', postId);
 
-      if (error) {
-        throw new Error(`Failed to schedule post: ${error.message}`);
-      }
-
-      return true;
+      if (error) throw error;
     } catch (error) {
-      console.error('Error scheduling post:', error);
-      return false;
+      console.error('Error deleting social media post:', error);
+      throw error;
     }
   }
 
   /**
-   * Map database row to SocialMediaAccount
+   * Get post analytics
    */
-  private static mapAccountFromDb(row: any): SocialMediaAccount {
-    return {
-      id: row.id,
-      tenantId: row.tenant_id,
-      platform: row.platform,
-      accountName: row.account_name,
-      accountHandle: row.account_handle,
-      accessToken: row.access_token,
-      refreshToken: row.refresh_token,
-      tokenExpiresAt: row.token_expires_at,
-      accountMetadata: row.account_metadata,
-      isActive: row.is_active,
-      createdBy: row.created_by,
-    };
+  static async getPostAnalytics(postId: string): Promise<PostAnalytics[]> {
+    try {
+      const { data, error } = await supabase
+        .from('social_media_post_analytics')
+        .select('*')
+        .eq('post_id', postId)
+        .order('tracked_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching post analytics:', error);
+      throw error;
+    }
   }
 
   /**
-   * Map database row to SocialMediaPost
+   * Sync account analytics
    */
-  private static mapPostFromDb(row: any): SocialMediaPost {
-    return {
-      id: row.id,
-      tenantId: row.tenant_id,
-      accountId: row.account_id,
-      productId: row.product_id,
-      workflowId: row.workflow_id,
-      postType: row.post_type,
-      caption: row.caption,
-      mediaUrls: row.media_urls,
-      hashtags: row.hashtags,
-      scheduledAt: row.scheduled_at,
-      postedAt: row.posted_at,
-      status: row.status,
-      platformPostId: row.platform_post_id,
-      likesCount: row.likes_count,
-      commentsCount: row.comments_count,
-      sharesCount: row.shares_count,
-      viewsCount: row.views_count,
-      reach: row.reach,
-      engagementRate: row.engagement_rate,
-      isAiGenerated: row.is_ai_generated,
-      aiPrompt: row.ai_prompt,
-      errorMessage: row.error_message,
-      metadata: row.metadata,
-    };
+  static async syncAccountAnalytics(accountId: string): Promise<void> {
+    try {
+      // This would integrate with platform APIs to sync analytics
+      // For now, just update last_synced_at
+      const { error } = await supabase
+        .from('social_media_accounts')
+        .update({ last_synced_at: new Date().toISOString() })
+        .eq('id', accountId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error syncing account analytics:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish a scheduled post
+   */
+  static async publishPost(postId: string): Promise<SocialMediaPost> {
+    try {
+      // In production, this would call platform APIs to publish
+      const { data, error } = await supabase
+        .from('social_media_posts')
+        .update({
+          status: 'published',
+          published_at: new Date().toISOString(),
+        })
+        .eq('id', postId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get account statistics
+   */
+  static async getAccountStats(tenantId: string): Promise<{
+    totalAccounts: number;
+    connectedAccounts: number;
+    totalPosts: number;
+    publishedPosts: number;
+    scheduledPosts: number;
+    totalEngagement: number;
+  }> {
+    try {
+      const [accountsData, postsData] = await Promise.all([
+        supabase
+          .from('social_media_accounts')
+          .select('id, is_connected')
+          .eq('tenant_id', tenantId),
+        supabase
+          .from('social_media_posts')
+          .select('id, status, likes_count, comments_count, shares_count')
+          .eq('tenant_id', tenantId),
+      ]);
+
+      const accounts = accountsData.data || [];
+      const posts = postsData.data || [];
+
+      return {
+        totalAccounts: accounts.length,
+        connectedAccounts: accounts.filter((a) => a.is_connected).length,
+        totalPosts: posts.length,
+        publishedPosts: posts.filter((p) => p.status === 'published').length,
+        scheduledPosts: posts.filter((p) => p.status === 'scheduled').length,
+        totalEngagement: posts.reduce(
+          (sum, p) =>
+            sum + (p.likes_count || 0) + (p.comments_count || 0) + (p.shares_count || 0),
+          0
+        ),
+      };
+    } catch (error) {
+      console.error('Error fetching account stats:', error);
+      throw error;
+    }
   }
 }
