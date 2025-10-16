@@ -281,15 +281,18 @@ CREATE TABLE IF NOT EXISTS public.telegram_bot_commands (
   
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  UNIQUE(tenant_id, command)
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes
 CREATE INDEX idx_telegram_commands_tenant ON public.telegram_bot_commands(tenant_id);
 CREATE INDEX idx_telegram_commands_active ON public.telegram_bot_commands(is_active, command) WHERE is_active = true;
 CREATE INDEX idx_telegram_commands_category ON public.telegram_bot_commands(category);
+
+-- Unique constraint for tenant-specific commands (allows multiple NULL tenant_ids for global commands)
+CREATE UNIQUE INDEX unique_telegram_commands_per_tenant 
+  ON public.telegram_bot_commands(tenant_id, command) 
+  WHERE tenant_id IS NOT NULL;
 
 COMMENT ON TABLE public.telegram_bot_commands IS 'Telegram bot command definitions and handlers';
 
