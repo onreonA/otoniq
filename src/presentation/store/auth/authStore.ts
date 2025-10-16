@@ -25,7 +25,6 @@ export const useAuthStore = create<AuthState>()(
 
       // Login action
       login: async (email: string, password: string): Promise<boolean> => {
-        console.log('🔄 Starting login for:', email);
         set({ isLoading: true, error: null });
 
         try {
@@ -36,7 +35,6 @@ export const useAuthStore = create<AuthState>()(
 
           if (error || !session) {
             const errorMessage = error?.message || 'Giriş başarısız';
-            console.log('❌ Login failed:', errorMessage);
             set({
               error: errorMessage,
               isLoading: false,
@@ -45,12 +43,8 @@ export const useAuthStore = create<AuthState>()(
             return false;
           }
 
-          console.log('✅ Login successful, setting session...');
-
           // Load user profile first
-          console.log('🔄 Loading user profile before setting session...');
           const profile = await authService.getUserProfile(session.user.id);
-          console.log('📊 User profile loaded:', profile);
 
           // Set session, user and profile together
           set({
@@ -65,20 +59,14 @@ export const useAuthStore = create<AuthState>()(
           // Set permissions based on user role
           if (profile?.role) {
             usePermissionStore.getState().setRole(profile.role);
-            console.log('✅ Permissions set for role:', profile.role);
           }
-
-          console.log('✅ Session and profile set together');
-          console.log('✅ Login process completed');
 
           // Role-based yönlendirme
           if (profile?.role === 'super_admin') {
-            console.log('🔍 Super admin detected, redirecting to /admin');
             setTimeout(() => {
               window.location.href = '/admin';
             }, 100);
           } else if (profile?.role === 'tenant_admin') {
-            console.log('🔍 Tenant admin detected, redirecting to /dashboard');
             setTimeout(() => {
               window.location.href = '/dashboard';
             }, 100);
@@ -86,7 +74,9 @@ export const useAuthStore = create<AuthState>()(
 
           return true;
         } catch (error) {
-          console.error('❌ Login error:', error);
+          if (import.meta.env.DEV) {
+            console.error('❌ Login error:', error);
+          }
           set({
             error: 'Beklenmeyen bir hata oluştu',
             isLoading: false,
@@ -129,7 +119,9 @@ export const useAuthStore = create<AuthState>()(
           // Email confirmation gerekebilir
           return true;
         } catch (error) {
-          console.error('Signup error:', error);
+          if (import.meta.env.DEV) {
+            console.error('Signup error:', error);
+          }
           set({
             error: 'Beklenmeyen bir hata oluştu',
             isLoading: false,
@@ -158,7 +150,9 @@ export const useAuthStore = create<AuthState>()(
           // Clear permissions
           usePermissionStore.getState().setRole(null);
         } catch (error) {
-          console.error('Logout error:', error);
+          if (import.meta.env.DEV) {
+            console.error('Logout error:', error);
+          }
           // Clear state anyway
           set({
             user: null,
@@ -179,7 +173,9 @@ export const useAuthStore = create<AuthState>()(
           const { data: session, error } = await authService.refreshSession();
 
           if (error || !session) {
-            console.error('Session refresh failed:', error);
+            if (import.meta.env.DEV) {
+              console.error('Session refresh failed:', error);
+            }
             get().logout();
             return;
           }
@@ -193,7 +189,9 @@ export const useAuthStore = create<AuthState>()(
           // Reload user profile
           await get().loadUserProfile();
         } catch (error) {
-          console.error('Session refresh exception:', error);
+          if (import.meta.env.DEV) {
+            console.error('Session refresh exception:', error);
+          }
           get().logout();
         }
       },
@@ -202,30 +200,24 @@ export const useAuthStore = create<AuthState>()(
       loadUserProfile: async (): Promise<void> => {
         const { user } = get();
         if (!user) {
-          console.log('❌ LoadUserProfile: No user found');
           return;
         }
 
-        console.log('🔄 Loading user profile for:', user.email);
-
         try {
           const profile = await authService.getUserProfile(user.id);
-          console.log('📊 User profile loaded:', profile);
 
           if (profile) {
             set({ userProfile: profile as UserProfile });
-            console.log('✅ User profile set in store');
 
             // Set permissions based on user role
             if (profile.role) {
               usePermissionStore.getState().setRole(profile.role);
-              console.log('✅ Permissions set for role:', profile.role);
             }
-          } else {
-            console.log('❌ No profile found for user');
           }
         } catch (error) {
-          console.error('❌ Load user profile error:', error);
+          if (import.meta.env.DEV) {
+            console.error('❌ Load user profile error:', error);
+          }
         }
       },
 
@@ -278,7 +270,9 @@ export function initializeAuthListener() {
   });
 
   authListenerInitialized = true;
-  console.log('✅ Auth listener initialized');
+  if (import.meta.env.DEV) {
+    console.log('✅ Auth listener initialized');
+  }
 }
 
 // Selectors (for better performance)

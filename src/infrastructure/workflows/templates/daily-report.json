@@ -1,0 +1,54 @@
+{
+  "name": "Daily Sales Report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Daily 9 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_daily_sales_report",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "name": "Get Sales Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "sendEmail",
+        "fromEmail": "noreply@otoniq.ai",
+        "toEmail": "={{$json.tenant_email}}",
+        "subject": "📊 Günlük Satış Raporu",
+        "text": "=Merhaba,\n\nDünkü satış performansınız:\n\n- Toplam Gelir: ₺{{$json.total_sales}}\n- Sipariş Sayısı: {{$json.total_orders}}\n- Ortalama Sepet: ₺{{$json.avg_order_value}}\n\nİyi çalışmalar!"
+      },
+      "name": "Send Email Report",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Daily 9 AM": {
+      "main": [[{ "node": "Get Sales Data", "type": "main", "index": 0 }]]
+    },
+    "Get Sales Data": {
+      "main": [[{ "node": "Send Email Report", "type": "main", "index": 0 }]]
+    }
+  }
+}

@@ -88,6 +88,12 @@ export const superAdminMenuConfig: MenuGroup[] = [
         icon: 'Users',
         path: '/customers',
       },
+      {
+        id: 'notifications',
+        label: 'Bildirimler',
+        icon: 'Bell',
+        path: '/notifications',
+      },
     ],
   },
   {
@@ -180,6 +186,13 @@ export const superAdminMenuConfig: MenuGroup[] = [
         icon: 'Zap',
         path: '/automation',
         badge: 'new',
+      },
+      {
+        id: 'feed-doctor',
+        label: 'Feed Doktoru',
+        icon: 'Stethoscope',
+        path: '/feed-doctor',
+        badge: 'ai',
       },
       {
         id: 'creative',

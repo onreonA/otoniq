@@ -3,7 +3,7 @@
  * Displays trend analysis by channel/category
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -14,14 +14,40 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { generateTrendData } from '../../../mocks/analytics';
+import { useAuth } from '../../../hooks/useAuth';
+import AnalyticsService from '../../../../infrastructure/services/AnalyticsService';
 
 type ViewMode = 'revenue' | 'orders';
 
 export default function TrendAnalysisChart() {
+  const { userProfile } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('revenue');
   const [days, setDays] = useState(30);
-  const data = generateTrendData(days);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTrend = async () => {
+      if (!userProfile?.tenant_id) return;
+
+      try {
+        setLoading(true);
+        const trend = await AnalyticsService.getSalesTrend(
+          userProfile.tenant_id,
+          days
+        );
+        setData(trend);
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Error loading trend:', error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTrend();
+  }, [userProfile?.tenant_id, days]);
 
   // Aggregate data by date and channel
   const aggregatedData = data.reduce(

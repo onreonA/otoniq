@@ -4,6 +4,9 @@
  */
 
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../../hooks/useAuth';
+import { WorkflowInstaller } from '../../../infrastructure/workflows/WorkflowInstaller';
 import FeatureIntro from '../../components/common/FeatureIntro';
 import WorkflowCard from './components/WorkflowCard';
 import WorkflowDetailModal from './components/WorkflowDetailModal';
@@ -14,10 +17,42 @@ import {
 } from '../../mocks/automation';
 
 export default function AutomationPage() {
+  const { userProfile } = useAuth();
   const [selectedWorkflow, setSelectedWorkflow] = useState<WorkflowData | null>(
     null
   );
   const [filterCategory, setFilterCategory] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInstallDefaultWorkflows = async () => {
+    if (!userProfile?.tenant_id) {
+      toast.error('Tenant ID bulunamadı');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const loadingToast = toast.loading(
+        "Varsayılan workflow'lar yükleniyor..."
+      );
+
+      await WorkflowInstaller.installDefaultWorkflows(userProfile.tenant_id);
+
+      toast.dismiss(loadingToast);
+      toast.success("Varsayılan workflow'lar başarıyla yüklendi! ✨");
+      // Refresh the page or reload workflows
+      window.location.reload();
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error installing workflows:', error);
+      }
+      toast.error(
+        'Workflow yükleme hatası. Lütfen N8N API ayarlarınızı kontrol edin.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredWorkflows =
     filterCategory === 'all'
@@ -74,6 +109,18 @@ export default function AutomationPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className='mb-6 flex gap-4'>
+          <button
+            onClick={handleInstallDefaultWorkflows}
+            disabled={isLoading}
+            className='px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-300 flex items-center gap-2 shadow-lg'
+          >
+            <i className='ri-download-cloud-line text-xl'></i>
+            {isLoading ? 'Yükleniyor...' : "📦 Varsayılan Workflow'ları Yükle"}
+          </button>
         </div>
 
         {/* Stats Overview */}

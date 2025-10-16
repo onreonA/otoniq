@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'node:path';
 import AutoImport from 'unplugin-auto-import/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 const base = process.env.BASE_PATH || '/';
 const isPreview = process.env.IS_PREVIEW ? true : false;
@@ -14,6 +15,18 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // Sentry source maps upload (only in production builds)
+    process.env.NODE_ENV === 'production' &&
+      process.env.SENTRY_AUTH_TOKEN &&
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG || 'otoniq',
+        project: process.env.SENTRY_PROJECT || 'otoniq-web',
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        sourcemaps: {
+          assets: './out/**',
+        },
+        telemetry: false,
+      }),
     AutoImport({
       imports: [
         {

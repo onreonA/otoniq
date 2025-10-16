@@ -1,14 +1,12 @@
 /**
  * WorkflowInstaller
- * Utility for installing pre-built N8N workflows
+ * Utility for installing pre-built N8N workflows to N8N Cloud
  */
 
 import { N8NService, N8NWorkflow } from '../services/N8NService';
-import dailyReportWorkflow from './daily-report.workflow.json';
-import lowStockAlertWorkflow from './low-stock-alert.workflow.json';
-import newOrderNotificationWorkflow from './new-order-notification.workflow.json';
-import socialMediaPostWorkflow from './social-media-post.workflow.json';
-import emailCampaignWorkflow from './email-campaign.workflow.json';
+import axios from 'axios';
+import dailyReportWorkflow from './templates/daily-report.json';
+import lowStockAlertWorkflow from './templates/low-stock-alert.json';
 
 export interface WorkflowTemplate {
   name: string;
@@ -44,129 +42,143 @@ export class WorkflowInstaller {
       {
         name: 'Düşük Stok Uyarısı',
         description:
-          'Stok seviyesi eşik değerin altına düştüğünde otomatik uyarı gönderir (E-posta + WhatsApp)',
+          'Stok seviyesi eşik değerin altına düştüğünde otomatik uyarı gönderir (6 saatte bir kontrol)',
         category: 'inventory',
-        triggerType: 'webhook',
+        triggerType: 'cron',
         workflowJson: lowStockAlertWorkflow,
         defaultConfig: {
-          notificationChannels: ['email', 'whatsapp', 'in-app'],
+          cronExpression: '0 */6 * * *',
+          notificationChannels: ['email', 'in-app'],
         },
         icon: 'ri-alert-line',
         color: 'orange',
-      },
-      {
-        name: 'Yeni Sipariş Bildirimi',
-        description:
-          'Yeni sipariş geldiğinde anında bildirim gönderir ve müşteriye onay e-postası atar',
-        category: 'orders',
-        triggerType: 'webhook',
-        workflowJson: newOrderNotificationWorkflow,
-        defaultConfig: {
-          notifyCustomer: true,
-          notificationChannels: ['email', 'whatsapp', 'in-app'],
-        },
-        icon: 'ri-shopping-bag-line',
-        color: 'green',
-      },
-      {
-        name: 'Sosyal Medya Otomasyonu',
-        description:
-          "Ürün bazlı veya manuel olarak Instagram, Facebook ve Twitter'a otomatik gönderi oluşturur ve yayınlar",
-        category: 'social_media',
-        triggerType: 'webhook',
-        workflowJson: socialMediaPostWorkflow,
-        defaultConfig: {
-          platforms: ['instagram', 'facebook', 'twitter'],
-          aiGenerated: true,
-        },
-        icon: 'ri-share-line',
-        color: 'purple',
-      },
-      {
-        name: 'E-posta Kampanyası',
-        description:
-          'Segmentlenmiş müşteri listelerine kişiselleştirilmiş toplu e-posta kampanyaları gönderir ve analiz sağlar',
-        category: 'email_marketing',
-        triggerType: 'webhook',
-        workflowJson: emailCampaignWorkflow,
-        defaultConfig: {
-          batchSize: 10,
-          rateLimitDelay: 1,
-        },
-        icon: 'ri-mail-send-line',
-        color: 'cyan',
       },
     ];
   }
 
   /**
-   * Install a workflow for a tenant
+   * Install workflow to N8N Cloud and save to database
    */
   static async installWorkflow(
     tenantId: string,
-    templateName: string,
-    customConfig?: any,
-    createdBy?: string
+    workflowJson: any,
+    workflowName: string,
+    workflowDescription: string
   ): Promise<string> {
-    const template = this.getTemplates().find(t => t.name === templateName);
-    if (!template) {
-      throw new Error(`Workflow template not found: ${templateName}`);
+    try {
+      // Upload workflow to N8N Cloud
+      const client = axios.create({
+        baseURL: `${import.meta.env.VITE_N8N_API_URL}/api/v1`,
+        headers: {
+          'X-N8N-API-KEY': import.meta.env.VITE_N8N_API_KEY,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const response = await client.post('/workflows', workflowJson);
+      const n8nWorkflowId = response.data.id;
+
+      // Activate the workflow
+      await client.patch(`/workflows/${n8nWorkflowId}`, {
+        active: true,
+      });
+
+      // Save to database
+      const workflowId = await N8NService.createWorkflow({
+        tenantId,
+        workflowName,
+        workflowDescription,
+        n8nWorkflowId,
+        workflowJson,
+        triggerType: workflowJson.nodes[0].type.includes('schedule')
+          ? 'cron'
+          : 'webhook',
+        triggerConfig: workflowJson.nodes[0].parameters,
+        isActive: true,
+      });
+
+      return workflowId;
+    } catch (error) {
+      console.error('Error installing workflow:', error);
+      throw error;
     }
-
-    const workflow: N8NWorkflow = {
-      tenantId,
-      workflowName: template.name,
-      workflowDescription: template.description,
-      triggerType: template.triggerType,
-      workflowJson: template.workflowJson,
-      triggerConfig: customConfig || template.defaultConfig,
-      isActive: false, // Start as inactive, user can activate later
-      createdBy,
-      metadata: {
-        category: template.category,
-        icon: template.icon,
-        color: template.color,
-        templateVersion: '1.0.0',
-      },
-    };
-
-    // For webhook workflows, generate webhook URL placeholder
-    if (template.triggerType === 'webhook') {
-      workflow.webhookUrl = `${import.meta.env.VITE_N8N_WEBHOOK_BASE_URL}/${templateName
-        .toLowerCase()
-        .replace(/\s+/g, '-')}`;
-    }
-
-    const workflowId = await N8NService.createWorkflow(workflow);
-    return workflowId;
   }
 
   /**
-   * Install all default workflows for a new tenant
+   * Install all default workflows for a tenant (Webhook Mode)
    */
-  static async installDefaultWorkflows(
-    tenantId: string,
-    createdBy?: string
-  ): Promise<string[]> {
-    const templates = this.getTemplates();
-    const workflowIds: string[] = [];
+  static async installDefaultWorkflows(tenantId: string): Promise<void> {
+    try {
+      // N8N Webhook URLs (configured manually in N8N Cloud)
+      const dailyReportWebhook =
+        'https://otoniq.app.n8n.cloud/workflow/atI6tzx75ieHfjrX';
+      const lowStockAlertWebhook =
+        'https://otoniq.app.n8n.cloud/workflow/rqn2AxkOapqUKpCm';
 
-    for (const template of templates) {
-      try {
-        const workflowId = await this.installWorkflow(
-          tenantId,
-          template.name,
-          undefined,
-          createdBy
+      // Install Daily Report Workflow (Webhook mode)
+      await this.installWorkflowWebhook(
+        tenantId,
+        'Daily Sales Report',
+        'Automatically sends daily sales report every morning at 9 AM',
+        dailyReportWebhook,
+        'cron'
+      );
+
+      // Install Low Stock Alert Workflow (Webhook mode)
+      await this.installWorkflowWebhook(
+        tenantId,
+        'Low Stock Alert',
+        'Monitors inventory and sends alerts when products are running low',
+        lowStockAlertWebhook,
+        'cron'
+      );
+
+      if (import.meta.env.DEV) {
+        console.log(
+          '✅ Default workflows installed successfully (Webhook mode)'
         );
-        workflowIds.push(workflowId);
-        console.log(`✅ Installed workflow: ${template.name}`);
-      } catch (error) {
-        console.error(`❌ Failed to install workflow: ${template.name}`, error);
       }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('❌ Error installing default workflows:', error);
+      }
+      throw error;
     }
+  }
 
-    return workflowIds;
+  /**
+   * Install workflow using webhook URL (no N8N API required)
+   */
+  static async installWorkflowWebhook(
+    tenantId: string,
+    workflowName: string,
+    workflowDescription: string,
+    webhookUrl: string,
+    triggerType: 'webhook' | 'cron'
+  ): Promise<string> {
+    try {
+      // Save workflow to database with webhook URL
+      const workflowId = await N8NService.createWorkflow({
+        tenantId,
+        workflowName,
+        workflowDescription,
+        webhookUrl,
+        triggerType,
+        triggerConfig: { webhookUrl },
+        isActive: true,
+        metadata: {
+          webhookMode: true,
+          manuallyConfigured: true,
+        },
+      });
+
+      return workflowId;
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error installing workflow (webhook):', error);
+      }
+      throw error;
+    }
   }
 
   /**

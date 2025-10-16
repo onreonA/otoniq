@@ -3,7 +3,7 @@
  * Displays sales forecasts with confidence intervals
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -16,13 +16,39 @@ import {
   Area,
   ComposedChart,
 } from 'recharts';
-import { generateSalesForecast } from '../../../mocks/analytics';
+import { useAuth } from '../../../hooks/useAuth';
+import AnalyticsService from '../../../../infrastructure/services/AnalyticsService';
 
 type ForecastPeriod = 7 | 30 | 90;
 
 export default function SalesForecastChart() {
-  const [period, setPeriod] = useState<ForecastPeriod>(30);
-  const data = generateSalesForecast(period);
+  const { userProfile } = useAuth();
+  const [period, setPeriod] = useState<ForecastPeriod>(7);
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadForecast = async () => {
+      if (!userProfile?.tenant_id) return;
+
+      try {
+        setLoading(true);
+        const forecast = await AnalyticsService.getSalesForecast(
+          userProfile.tenant_id,
+          period
+        );
+        setData(forecast);
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Error loading forecast:', error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadForecast();
+  }, [userProfile?.tenant_id, period]);
 
   return (
     <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
@@ -56,109 +82,115 @@ export default function SalesForecastChart() {
       </div>
 
       {/* Chart */}
-      <div className='h-80'>
-        <ResponsiveContainer width='100%' height='100%'>
-          <ComposedChart data={data}>
-            <defs>
-              <linearGradient id='colorForecast' x1='0' y1='0' x2='0' y2='1'>
-                <stop offset='5%' stopColor='#3b82f6' stopOpacity={0.3} />
-                <stop offset='95%' stopColor='#3b82f6' stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              strokeDasharray='3 3'
-              stroke='rgba(255,255,255,0.1)'
-            />
-            <XAxis
-              dataKey='date'
-              stroke='#9ca3af'
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
-              tickFormatter={value => {
-                const date = new Date(value);
-                return `${date.getDate()}/${date.getMonth() + 1}`;
-              }}
-            />
-            <YAxis
-              stroke='#9ca3af'
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
-              tickFormatter={value => `₺${(value / 1000).toFixed(0)}K`}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(17, 24, 39, 0.95)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                color: '#fff',
-              }}
-              formatter={(value: number) => [
-                `₺${value.toLocaleString('tr-TR')}`,
-                '',
-              ]}
-              labelFormatter={value => {
-                const date = new Date(value);
-                return date.toLocaleDateString('tr-TR');
-              }}
-            />
-            <Legend wrapperStyle={{ color: '#9ca3af' }} iconType='line' />
-
-            {/* Confidence Interval Area */}
-            <Area
-              type='monotone'
-              dataKey='upper'
-              stroke='none'
-              fill='url(#colorForecast)'
-              fillOpacity={0.3}
-              name='Üst Limit'
-            />
-            <Area
-              type='monotone'
-              dataKey='lower'
-              stroke='none'
-              fill='url(#colorForecast)'
-              fillOpacity={0.3}
-              name='Alt Limit'
-            />
-
-            {/* Actual Sales Line */}
-            <Line
-              type='monotone'
-              dataKey='actual'
-              stroke='#10b981'
-              strokeWidth={3}
-              dot={{ fill: '#10b981', r: 4 }}
-              name='Gerçekleşen'
-              connectNulls={false}
-            />
-
-            {/* Forecast Line */}
-            <Line
-              type='monotone'
-              dataKey='forecast'
-              stroke='#3b82f6'
-              strokeWidth={3}
-              strokeDasharray='5 5'
-              dot={{ fill: '#3b82f6', r: 4 }}
-              name='Tahmin'
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Legend Info */}
-      <div className='mt-4 flex flex-wrap gap-4 text-sm'>
-        <div className='flex items-center gap-2'>
-          <div className='w-3 h-3 bg-green-500 rounded-full'></div>
-          <span className='text-gray-300'>Gerçekleşen Satışlar</span>
+      {loading ? (
+        <div className='h-80 flex items-center justify-center'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-4 border-blue-500'></div>
         </div>
-        <div className='flex items-center gap-2'>
-          <div className='w-3 h-3 bg-blue-500 rounded-full'></div>
-          <span className='text-gray-300'>Tahmin Edilen Satışlar</span>
+      ) : (
+        <div className='h-80'>
+          <ResponsiveContainer width='100%' height='100%'>
+            <ComposedChart data={data}>
+              <defs>
+                <linearGradient id='colorForecast' x1='0' y1='0' x2='0' y2='1'>
+                  <stop offset='5%' stopColor='#3b82f6' stopOpacity={0.3} />
+                  <stop offset='95%' stopColor='#3b82f6' stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray='3 3'
+                stroke='rgba(255,255,255,0.1)'
+              />
+              <XAxis
+                dataKey='date'
+                stroke='#9ca3af'
+                tick={{ fill: '#9ca3af', fontSize: 12 }}
+                tickFormatter={value => {
+                  const date = new Date(value);
+                  return `${date.getDate()}/${date.getMonth() + 1}`;
+                }}
+              />
+              <YAxis
+                stroke='#9ca3af'
+                tick={{ fill: '#9ca3af', fontSize: 12 }}
+                tickFormatter={value => `₺${(value / 1000).toFixed(0)}K`}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '12px',
+                  color: '#fff',
+                }}
+                formatter={(value: number) => [
+                  `₺${value.toLocaleString('tr-TR')}`,
+                  '',
+                ]}
+                labelFormatter={value => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString('tr-TR');
+                }}
+              />
+              <Legend wrapperStyle={{ color: '#9ca3af' }} iconType='line' />
+
+              {/* Confidence Interval Area */}
+              <Area
+                type='monotone'
+                dataKey='upper'
+                stroke='none'
+                fill='url(#colorForecast)'
+                fillOpacity={0.3}
+                name='Üst Limit'
+              />
+              <Area
+                type='monotone'
+                dataKey='lower'
+                stroke='none'
+                fill='url(#colorForecast)'
+                fillOpacity={0.3}
+                name='Alt Limit'
+              />
+
+              {/* Actual Sales Line */}
+              <Line
+                type='monotone'
+                dataKey='actual'
+                stroke='#10b981'
+                strokeWidth={3}
+                dot={{ fill: '#10b981', r: 4 }}
+                name='Gerçekleşen'
+                connectNulls={false}
+              />
+
+              {/* Forecast Line */}
+              <Line
+                type='monotone'
+                dataKey='forecast'
+                stroke='#3b82f6'
+                strokeWidth={3}
+                strokeDasharray='5 5'
+                dot={{ fill: '#3b82f6', r: 4 }}
+                name='Tahmin'
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+
+          {/* Legend Info */}
+          <div className='mt-4 flex flex-wrap gap-4 text-sm'>
+            <div className='flex items-center gap-2'>
+              <div className='w-3 h-3 bg-green-500 rounded-full'></div>
+              <span className='text-gray-300'>Gerçekleşen Satışlar</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <div className='w-3 h-3 bg-blue-500 rounded-full'></div>
+              <span className='text-gray-300'>Tahmin Edilen Satışlar</span>
+            </div>
+            <div className='flex items-center gap-2'>
+              <div className='w-3 h-3 bg-blue-500/30 rounded-full'></div>
+              <span className='text-gray-300'>Güven Aralığı (%85-115)</span>
+            </div>
+          </div>
         </div>
-        <div className='flex items-center gap-2'>
-          <div className='w-3 h-3 bg-blue-500/30 rounded-full'></div>
-          <span className='text-gray-300'>Güven Aralığı (%85-115)</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

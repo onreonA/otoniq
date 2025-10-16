@@ -4,9 +4,19 @@
  */
 
 import { useState, useEffect } from 'react';
-import { mockKPIData } from '../../../mocks/analytics';
+import { useAuth } from '../../../hooks/useAuth';
+import AnalyticsService from '../../../../infrastructure/services/AnalyticsService';
 
 export default function AnalyticsKPICards() {
+  const { user, userProfile } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [metrics, setMetrics] = useState({
+    revenue: 0,
+    orders: 0,
+    avgOrderValue: 0,
+    revenueGrowth: 0,
+    orderGrowth: 0,
+  });
   const [animatedValues, setAnimatedValues] = useState({
     revenue: 0,
     orders: 0,
@@ -15,7 +25,37 @@ export default function AnalyticsKPICards() {
   });
 
   useEffect(() => {
-    // Animate values on mount
+    const loadMetrics = async () => {
+      if (!userProfile?.tenant_id) return;
+
+      try {
+        setLoading(true);
+        const data = await AnalyticsService.getDashboardMetrics(
+          userProfile.tenant_id
+        );
+        setMetrics({
+          revenue: data.totalSales,
+          orders: data.totalOrders,
+          avgOrderValue: data.avgOrderValue,
+          revenueGrowth: data.revenueGrowth,
+          orderGrowth: data.orderGrowth,
+        });
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.error('Error loading metrics:', error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMetrics();
+  }, [userProfile?.tenant_id]);
+
+  useEffect(() => {
+    // Animate values on mount or when metrics change
+    if (loading) return;
+
     const duration = 1500;
     const steps = 60;
     const interval = duration / steps;
@@ -26,10 +66,10 @@ export default function AnalyticsKPICards() {
       const progress = currentStep / steps;
 
       setAnimatedValues({
-        revenue: mockKPIData.revenue * progress,
-        orders: mockKPIData.orders * progress,
-        conversionRate: mockKPIData.conversionRate * progress,
-        aov: mockKPIData.averageOrderValue * progress,
+        revenue: metrics.revenue * progress,
+        orders: metrics.orders * progress,
+        conversionRate: 3.2 * progress, // Mock for now
+        aov: metrics.avgOrderValue * progress,
       });
 
       if (currentStep >= steps) {
@@ -38,15 +78,17 @@ export default function AnalyticsKPICards() {
     }, interval);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [loading, metrics]);
 
   const kpis = [
     {
       id: 'revenue',
       title: 'Toplam Gelir',
       value: animatedValues.revenue,
-      displayValue: `₺${Math.round(animatedValues.revenue).toLocaleString('tr-TR')}`,
-      change: mockKPIData.revenueChange,
+      displayValue: loading
+        ? '...'
+        : `₺${Math.round(animatedValues.revenue).toLocaleString('tr-TR')}`,
+      change: metrics.revenueGrowth,
       icon: 'ri-money-dollar-circle-line',
       color: 'from-green-500 to-emerald-500',
       bgColor: 'from-green-600/20 to-emerald-600/20',
@@ -55,8 +97,10 @@ export default function AnalyticsKPICards() {
       id: 'orders',
       title: 'Toplam Sipariş',
       value: animatedValues.orders,
-      displayValue: Math.round(animatedValues.orders).toLocaleString('tr-TR'),
-      change: mockKPIData.ordersChange,
+      displayValue: loading
+        ? '...'
+        : Math.round(animatedValues.orders).toLocaleString('tr-TR'),
+      change: metrics.orderGrowth,
       icon: 'ri-shopping-cart-line',
       color: 'from-blue-500 to-cyan-500',
       bgColor: 'from-blue-600/20 to-cyan-600/20',
@@ -65,8 +109,10 @@ export default function AnalyticsKPICards() {
       id: 'conversion',
       title: 'Dönüşüm Oranı',
       value: animatedValues.conversionRate,
-      displayValue: `%${animatedValues.conversionRate.toFixed(1)}`,
-      change: mockKPIData.conversionChange,
+      displayValue: loading
+        ? '...'
+        : `%${animatedValues.conversionRate.toFixed(1)}`,
+      change: 2.4, // Mock for now
       icon: 'ri-line-chart-line',
       color: 'from-purple-500 to-pink-500',
       bgColor: 'from-purple-600/20 to-pink-600/20',
@@ -75,8 +121,10 @@ export default function AnalyticsKPICards() {
       id: 'aov',
       title: 'Ortalama Sepet',
       value: animatedValues.aov,
-      displayValue: `₺${Math.round(animatedValues.aov).toLocaleString('tr-TR')}`,
-      change: mockKPIData.aovChange,
+      displayValue: loading
+        ? '...'
+        : `₺${Math.round(animatedValues.aov).toLocaleString('tr-TR')}`,
+      change: (metrics.revenueGrowth + metrics.orderGrowth) / 2, // Simple approximation
       icon: 'ri-shopping-bag-line',
       color: 'from-orange-500 to-amber-500',
       bgColor: 'from-orange-600/20 to-amber-600/20',
@@ -125,7 +173,20 @@ export default function AnalyticsKPICards() {
             <div
               className={`h-full bg-gradient-to-r ${kpi.color} transition-all duration-1000 ease-out`}
               style={{
-                width: `${Math.min(100, (kpi.value / (kpi.id === 'revenue' ? mockKPIData.revenue : kpi.id === 'orders' ? mockKPIData.orders : kpi.id === 'conversion' ? mockKPIData.conversionRate : mockKPIData.averageOrderValue)) * 100)}%`,
+                width: loading
+                  ? '0%'
+                  : `${Math.min(
+                      100,
+                      (kpi.value /
+                        (kpi.id === 'revenue'
+                          ? metrics.revenue
+                          : kpi.id === 'orders'
+                            ? metrics.orders
+                            : kpi.id === 'conversion'
+                              ? 3.2
+                              : metrics.avgOrderValue)) *
+                        100
+                    )}%`,
               }}
             ></div>
           </div>

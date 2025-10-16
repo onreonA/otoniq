@@ -40,11 +40,19 @@ const AutomationOutputsPage = lazy(
 const WorkflowDetailPage = lazy(
   () => import('../pages/automation/workflow-detail/[id]/page')
 );
+const FeedDoctorPage = lazy(() => import('../pages/feed-doctor/page'));
 const CreativePage = lazy(() => import('../pages/creative/page'));
 const ChatAutomationPage = lazy(() => import('../pages/chat-automation/page'));
 const ARVRPage = lazy(() => import('../pages/ar-vr/page'));
 const IoTPage = lazy(() => import('../pages/iot/page'));
 const AdminPage = lazy(() => import('../pages/admin/page'));
+const SecuritySettingsPage = lazy(
+  () => import('../pages/settings/security/page')
+);
+const NotificationsPage = lazy(() => import('../pages/notifications/page'));
+const NotificationSettingsPage = lazy(
+  () => import('../pages/settings/notifications/page')
+);
 const PitchDeckPage = lazy(() => import('../pages/pitch-deck/page'));
 const OnePagerPage = lazy(() => import('../pages/one-pager/page'));
 const SalesToolkitPage = lazy(() => import('../pages/sales-toolkit/page'));
@@ -168,6 +176,10 @@ const routes: RouteObject[] = [
         element: <AutomationPage />,
       },
       {
+        path: '/feed-doctor',
+        element: <FeedDoctorPage />,
+      },
+      {
         path: '/automation/outputs',
         element: <AutomationOutputsPage />,
       },
@@ -190,6 +202,18 @@ const routes: RouteObject[] = [
       {
         path: '/iot',
         element: <IoTPage />,
+      },
+      {
+        path: '/settings/security',
+        element: <SecuritySettingsPage />,
+      },
+      {
+        path: '/notifications',
+        element: <NotificationsPage />,
+      },
+      {
+        path: '/settings/notifications',
+        element: <NotificationSettingsPage />,
       },
 
       // Super admin only routes (still inside SidebarLayout)

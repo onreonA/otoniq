@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../../components/base/Button';
 import { useAuth } from '../../hooks/useAuth';
+import { useRateLimit } from '../../hooks/useRateLimit';
 import { TwoFactorAuthService } from '../../../infrastructure/services/TwoFactorAuthService';
 import { AccountLockoutService } from '../../../infrastructure/services/AccountLockoutService';
 import { toast } from 'react-hot-toast';
@@ -22,6 +23,7 @@ export default function Login() {
   const [isVerifying2FA, setIsVerifying2FA] = useState(false);
 
   const { login, isLoading, error } = useAuth();
+  const { checkLimit } = useRateLimit('/auth/login', 'ip');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +45,12 @@ export default function Login() {
 
   const handleInitialLogin = async () => {
     try {
+      // Check rate limit first
+      const isAllowed = await checkLimit();
+      if (!isAllowed) {
+        return; // Rate limit error already shown by toast
+      }
+
       // Check if login should be blocked
       const blockStatus = await AccountLockoutService.shouldBlockLogin(email);
       if (blockStatus.shouldBlock) {
@@ -269,6 +277,22 @@ export default function Login() {
               <p className='text-sm text-gray-400 mt-2 text-center'>
                 Authenticator uygulamanızdan aldığınız 6 haneli kodu girin
               </p>
+              {/* Backup Code Option */}
+              <div className='text-center mt-4'>
+                <button
+                  type='button'
+                  onClick={() => {
+                    // Toggle between authenticator code and backup code
+                    // For now, just show a message
+                    toast.info(
+                      'Yedek kod özelliği yakında eklenecek. Şimdilik Authenticator kodunu kullanın.'
+                    );
+                  }}
+                  className='text-sm text-blue-400 hover:text-blue-300 transition-colors'
+                >
+                  Yedek kod kullan
+                </button>
+              </div>
             </div>
           )}
 

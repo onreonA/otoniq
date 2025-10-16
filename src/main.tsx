@@ -11,6 +11,14 @@ import ErrorBoundary from './presentation/components/base/ErrorBoundary';
 // Initialize Sentry for error tracking
 initSentry();
 
+// Clean console logs in production
+if (import.meta.env.PROD) {
+  console.log = () => {};
+  console.info = () => {};
+  console.debug = () => {};
+  // Keep console.warn and console.error for important messages
+}
+
 // Validate environment variables on app start
 validateEnv();
 

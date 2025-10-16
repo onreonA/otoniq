@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { ThemeToggle } from '../theme/ThemeToggle';
+import { NotificationBell } from '../notifications/NotificationBell';
 import { useState, memo, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUIStore } from '../../store/ui/uiStore';
@@ -27,45 +28,15 @@ const TopHeader = memo(function TopHeader() {
   const { sidebarCollapsed, toggleSidebar, toggleMobileSidebar } = useUIStore();
   const { userProfile, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleLogout = useCallback(async () => {
     await logout();
     navigate('/login');
   }, [logout, navigate]);
 
-  // Mock notifications
-  const notifications = useMemo(
-    () => [
-      {
-        id: 1,
-        title: 'Yeni Sipariş',
-        message: '5 yeni sipariş alındı',
-        time: '2 dakika önce',
-        unread: true,
-      },
-      {
-        id: 2,
-        title: 'Stok Uyarısı',
-        message: '3 ürünün stoğu azalıyor',
-        time: '1 saat önce',
-        unread: true,
-      },
-      {
-        id: 3,
-        title: 'Shopify Senkronizasyonu',
-        message: '50 ürün başarıyla senkronize edildi',
-        time: '3 saat önce',
-        unread: false,
-      },
-    ],
-    []
-  );
-
-  const unreadCount = useMemo(
-    () => notifications.filter(n => n.unread).length,
-    [notifications]
-  );
+  // Get user ID and tenant ID for notifications
+  const userId = userProfile?.id || 'user-123';
+  const tenantId = userProfile?.tenant_id || 'tenant-123';
 
   return (
     <header
@@ -135,78 +106,7 @@ const TopHeader = memo(function TopHeader() {
           <ThemeToggle />
 
           {/* Notifications */}
-          <div className='relative'>
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className='relative p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-300'
-              aria-label='Notifications'
-            >
-              <Bell className='w-5 h-5' />
-              {unreadCount > 0 && (
-                <span className='absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center'>
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {/* Notifications Dropdown */}
-            {showNotifications && (
-              <>
-                <div
-                  className='fixed inset-0 z-10'
-                  onClick={() => setShowNotifications(false)}
-                />
-                <div className='absolute right-0 mt-2 w-80 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl z-20'>
-                  <div className='p-4 border-b border-gray-800'>
-                    <div className='flex items-center justify-between'>
-                      <h3 className='font-semibold text-white'>Bildirimler</h3>
-                      {unreadCount > 0 && (
-                        <span className='px-2 py-0.5 text-xs font-semibold bg-blue-500/20 text-blue-400 rounded-full'>
-                          {unreadCount} yeni
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className='max-h-96 overflow-y-auto'>
-                    {notifications.map(notification => (
-                      <div
-                        key={notification.id}
-                        className={`
-                          p-4 border-b border-gray-800 hover:bg-gray-800 cursor-pointer
-                          ${notification.unread ? 'bg-blue-500/10' : ''}
-                        `}
-                      >
-                        <div className='flex items-start gap-3'>
-                          <div
-                            className={`
-                            w-2 h-2 rounded-full mt-2
-                            ${notification.unread ? 'bg-blue-400' : 'bg-transparent'}
-                          `}
-                          />
-                          <div className='flex-1'>
-                            <p className='text-sm font-medium text-white'>
-                              {notification.title}
-                            </p>
-                            <p className='text-sm text-gray-300 mt-0.5'>
-                              {notification.message}
-                            </p>
-                            <p className='text-xs text-gray-400 mt-1'>
-                              {notification.time}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className='p-3 border-t border-white/10'>
-                    <button className='w-full text-center text-sm text-blue-400 hover:text-blue-300 font-medium'>
-                      Tümünü Gör
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <NotificationBell userId={userId} tenantId={tenantId} />
 
           {/* User Menu */}
           <div className='relative'>

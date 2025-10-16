@@ -104,8 +104,8 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
       .select(
         `
         *,
-        products!inner(id, name, sku, cost),
-        warehouses!inner(id, name)
+        products(id, name, sku, cost),
+        warehouses(id, name)
       `
       )
       .eq('tenant_id', tenantId);
@@ -232,8 +232,8 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
       .select(
         `
         *,
-        products!inner(id, name, sku),
-        warehouses!inner(id, name)
+        products(id, name, sku),
+        warehouses(id, name)
       `
       )
       .eq('tenant_id', tenantId);
@@ -254,7 +254,52 @@ export class SupabaseInventoryRepository implements IInventoryRepository {
       ascending: false,
     });
 
-    if (error) throw error;
+    if (error) {
+      // If relationship error, fallback to basic query without joins
+      if (
+        error.code === 'PGRST201' ||
+        error.message?.includes('Could not embed')
+      ) {
+        console.warn('Foreign key relationship not found, using basic query');
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('stock_movements')
+          .select('*')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false });
+
+        if (fallbackError) throw fallbackError;
+
+        // Map without joined data
+        return (fallbackData || []).map((row: any) => ({
+          id: row.id,
+          tenantId: row.tenant_id,
+          productId: row.product_id,
+          warehouseId: row.warehouse_id,
+          movementType: row.movement_type,
+          quantity: parseFloat(row.quantity) || 0,
+          relatedWarehouseId: row.related_warehouse_id,
+          referenceType: row.reference_type,
+          referenceId: row.reference_id,
+          referenceNumber: row.reference_number,
+          unitCost: row.unit_cost ? parseFloat(row.unit_cost) : null,
+          totalCost: row.total_cost ? parseFloat(row.total_cost) : null,
+          quantityBefore: row.quantity_before
+            ? parseFloat(row.quantity_before)
+            : null,
+          quantityAfter: row.quantity_after
+            ? parseFloat(row.quantity_after)
+            : null,
+          notes: row.notes,
+          createdAt: new Date(row.created_at),
+          createdBy: row.created_by,
+          productName: 'Unknown Product',
+          productSku: 'N/A',
+          warehouseName: 'Unknown Warehouse',
+          relatedWarehouseName: null,
+        }));
+      }
+      throw error;
+    }
 
     // Map to StockMovement entity with joined data
     return (data || []).map((row: any) => ({

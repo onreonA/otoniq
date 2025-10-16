@@ -1,0 +1,75 @@
+{
+  "name": "Low Stock Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */6 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Check Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_low_stock_products",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "name": "Get Low Stock Products",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.length}}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "Has Low Stock Items",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "sendEmail",
+        "fromEmail": "alerts@otoniq.ai",
+        "toEmail": "={{$json.tenant_email}}",
+        "subject": "⚠️ Düşük Stok Uyarısı",
+        "text": "=Merhaba,\n\nAşağıdaki ürünlerinizin stoğu kritik seviyede:\n\n{{$json.products.map(p => `- ${p.name}: ${p.stock} adet kaldı`).join('\\n')}}\n\nLütfen stok yenilemesi yapın."
+      },
+      "name": "Send Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Check Every 6 Hours": {
+      "main": [
+        [{ "node": "Get Low Stock Products", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Low Stock Products": {
+      "main": [[{ "node": "Has Low Stock Items", "type": "main", "index": 0 }]]
+    },
+    "Has Low Stock Items": {
+      "main": [[{ "node": "Send Alert Email", "type": "main", "index": 0 }]]
+    }
+  }
+}

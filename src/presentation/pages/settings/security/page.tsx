@@ -46,7 +46,9 @@ export default function SecuritySettingsPage() {
       const status = await TwoFactorAuthService.getTwoFactorStatus(user.id);
       setTwoFactorStatus(status);
     } catch (error) {
-      console.error('Error loading 2FA status:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error loading 2FA status:', error);
+      }
       toast.error('2FA durumu yüklenirken hata oluştu');
     }
   };
@@ -62,7 +64,9 @@ export default function SecuritySettingsPage() {
       setShowSetup(true);
       toast.success('2FA kurulumu başlatıldı');
     } catch (error) {
-      console.error('Error setting up 2FA:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error setting up 2FA:', error);
+      }
       toast.error('2FA kurulumu sırasında hata oluştu');
     } finally {
       setIsLoading(false);
@@ -89,7 +93,9 @@ export default function SecuritySettingsPage() {
         toast.error('Geçersiz doğrulama kodu');
       }
     } catch (error) {
-      console.error('Error verifying 2FA setup:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error verifying 2FA setup:', error);
+      }
       toast.error('Doğrulama sırasında hata oluştu');
     } finally {
       setIsLoading(false);
@@ -114,7 +120,9 @@ export default function SecuritySettingsPage() {
         toast.error('2FA devre dışı bırakılamadı');
       }
     } catch (error) {
-      console.error('Error disabling 2FA:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error disabling 2FA:', error);
+      }
       toast.error('2FA devre dışı bırakılırken hata oluştu');
     } finally {
       setIsLoading(false);
@@ -132,7 +140,9 @@ export default function SecuritySettingsPage() {
       setBackupCodes(newCodes);
       toast.success('Yeni yedek kodlar oluşturuldu');
     } catch (error) {
-      console.error('Error generating backup codes:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error generating backup codes:', error);
+      }
       toast.error('Yedek kodlar oluşturulurken hata oluştu');
     } finally {
       setIsLoading(false);

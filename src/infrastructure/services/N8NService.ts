@@ -293,6 +293,64 @@ export class N8NService {
   }
 
   /**
+   * Sync execution status from N8N and update database
+   */
+  static async syncExecutionStatus(executionId: string): Promise<N8NExecution> {
+    try {
+      // Get execution from database
+      const { data: execution, error: fetchError } = await supabase
+        .from('n8n_executions')
+        .select('*')
+        .eq('id', executionId)
+        .single();
+
+      if (fetchError || !execution) {
+        throw new Error('Execution not found');
+      }
+
+      // Get status from N8N API
+      const client = this.getApiClient();
+      const response = await client.get(
+        `/executions/${execution.n8n_execution_id}`
+      );
+
+      const n8nExecution = response.data;
+      const status = n8nExecution.finished
+        ? n8nExecution.data.resultData.error
+          ? 'failed'
+          : 'success'
+        : 'running';
+
+      // Update database
+      const { data: updated, error: updateError } = await supabase
+        .from('n8n_executions')
+        .update({
+          status,
+          finished_at: n8nExecution.stoppedAt,
+          duration_ms: n8nExecution.stoppedAt
+            ? new Date(n8nExecution.stoppedAt).getTime() -
+              new Date(execution.started_at).getTime()
+            : null,
+          execution_data: n8nExecution.data,
+          output_data: n8nExecution.data.resultData,
+          error_message: n8nExecution.data.resultData.error?.message,
+        })
+        .eq('id', executionId)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw new Error(`Failed to update execution: ${updateError.message}`);
+      }
+
+      return updated as N8NExecution;
+    } catch (error) {
+      console.error('Error syncing execution status:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get execution status from N8N
    */
   static async getExecutionStatus(
