@@ -1,0 +1,185 @@
+{
+  "name": "Visual Content Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "visual-content-trigger",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "visual-content-auto"
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/products",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "qs": {
+            "id": "eq.={{$json.product_id}}",
+            "select": "id,name,description,price,images,category_id"
+          }
+        }
+      },
+      "name": "Get Product Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_APP_URL}}/api/canva/generate-post",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "productName",
+              "value": "={{$json[0].name}}"
+            },
+            {
+              "name": "productImage",
+              "value": "={{$json[0].images[0]}}"
+            },
+            {
+              "name": "price",
+              "value": "={{$json[0].price}}"
+            },
+            {
+              "name": "platform",
+              "value": "={{$json.platform || 'instagram'}}"
+            }
+          ]
+        }
+      },
+      "name": "Generate Design with Canva",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_APP_URL}}/api/image/enhance",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "imageUrl",
+              "value": "={{$json.exportUrl}}"
+            },
+            {
+              "name": "autoEnhance",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "name": "Enhance Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.auto_post}}",
+              "operation": "equals",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "name": "Should Auto-Post?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "caption": "={{$node['Get Product Data'].json[0].name}} - ₺{{$node['Get Product Data'].json[0].price}}\n\n{{$node['Get Product Data'].json[0].description}}\n\n#ürün #alışveriş #indirim",
+        "imageUrl": "={{$json.enhancedUrl}}"
+      },
+      "name": "Post to Instagram",
+      "type": "n8n-nodes-base.instagram",
+      "typeVersion": 1,
+      "position": [1250, 250]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/visual_content_history",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "tenant_id",
+              "value": "={{$node['Get Product Data'].json[0].tenant_id}}"
+            },
+            {
+              "name": "product_id",
+              "value": "={{$node['Get Product Data'].json[0].id}}"
+            },
+            {
+              "name": "content_type",
+              "value": "social_post"
+            },
+            {
+              "name": "platform",
+              "value": "={{$json.platform || 'instagram'}}"
+            },
+            {
+              "name": "design_url",
+              "value": "={{$json.enhancedUrl}}"
+            },
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "created_at",
+              "value": "={{new Date().toISOString()}}"
+            }
+          ]
+        }
+      },
+      "name": "Save to History",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{"node": "Get Product Data", "type": "main", "index": 0}]]
+    },
+    "Get Product Data": {
+      "main": [[{"node": "Generate Design with Canva", "type": "main", "index": 0}]]
+    },
+    "Generate Design with Canva": {
+      "main": [[{"node": "Enhance Image", "type": "main", "index": 0}]]
+    },
+    "Enhance Image": {
+      "main": [[{"node": "Should Auto-Post?", "type": "main", "index": 0}]]
+    },
+    "Should Auto-Post?": {
+      "main": [
+        [{"node": "Post to Instagram", "type": "main", "index": 0}],
+        [{"node": "Save to History", "type": "main", "index": 0}]
+      ]
+    },
+    "Post to Instagram": {
+      "main": [[{"node": "Save to History", "type": "main", "index": 0}]]
+    }
+  }
+}
+
