@@ -15,6 +15,8 @@ import {
   Database,
   Save,
   TestTube,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import {
   OdooService,
@@ -59,6 +61,9 @@ const OdooIntegrationPage = () => {
   // Logs state
   const [logs, setLogs] = useState<any[]>([]);
 
+  // Password visibility state
+  const [showPassword, setShowPassword] = useState(false);
+
   // Supabase client (singleton)
   const [supabaseClient, setSupabaseClient] = useState<any>(null);
 
@@ -80,6 +85,7 @@ const OdooIntegrationPage = () => {
     if (supabaseClient) {
       loadConfiguration();
       loadLogs();
+      loadSyncHistory();
     }
   }, [supabaseClient]);
 
@@ -104,6 +110,47 @@ const OdooIntegrationPage = () => {
       setLogs(data || []);
     } catch (error) {
       console.error('Failed to load logs:', error);
+    }
+  };
+
+  // Load sync history from database
+  const loadSyncHistory = async () => {
+    try {
+      if (!userProfile?.tenant_id || !supabaseClient) return;
+
+      const { data, error } = await supabaseClient
+        .from('integration_sync_history')
+        .select('*')
+        .eq('tenant_id', userProfile.tenant_id)
+        .eq('integration_type', 'odoo')
+        .order('completed_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Failed to load sync history:', error);
+        return;
+      }
+
+      if (data) {
+        const formattedHistory = data.map(sync => ({
+          id: sync.id,
+          type: sync.sync_type,
+          status: sync.status,
+          message: `${sync.items_successful || 0} başarılı, ${sync.items_failed || 0} başarısız`,
+          timestamp: sync.completed_at,
+          processed: sync.items_processed || 0,
+          successful: sync.items_successful || 0,
+          failed: sync.items_failed || 0,
+          duration: sync.duration_seconds || 0,
+        }));
+        setSyncHistory(formattedHistory);
+        console.log(
+          '📋 Loaded sync history from database:',
+          formattedHistory.length
+        );
+      }
+    } catch (error) {
+      console.error('Failed to load sync history:', error);
     }
   };
 
@@ -254,15 +301,18 @@ const OdooIntegrationPage = () => {
         return;
       }
 
-      const { error } = await supabaseClient
-        .from('tenant_integrations')
-        .upsert({
+      const { error } = await supabaseClient.from('tenant_integrations').upsert(
+        {
           tenant_id: userProfile.tenant_id,
           integration_type: 'odoo',
           config: JSON.stringify(config),
           is_active: true,
           updated_at: new Date().toISOString(),
-        });
+        },
+        {
+          onConflict: 'tenant_id,integration_type',
+        }
+      );
 
       if (error) {
         console.error('Failed to save Odoo configuration:', error);
@@ -302,69 +352,165 @@ const OdooIntegrationPage = () => {
       return;
     }
 
+    if (!supabaseClient || !userProfile?.tenant_id) {
+      toast.error('Kullanıcı bilgileri bulunamadı!');
+      return;
+    }
+
     console.log('🔄 Starting full sync...');
     setIsLoading(true);
+    const startTime = Date.now();
+
     try {
       const result = await odooService.fullSync();
       console.log('✅ Full sync result:', result);
 
-      toast.success(
-        `Tam senkronizasyon tamamlandı! ${result.count} ürün işlendi.`
-      );
+      // Products'ı Supabase'e kaydet
+      let successCount = 0;
+      let failCount = 0;
 
-      // Sync history'ye ekle
-      const newHistoryItem = {
-        id: Date.now(),
-        type: 'full',
-        status: 'success',
-        message: `${result.count} ürün senkronize edildi`,
-        timestamp: new Date().toISOString(),
-        processed: result.count,
-        successful: result.count,
-        failed: 0,
-        duration: Math.floor(Math.random() * 30) + 10, // Mock duration in seconds
-      };
+      for (const product of result.products) {
+        try {
+          const { error } = await supabaseClient.from('products').upsert(
+            {
+              tenant_id: userProfile.tenant_id,
+              name: product.name,
+              sku: product.default_code || `ODOO-${product.id}`,
+              barcode: product.barcode || null, // NEW: Barcode for cross-platform sync
+              vendor: null, // NEW: Will be filled from metadata if available
+              description: product.description || product.description_sale || '',
+              price: product.list_price,
+              compare_at_price: null, // NEW: Odoo doesn't have compare_at_price
+              cost: product.standard_price,
+              categories: Array.isArray(product.categ_id)
+                ? [product.categ_id[1]]
+                : ['Uncategorized'],
+              status: product.active ? 'active' : 'inactive',
+              published_at: product.create_date ? new Date(product.create_date) : null, // NEW: Published date
+              weight: product.weight || null, // NEW: Weight
+              volume: product.volume || null, // NEW: Volume
+              requires_shipping: product.type !== 'service', // NEW: Services don't require shipping
+              is_taxable: true, // NEW: Assume taxable by default
+              sale_ok: product.sale_ok !== false, // NEW: Can be sold
+              purchase_ok: product.purchase_ok !== false, // NEW: Can be purchased
+              inventory_policy: 'continue', // NEW: Default inventory policy
+              metadata: {
+                odoo_id: product.id,
+                odoo_data: product,
+                source: 'odoo',
+                synced_at: new Date().toISOString(),
+              },
+              updated_at: new Date().toISOString(),
+            },
+            {
+              onConflict: 'tenant_id,barcode', // Use barcode as primary key for cross-platform sync
+            }
+          );
 
-      console.log('📝 Adding to sync history:', newHistoryItem);
-      setSyncHistory(prev => {
-        const updated = [newHistoryItem, ...prev.slice(0, 9)];
-        console.log('📝 Updated sync history:', updated);
-        return updated;
-      });
+          if (error) {
+            console.error('Failed to save product:', product.name, error);
+            failCount++;
+          } else {
+            successCount++;
+            
+            // Create platform mapping if barcode exists
+            if (product.barcode) {
+              try {
+                await supabaseClient
+                  .from('product_platform_mappings')
+                  .upsert({
+                    tenant_id: userProfile.tenant_id,
+                    product_id: null, // Will be filled by trigger or lookup
+                    platform: 'odoo',
+                    external_id: product.id.toString(),
+                    external_data: {
+                      odoo_id: product.id,
+                      odoo_data: product,
+                      source: 'odoo',
+                      synced_at: new Date().toISOString(),
+                    },
+                    sync_status: 'active',
+                    platform_stock_quantity: null, // Will be filled from stock_levels
+                    platform_price: product.list_price,
+                    platform_status: product.active ? 'active' : 'inactive',
+                    external_created_at: product.create_date ? new Date(product.create_date) : null,
+                    external_updated_at: product.write_date ? new Date(product.write_date) : null,
+                  }, {
+                    onConflict: 'tenant_id,platform,external_id'
+                  });
+              } catch (mappingError) {
+                console.error('Failed to create platform mapping:', mappingError);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to save product:', product.name, error);
+          failCount++;
+        }
+      }
+
+      const duration = Math.floor((Date.now() - startTime) / 1000);
+
+      // Sync history'ye kaydet
+      const { data: syncHistory, error: syncError } = await supabaseClient
+        .from('integration_sync_history')
+        .insert({
+          tenant_id: userProfile.tenant_id,
+          integration_type: 'odoo',
+          sync_type: 'full',
+          status: failCount === 0 ? 'completed' : 'partial',
+          items_processed: result.count,
+          items_successful: successCount,
+          items_failed: failCount,
+          duration_seconds: duration,
+          started_at: new Date(startTime).toISOString(),
+          completed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (syncError) {
+        console.error('Failed to save sync history:', syncError);
+      }
 
       // Log ekle
       await saveLogToDatabase({
-        level: 'info',
-        message: `Tam senkronizasyon tamamlandı: ${result.count} ürün işlendi`,
+        level: failCount === 0 ? 'info' : 'warning',
+        message: `Tam senkronizasyon tamamlandı: ${successCount} başarılı, ${failCount} başarısız`,
         type: 'sync',
         details: {
           operation: 'full_sync',
-          products_processed: result.count,
-          duration: newHistoryItem.duration,
+          products_count: result.count,
+          successful: successCount,
+          failed: failCount,
+          duration: duration,
         },
       });
+
+      toast.success(
+        `Tam senkronizasyon tamamlandı! ${successCount} ürün senkronize edildi${failCount > 0 ? `, ${failCount} hata` : ''}.`
+      );
+
+      // UI state'i güncelle
+      await loadSyncHistory();
+      await loadLogs();
     } catch (error) {
       console.error('Full sync failed:', error);
-      toast.error('Senkronizasyon başarısız!');
+      const duration = Math.floor((Date.now() - startTime) / 1000);
 
-      // Sync history'ye ekle
-      const newHistoryItem = {
-        id: Date.now(),
-        type: 'full',
-        status: 'error',
-        message: 'Senkronizasyon başarısız',
-        timestamp: new Date().toISOString(),
-        processed: 0,
-        successful: 0,
-        failed: 1,
-        duration: 0,
-      };
-
-      console.log('📝 Adding error to sync history:', newHistoryItem);
-      setSyncHistory(prev => {
-        const updated = [newHistoryItem, ...prev.slice(0, 9)];
-        console.log('📝 Updated sync history (error):', updated);
-        return updated;
+      // Sync history'ye kaydet (hata durumu)
+      await supabaseClient.from('integration_sync_history').insert({
+        tenant_id: userProfile.tenant_id,
+        integration_type: 'odoo',
+        sync_type: 'full',
+        status: 'failed',
+        items_processed: 0,
+        items_successful: 0,
+        items_failed: 1,
+        duration_seconds: duration,
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        started_at: new Date(startTime).toISOString(),
+        completed_at: new Date().toISOString(),
       });
 
       // Error log ekle
@@ -377,6 +523,14 @@ const OdooIntegrationPage = () => {
           error: error instanceof Error ? error.message : String(error),
         },
       });
+
+      toast.error(
+        `Senkronizasyon başarısız: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`
+      );
+
+      // UI state'i güncelle
+      await loadSyncHistory();
+      await loadLogs();
     } finally {
       setIsLoading(false);
     }
@@ -799,15 +953,28 @@ const OdooIntegrationPage = () => {
                 <label className='block text-sm font-medium text-white/80 mb-2'>
                   Şifre
                 </label>
-                <input
-                  type='password'
-                  value={config.password}
-                  onChange={e =>
-                    setConfig({ ...config, password: e.target.value })
-                  }
-                  placeholder='your_password'
-                  className='w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-orange-500'
-                />
+                <div className='relative'>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={config.password}
+                    onChange={e =>
+                      setConfig({ ...config, password: e.target.value })
+                    }
+                    placeholder='your_password'
+                    className='w-full px-4 py-2 pr-12 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-orange-500'
+                  />
+                  <button
+                    type='button'
+                    onClick={() => setShowPassword(!showPassword)}
+                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 transition-colors'
+                  >
+                    {showPassword ? (
+                      <EyeOff className='w-5 h-5' />
+                    ) : (
+                      <Eye className='w-5 h-5' />
+                    )}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className='block text-sm font-medium text-white/80 mb-2'>

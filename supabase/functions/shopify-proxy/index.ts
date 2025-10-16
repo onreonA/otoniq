@@ -159,18 +159,22 @@ async function getShopifyProducts(
   page: number
 ) {
   try {
-    const response = await fetch(
-      `${baseUrl}/products.json?limit=${limit}&page=${page}`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Shopify-Access-Token': accessToken,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // Shopify now uses cursor-based pagination, ignore page parameter
+    const response = await fetch(`${baseUrl}/products.json?limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Shopify API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
       throw new Error(
         `Shopify API error: ${response.status} ${response.statusText}`
       );
@@ -248,31 +252,48 @@ async function syncProductsToDatabase(
       };
     }
 
-    // Transform Shopify products to Otoniq format
-    const transformedProducts = products.map((product: any) => ({
-      name: product.title,
-      description: product.body_html || '',
-      sku: product.variants?.[0]?.sku || '',
-      price: parseFloat(product.variants?.[0]?.price || '0'),
-      cost_price: parseFloat(product.variants?.[0]?.compare_at_price || '0'),
-      stock_quantity: product.variants?.[0]?.inventory_quantity || 0,
-      category: product.product_type || 'Uncategorized',
-      brand: product.vendor || '',
-      tags: product.tags || '',
-      status: product.status === 'active' ? 'active' : 'inactive',
-      source: 'shopify',
-      external_id: product.id.toString(),
-      external_data: {
-        shopify_id: product.id,
-        shopify_handle: product.handle,
-        variants: product.variants,
-        images: product.images,
-        created_at: product.created_at,
-        updated_at: product.updated_at,
-      },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
+    // Transform Shopify products to Otoniq format with new fields
+    const transformedProducts = products.map((product: any) => {
+      const primaryVariant = product.variants?.[0];
+      
+      return {
+        name: product.title,
+        description: product.body_html || '',
+        sku: primaryVariant?.sku || `SHOPIFY-${product.id}`,
+        barcode: primaryVariant?.barcode || null, // NEW: Barcode for cross-platform sync
+        vendor: product.vendor || null, // NEW: Vendor/Brand
+        price: parseFloat(primaryVariant?.price || '0'),
+        compare_at_price: parseFloat(primaryVariant?.compare_at_price || '0'), // NEW: Original price
+        cost: parseFloat(primaryVariant?.compare_at_price || '0'),
+        categories: product.product_type
+          ? [product.product_type]
+          : ['Uncategorized'],
+        tags: product.tags
+          ? product.tags.split(',').map((t: string) => t.trim())
+          : [],
+        status: product.status === 'active' ? 'active' : 'inactive',
+        published_at: product.published_at ? new Date(product.published_at) : null, // NEW: Published date
+        weight: primaryVariant?.grams ? primaryVariant.grams / 1000 : null, // Convert grams to kg
+        volume: null, // NEW: Will be calculated if needed
+        requires_shipping: primaryVariant?.requires_shipping !== false, // NEW: Shipping required
+        is_taxable: primaryVariant?.taxable !== false, // NEW: Taxable
+        sale_ok: product.status === 'active', // NEW: Can be sold
+        purchase_ok: true, // NEW: Can be purchased
+        inventory_policy: primaryVariant?.inventory_policy === 'deny' ? 'deny' : 'continue', // NEW: Inventory policy
+        metadata: {
+          shopify_id: product.id,
+          shopify_handle: product.handle,
+          product_type: product.product_type || '',
+          source: 'shopify',
+          synced_at: new Date().toISOString(),
+          variants: product.variants,
+          images: product.images,
+          shopify_created_at: product.created_at,
+          shopify_updated_at: product.updated_at,
+        },
+        updated_at: new Date().toISOString(),
+      };
+    });
 
     // Get user's tenant_id
     const { data: profile } = await supabaseClient
@@ -285,22 +306,51 @@ async function syncProductsToDatabase(
       throw new Error('User tenant not found');
     }
 
-    // Upsert products to database
+    // Upsert products to database with barcode conflict resolution
     const { error: upsertError } = await supabaseClient.from('products').upsert(
       transformedProducts.map(product => ({
         ...product,
         tenant_id: profile.tenant_id,
       })),
-      { onConflict: 'tenant_id,external_id' }
+      { onConflict: 'tenant_id,barcode' } // Use barcode as primary key for cross-platform sync
     );
 
     if (upsertError) {
       throw new Error(`Database error: ${upsertError.message}`);
     }
 
+    // Create platform mappings for each product
+    const mappingPromises = transformedProducts.map(async (product) => {
+      if (product.barcode) {
+        const { error: mappingError } = await supabaseClient
+          .from('product_platform_mappings')
+          .upsert({
+            tenant_id: profile.tenant_id,
+            product_id: null, // Will be filled by trigger or lookup
+            platform: 'shopify',
+            external_id: product.metadata.shopify_id.toString(),
+            external_data: product.metadata,
+            sync_status: 'active',
+            platform_stock_quantity: product.metadata.variants?.[0]?.inventory_quantity || 0,
+            platform_price: product.price,
+            platform_status: product.status,
+            external_created_at: product.metadata.shopify_created_at ? new Date(product.metadata.shopify_created_at) : null,
+            external_updated_at: product.metadata.shopify_updated_at ? new Date(product.metadata.shopify_updated_at) : null,
+          }, {
+            onConflict: 'tenant_id,platform,external_id'
+          });
+
+        if (mappingError) {
+          console.error('Failed to create platform mapping:', mappingError);
+        }
+      }
+    });
+
+    await Promise.all(mappingPromises);
+
     return {
       success: true,
-      message: `Successfully synced ${products.length} products`,
+      message: `Successfully synced ${products.length} products with platform mappings`,
       synced: products.length,
       products: transformedProducts,
     };

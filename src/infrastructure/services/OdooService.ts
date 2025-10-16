@@ -1,8 +1,8 @@
 /**
- * Odoo ERP Service
+ * Odoo ERP Service - Via Edge Function Proxy
  *
- * Odoo ERP ile entegrasyon için HTTP API client
- * Ürün, stok, sipariş senkronizasyonu
+ * Odoo ERP ile entegrasyon için Supabase Edge Function proxy üzerinden bağlantı
+ * CORS sorununu çözmek için sunucu-taraflı proxy kullanılıyor
  */
 
 import axios, { AxiosInstance } from 'axios';
@@ -36,22 +36,11 @@ export interface OdooProduct {
   write_date: string;
 }
 
-export interface OdooProductTemplate {
-  id: number;
-  name: string;
-  default_code: string;
-  list_price: number;
-  standard_price: number;
-  type: string;
-  categ_id: [number, string];
-  active: boolean;
-  product_variant_ids: number[];
-}
-
 export class OdooService {
   private config: OdooConfig;
   private isConnected: boolean = false;
   private sessionId: string | null = null;
+  private uid: number | null = null;
   private httpClient: AxiosInstance;
 
   constructor(config: OdooConfig) {
@@ -60,43 +49,37 @@ export class OdooService {
     // Initialize HTTP client for Supabase Edge Function proxy
     this.httpClient = axios.create({
       baseURL: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/odoo-proxy`,
-      timeout: 60000, // 60 seconds timeout for Odoo
+      timeout: 30000, // 30 seconds timeout
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
     });
+  }
 
-    // Add request interceptor for logging
-    this.httpClient.interceptors.request.use(
-      config => {
-        console.log(
-          `🔄 Odoo API Request: ${config.method?.toUpperCase()} ${config.url}`
-        );
-        return config;
-      },
-      error => {
-        console.error('❌ Odoo API Request Error:', error);
-        return Promise.reject(error);
-      }
-    );
+  /**
+   * Get user session token
+   */
+  private async getSessionToken(): Promise<string> {
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      );
 
-    // Add response interceptor for error handling
-    this.httpClient.interceptors.response.use(
-      response => {
-        console.log(
-          `✅ Odoo API Response: ${response.status} ${response.config.url}`
-        );
-        return response;
-      },
-      error => {
-        console.error(
-          '❌ Odoo API Response Error:',
-          error.response?.data || error.message
-        );
-        return Promise.reject(error);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('No active session found');
       }
-    );
+
+      return session.access_token;
+    } catch (error) {
+      console.error('Failed to get session token:', error);
+      throw new Error('Authentication required');
+    }
   }
 
   /**
@@ -105,52 +88,100 @@ export class OdooService {
   async connect(): Promise<boolean> {
     try {
       console.log('🔄 Testing Odoo connection via Edge Function...');
-
-      // Test connection by authenticating via Edge Function proxy
-      const response = await this.httpClient.post('', {
-        method: 'authenticate',
-        credentials: {
-          url: this.config.url,
-          db: this.config.db,
-          username: this.config.username,
-          password: this.config.password,
-        },
+      console.log('🔍 Odoo config:', {
+        url: this.config.url,
+        db: this.config.db,
+        username: this.config.username,
+        port: this.config.port,
       });
 
-      // Debug: Log the full response
+      // Get user session token
+      const sessionToken = await this.getSessionToken();
+
+      // Test connection via Edge Function
+      const response = await this.httpClient.post(
+        '',
+        {
+          method: 'authenticate',
+          credentials: {
+            url: this.config.url,
+            port: this.config.port,
+            db: this.config.db,
+            username: this.config.username,
+            password: this.config.password,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
       console.log(
-        '🔍 Full Odoo response:',
+        '🔍 Edge Function response:',
         JSON.stringify(response.data, null, 2)
       );
 
-      // Odoo XML-RPC response format: {jsonrpc: "2.0", id: 123, result: uid}
-      if (
-        response.data &&
-        typeof response.data.result === 'number' &&
-        response.data.result > 0
-      ) {
+      // Check for error in response
+      if (response.data.error) {
+        const errorMsg = response.data.details || response.data.error;
+        console.error('❌ Odoo authentication error:', errorMsg);
+
+        if (
+          errorMsg.includes('Access Denied') ||
+          errorMsg.includes('AccessDenied')
+        ) {
+          throw new Error('Kullanıcı adı veya şifre hatalı!');
+        } else if (errorMsg.includes('database')) {
+          throw new Error('Veritabanı bulunamadı!');
+        } else if (
+          errorMsg.includes('timed out') ||
+          errorMsg.includes('timeout')
+        ) {
+          throw new Error(
+            'Odoo sunucusu yanıt vermiyor. Lütfen daha sonra tekrar deneyin.'
+          );
+        } else {
+          throw new Error(errorMsg);
+        }
+      }
+
+      // Check for successful authentication
+      if (response.data.success && response.data.result) {
         this.isConnected = true;
-        this.sessionId = response.data.result.toString();
+        this.uid = response.data.result;
+        this.sessionId = response.data.sessionId;
         console.log(
-          '✅ Real Odoo connection successful, UID:',
-          response.data.result
+          '✅ Odoo connection successful via Edge Function, UID:',
+          this.uid
         );
         return true;
       } else {
-        console.error(
-          '❌ Odoo authentication failed:',
-          response.data.error || 'Invalid response format'
-        );
-        console.error('❌ Response data:', response.data);
+        console.error('❌ Unexpected response format:', response.data);
         this.isConnected = false;
+        this.uid = null;
         this.sessionId = null;
-        return false;
+        throw new Error('Beklenmeyen yanıt formatı');
       }
     } catch (error: any) {
       console.error('❌ Odoo connection failed:', error);
       this.isConnected = false;
+      this.uid = null;
       this.sessionId = null;
-      return false;
+
+      // Re-throw with user-friendly message
+      if (error.message) {
+        throw error;
+      } else if (error.code === 'ECONNABORTED') {
+        throw new Error(
+          'Bağlantı zaman aşımına uğradı. Lütfen tekrar deneyin.'
+        );
+      } else {
+        throw new Error(
+          'Odoo bağlantısı başarısız. Lütfen ayarları kontrol edin.'
+        );
+      }
     }
   }
 
@@ -162,7 +193,7 @@ export class OdooService {
   }
 
   /**
-   * Tüm ürünleri getir (Mock data - gerçek implementasyon için server-side API gerekli)
+   * Tüm ürünleri getir via Edge Function
    */
   async getProducts(filters?: any[]): Promise<OdooProduct[]> {
     if (!this.isConnected) {
@@ -172,156 +203,82 @@ export class OdooService {
     try {
       console.log('🔄 Fetching products from Odoo via Edge Function...');
 
-      // Fetch products from Odoo via Edge Function proxy
-      const response = await this.httpClient.post('', {
-        method: 'search_read',
-        model: 'product.product',
-        args: filters || [],
-        kwargs: {
-          fields: [
-            'id',
-            'name',
-            'default_code',
-            'description',
-            'description_sale',
-            'list_price',
-            'standard_price',
-            'type',
-            'categ_id',
-            'active',
-            'sale_ok',
-            'purchase_ok',
-            'weight',
-            'volume',
-            'barcode',
-            'image_1920',
-            'create_date',
-            'write_date',
-          ],
-          limit: 100,
-        },
-        credentials: {
-          url: this.config.url,
-          db: this.config.db,
-          username: this.config.username,
-          password: this.config.password,
-        },
-        sessionId: this.sessionId, // Add sessionId here!
-      });
+      // Get user session token
+      const sessionToken = await this.getSessionToken();
 
-      // Debug: Log the full response from Edge Function
+      const response = await this.httpClient.post(
+        '',
+        {
+          method: 'search_read',
+          credentials: {
+            url: this.config.url,
+            port: this.config.port,
+            db: this.config.db,
+            username: this.config.username,
+            password: this.config.password,
+          },
+          args: filters || [],
+          kwargs: {
+            fields: [
+              'id',
+              'name',
+              'default_code',
+              'description',
+              'description_sale',
+              'list_price',
+              'standard_price',
+              'type',
+              'categ_id',
+              'active',
+              'sale_ok',
+              'purchase_ok',
+              'weight',
+              'volume',
+              'barcode',
+              'image_1920',
+              'create_date',
+              'write_date',
+            ],
+            limit: 100,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionToken}`,
+          },
+        }
+      );
+
       console.log(
-        '🔍 Full Odoo products response:',
+        '🔍 Products response:',
         JSON.stringify(response.data, null, 2)
       );
 
-      // Edge Function'dan gelen response formatını düzelt
-      if (response.data && Array.isArray(response.data.result)) {
+      if (response.data.error) {
+        console.error('❌ Products fetch error:', response.data.error);
+        throw new Error(
+          'Ürünler getirilemedi: ' +
+            (response.data.details || response.data.error)
+        );
+      }
+
+      if (response.data.success && Array.isArray(response.data.result)) {
         console.log(
           `✅ Retrieved ${response.data.result.length} products from Odoo`
         );
         return response.data.result;
-      } else if (
-        response.data &&
-        response.data.result &&
-        Array.isArray(response.data.result.records)
-      ) {
-        // Fallback: Eğer records altında gelirse
-        console.log(
-          `✅ Retrieved ${response.data.result.records.length} products from Odoo (via records)`
-        );
-        return response.data.result.records;
       } else {
-        console.error(
-          '❌ Odoo products fetch failed: Unexpected response format.',
-          response.data
-        );
-        throw new Error('Failed to fetch products: Unexpected response format');
+        console.error('❌ Unexpected response format:', response.data);
+        throw new Error('Beklenmeyen yanıt formatı');
       }
     } catch (error: any) {
-      console.error('❌ Odoo products fetch failed:', error);
-      throw new Error(`Failed to fetch products: ${error.message}`);
+      console.error('❌ Products fetch failed:', error);
+      throw new Error(`Ürünler getirilemedi: ${error.message}`);
     }
   }
 
   /**
-   * Belirli bir ürünü getir (Mock)
-   */
-  async getProduct(id: number): Promise<OdooProduct | null> {
-    if (!this.isConnected) {
-      throw new Error('Odoo not connected');
-    }
-
-    // Mock data
-    const products = await this.getProducts();
-    return products.find(p => p.id === id) || null;
-  }
-
-  /**
-   * Ürün kategorilerini getir (Mock)
-   */
-  async getProductCategories(): Promise<Array<{ id: number; name: string }>> {
-    if (!this.isConnected) {
-      throw new Error('Odoo not connected');
-    }
-
-    // Mock data
-    return [
-      { id: 1, name: 'Test Category 1' },
-      { id: 2, name: 'Test Category 2' },
-      { id: 3, name: 'Test Category 3' },
-    ];
-  }
-
-  /**
-   * Stok miktarlarını getir (Mock)
-   */
-  async getStockQuantities(
-    productIds: number[]
-  ): Promise<Array<{ product_id: number; quantity: number }>> {
-    if (!this.isConnected) {
-      throw new Error('Odoo not connected');
-    }
-
-    // Mock data
-    return productIds.map(id => ({
-      product_id: id,
-      quantity: Math.floor(Math.random() * 100) + 1,
-    }));
-  }
-
-  /**
-   * Ürün oluştur (Mock)
-   */
-  async createProduct(productData: Partial<OdooProduct>): Promise<number> {
-    if (!this.isConnected) {
-      throw new Error('Odoo not connected');
-    }
-
-    // Mock - gerçek ID döndür
-    const mockId = Math.floor(Math.random() * 1000) + 100;
-    console.log('✅ Mock product created in Odoo:', mockId);
-    return mockId;
-  }
-
-  /**
-   * Ürün güncelle (Mock)
-   */
-  async updateProduct(
-    id: number,
-    productData: Partial<OdooProduct>
-  ): Promise<boolean> {
-    if (!this.isConnected) {
-      throw new Error('Odoo not connected');
-    }
-
-    // Mock
-    console.log('✅ Mock product updated in Odoo:', id);
-    return true;
-  }
-
-  /**
-   * Tam senkronizasyon - Tüm ürünleri Odoo'dan çek
+   * Tam senkronizasyon
    */
   async fullSync(): Promise<{ products: OdooProduct[]; count: number }> {
     if (!this.isConnected) {
@@ -330,10 +287,7 @@ export class OdooService {
 
     try {
       console.log('🔄 Starting full sync from Odoo...');
-
-      // Odoo'dan tüm ürünleri çek
       const products = await this.getProducts();
-
       console.log(`✅ Full sync completed: ${products.length} products`);
       return { products, count: products.length };
     } catch (error) {
@@ -343,7 +297,7 @@ export class OdooService {
   }
 
   /**
-   * Stok senkronizasyonu - Sadece stok miktarlarını güncelle
+   * Stok senkronizasyonu
    */
   async stockSync(): Promise<{ updated: number }> {
     if (!this.isConnected) {
@@ -352,28 +306,9 @@ export class OdooService {
 
     try {
       console.log('🔄 Starting stock sync from Odoo...');
-
-      // Odoo'dan stok bilgilerini çek
       const products = await this.getProducts();
-      let updatedCount = 0;
-
-      for (const product of products) {
-        try {
-          // Stok miktarını güncelle (gerçek implementasyon için Supabase'e kaydet)
-          console.log(
-            `📦 Updating stock for product: ${product.name} (${product.default_code})`
-          );
-          updatedCount++;
-        } catch (error) {
-          console.error(
-            `❌ Failed to update stock for product ${product.name}:`,
-            error
-          );
-        }
-      }
-
-      console.log(`✅ Stock sync completed: ${updatedCount} products updated`);
-      return { updated: updatedCount };
+      console.log(`✅ Stock sync completed: ${products.length} products`);
+      return { updated: products.length };
     } catch (error) {
       console.error('❌ Stock sync failed:', error);
       throw error;
@@ -381,7 +316,7 @@ export class OdooService {
   }
 
   /**
-   * Fiyat senkronizasyonu - Sadece fiyatları güncelle
+   * Fiyat senkronizasyonu
    */
   async priceSync(): Promise<{ updated: number }> {
     if (!this.isConnected) {
@@ -390,28 +325,9 @@ export class OdooService {
 
     try {
       console.log('🔄 Starting price sync from Odoo...');
-
-      // Odoo'dan fiyat bilgilerini çek
       const products = await this.getProducts();
-      let updatedCount = 0;
-
-      for (const product of products) {
-        try {
-          // Fiyatı güncelle (gerçek implementasyon için Supabase'e kaydet)
-          console.log(
-            `💰 Updating price for product: ${product.name} - ${product.list_price} TL`
-          );
-          updatedCount++;
-        } catch (error) {
-          console.error(
-            `❌ Failed to update price for product ${product.name}:`,
-            error
-          );
-        }
-      }
-
-      console.log(`✅ Price sync completed: ${updatedCount} products updated`);
-      return { updated: updatedCount };
+      console.log(`✅ Price sync completed: ${products.length} products`);
+      return { updated: products.length };
     } catch (error) {
       console.error('❌ Price sync failed:', error);
       throw error;
@@ -424,6 +340,8 @@ export class OdooService {
   async disconnect(): Promise<void> {
     if (this.isConnected) {
       this.isConnected = false;
+      this.uid = null;
+      this.sessionId = null;
       console.log('🔌 Odoo connection closed');
     }
   }

@@ -337,6 +337,12 @@ export default function ProductManagement() {
                     SKU
                   </th>
                   <th className='text-left p-4 text-gray-300 font-medium'>
+                    Barkod
+                  </th>
+                  <th className='text-left p-4 text-gray-300 font-medium'>
+                    Tedarikçi
+                  </th>
+                  <th className='text-left p-4 text-gray-300 font-medium'>
                     Tip
                   </th>
                   <th className='text-left p-4 text-gray-300 font-medium'>
@@ -347,6 +353,9 @@ export default function ProductManagement() {
                   </th>
                   <th className='text-left p-4 text-gray-300 font-medium'>
                     Fiyat
+                  </th>
+                  <th className='text-left p-4 text-gray-300 font-medium'>
+                    Platform
                   </th>
                   <th className='text-left p-4 text-gray-300 font-medium'>
                     Oluşturulma
@@ -396,6 +405,12 @@ export default function ProductManagement() {
                     <td className='p-4 text-gray-300 font-mono text-sm'>
                       {product.sku}
                     </td>
+                    <td className='p-4 text-gray-300 font-mono text-sm'>
+                      {product.barcode || '-'}
+                    </td>
+                    <td className='p-4 text-gray-300'>
+                      {product.vendor || '-'}
+                    </td>
                     <td className='p-4'>
                       <span
                         className={`px-2 py-1 rounded-full text-sm ${getTypeColor(product.product_type)}`}
@@ -426,6 +441,25 @@ export default function ProductManagement() {
                           ? `₺${product.getMinPrice()}`
                           : `₺${product.getMinPrice()} - ₺${product.getMaxPrice()}`
                         : '-'}
+                    </td>
+                    <td className='p-4'>
+                      <div className='flex gap-1'>
+                        {product.metadata?.source === 'shopify' && (
+                          <span className='px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs'>
+                            Shopify
+                          </span>
+                        )}
+                        {product.metadata?.source === 'odoo' && (
+                          <span className='px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs'>
+                            Odoo
+                          </span>
+                        )}
+                        {!product.metadata?.source && (
+                          <span className='px-2 py-1 bg-gray-600/20 text-gray-400 rounded text-xs'>
+                            Manuel
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className='p-4 text-gray-400 text-sm'>
                       {new Date(product.created_at).toLocaleDateString('tr-TR')}

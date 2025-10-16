@@ -878,26 +878,103 @@ const ShopifyIntegrationPage = () => {
         {activeTab === 'mapping' && (
           <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6'>
             <h2 className='text-xl font-bold text-white mb-4'>
-              Ürün Eşleştirme Kuralları
+              Barkod Bazlı Ürün Eşleştirme
             </h2>
             <p className='text-white/70 mb-6'>
-              Shopify ve Otoniq arasında ürün eşleştirme kurallarını yönetin.
-              Otomatik eşleştirme ve manuel eşleştirme seçenekleri mevcuttur.
+              Shopify ürünleri barkod kodu ile Otoniq ürünleriyle eşleştirilir.
+              Aynı barkoda sahip ürünler tüm platformlarda senkronize edilir.
             </p>
+            
+            {/* Barkod Mapping Status */}
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+              <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
+                <div className='flex items-center gap-3 mb-2'>
+                  <div className='w-2 h-2 bg-green-500 rounded-full'></div>
+                  <span className='text-sm font-medium text-white'>Eşleşen Ürünler</span>
+                </div>
+                <p className='text-2xl font-bold text-white'>0</p>
+                <p className='text-xs text-white/50'>Barkod ile eşleşen</p>
+              </div>
+              
+              <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
+                <div className='flex items-center gap-3 mb-2'>
+                  <div className='w-2 h-2 bg-yellow-500 rounded-full'></div>
+                  <span className='text-sm font-medium text-white'>Eşleşmeyen Ürünler</span>
+                </div>
+                <p className='text-2xl font-bold text-white'>0</p>
+                <p className='text-xs text-white/50'>Barkod eksik</p>
+              </div>
+              
+              <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
+                <div className='flex items-center gap-3 mb-2'>
+                  <div className='w-2 h-2 bg-blue-500 rounded-full'></div>
+                  <span className='text-sm font-medium text-white'>Toplam Ürün</span>
+                </div>
+                <p className='text-2xl font-bold text-white'>0</p>
+                <p className='text-xs text-white/50'>Shopify'dan gelen</p>
+              </div>
+            </div>
+
+            {/* Mapping Rules */}
             <div className='space-y-4'>
               <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
                 <div className='flex items-center justify-between'>
                   <div>
                     <p className='text-sm font-medium text-white'>
-                      SKU Bazlı Otomatik Eşleştirme
+                      Barkod Bazlı Otomatik Eşleştirme
                     </p>
                     <p className='text-xs text-white/50'>
-                      SKU kodlarına göre otomatik ürün eşleştirme
+                      Barkod kodu ile otomatik ürün eşleştirme (Öncelik: 1)
                     </p>
                   </div>
                   <div className='w-12 h-6 bg-green-600 rounded-full relative'>
                     <div className='absolute right-1 top-1 w-4 h-4 bg-white rounded-full'></div>
                   </div>
+                </div>
+              </div>
+              
+              <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <p className='text-sm font-medium text-white'>
+                      SKU Bazlı Yedek Eşleştirme
+                    </p>
+                    <p className='text-xs text-white/50'>
+                      Barkod yoksa SKU ile eşleştirme (Öncelik: 2)
+                    </p>
+                  </div>
+                  <div className='w-12 h-6 bg-yellow-600 rounded-full relative'>
+                    <div className='absolute right-1 top-1 w-4 h-4 bg-white rounded-full'></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <p className='text-sm font-medium text-white'>
+                      Manuel Eşleştirme
+                    </p>
+                    <p className='text-xs text-white/50'>
+                      Otomatik eşleşmeyen ürünleri manuel eşleştir
+                    </p>
+                  </div>
+                  <button className='px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors'>
+                    Yönet
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Mappings */}
+            <div className='mt-6'>
+              <h3 className='text-lg font-semibold text-white mb-4'>Son Eşleştirmeler</h3>
+              <div className='space-y-2'>
+                <div className='text-center py-8'>
+                  <p className='text-white/60'>Henüz eşleştirme yok</p>
+                  <p className='text-white/40 text-sm'>
+                    Shopify'dan ürün senkronizasyonu yaptıktan sonra burada görünecek
+                  </p>
                 </div>
               </div>
             </div>

@@ -84,7 +84,21 @@ export class Product {
     public seo_description?: string,
     public seo_keywords: string[] = [],
     public created_at: Date = new Date(),
-    public updated_at: Date = new Date()
+    public updated_at: Date = new Date(),
+    // NEW: Multi-platform sync fields
+    public barcode?: string,
+    public vendor?: string,
+    public compare_at_price?: number,
+    public tax_rate?: number,
+    public discount_percentage?: number,
+    public final_price?: number,
+    public volume?: number,
+    public requires_shipping?: boolean,
+    public is_taxable?: boolean,
+    public sale_ok?: boolean,
+    public purchase_ok?: boolean,
+    public inventory_policy?: 'continue' | 'deny',
+    public published_at?: Date
   ) {
     // Ensure arrays are always initialized
     this.variants = this.variants || [];
@@ -408,4 +422,16 @@ export interface CreateProductDto {
   seo_description?: string;
   seo_keywords?: string[];
   metadata?: Record<string, any>;
+  // NEW: Multi-platform sync fields
+  barcode?: string;
+  vendor?: string;
+  compare_at_price?: number;
+  tax_rate?: number;
+  volume?: number;
+  requires_shipping?: boolean;
+  is_taxable?: boolean;
+  sale_ok?: boolean;
+  purchase_ok?: boolean;
+  inventory_policy?: 'continue' | 'deny';
+  published_at?: Date;
 }
