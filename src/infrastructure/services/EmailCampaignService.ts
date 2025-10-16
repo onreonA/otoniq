@@ -9,7 +9,12 @@ export interface EmailCampaign {
   id: string;
   tenant_id: string;
   campaign_name: string;
-  campaign_type: 'one_time' | 'drip' | 'promotional' | 'newsletter' | 'transactional';
+  campaign_type:
+    | 'one_time'
+    | 'drip'
+    | 'promotional'
+    | 'newsletter'
+    | 'transactional';
   status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'paused' | 'failed';
   subject_line: string;
   preview_text?: string;
@@ -38,7 +43,14 @@ export interface EmailRecipient {
   tenant_id: string;
   email: string;
   name?: string;
-  status: 'pending' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'failed';
+  status:
+    | 'pending'
+    | 'sent'
+    | 'delivered'
+    | 'opened'
+    | 'clicked'
+    | 'bounced'
+    | 'failed';
   sent_at?: string;
   delivered_at?: string;
   opened_at?: string;
@@ -202,7 +214,7 @@ export class EmailCampaignService {
     recipients: Array<{ email: string; name?: string }>
   ): Promise<EmailRecipient[]> {
     try {
-      const recipientRecords = recipients.map((r) => ({
+      const recipientRecords = recipients.map(r => ({
         campaign_id: campaignId,
         tenant_id: tenantId,
         email: r.email,
@@ -322,12 +334,15 @@ export class EmailCampaignService {
 
       const totalSent = campaigns.reduce((sum, c) => sum + c.sent_count, 0);
       const totalOpened = campaigns.reduce((sum, c) => sum + c.opened_count, 0);
-      const totalClicked = campaigns.reduce((sum, c) => sum + c.clicked_count, 0);
+      const totalClicked = campaigns.reduce(
+        (sum, c) => sum + c.clicked_count,
+        0
+      );
 
       return {
         totalCampaigns: campaigns.length,
         activeCampaigns: campaigns.filter(
-          (c) => c.status === 'sending' || c.status === 'scheduled'
+          c => c.status === 'sending' || c.status === 'scheduled'
         ).length,
         totalSent,
         averageOpenRate: totalSent > 0 ? (totalOpened / totalSent) * 100 : 0,

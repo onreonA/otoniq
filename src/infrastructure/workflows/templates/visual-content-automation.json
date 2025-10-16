@@ -160,26 +160,27 @@
   ],
   "connections": {
     "Webhook Trigger": {
-      "main": [[{"node": "Get Product Data", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Get Product Data", "type": "main", "index": 0 }]]
     },
     "Get Product Data": {
-      "main": [[{"node": "Generate Design with Canva", "type": "main", "index": 0}]]
+      "main": [
+        [{ "node": "Generate Design with Canva", "type": "main", "index": 0 }]
+      ]
     },
     "Generate Design with Canva": {
-      "main": [[{"node": "Enhance Image", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Enhance Image", "type": "main", "index": 0 }]]
     },
     "Enhance Image": {
-      "main": [[{"node": "Should Auto-Post?", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Should Auto-Post?", "type": "main", "index": 0 }]]
     },
     "Should Auto-Post?": {
       "main": [
-        [{"node": "Post to Instagram", "type": "main", "index": 0}],
-        [{"node": "Save to History", "type": "main", "index": 0}]
+        [{ "node": "Post to Instagram", "type": "main", "index": 0 }],
+        [{ "node": "Save to History", "type": "main", "index": 0 }]
       ]
     },
     "Post to Instagram": {
-      "main": [[{"node": "Save to History", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Save to History", "type": "main", "index": 0 }]]
     }
   }
 }
-

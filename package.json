@@ -18,6 +18,10 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "cypress": "cypress open",
+    "cypress:headless": "cypress run",
+    "e2e": "start-server-and-test dev http://localhost:3000 cypress",
+    "e2e:headless": "start-server-and-test dev http://localhost:3000 cypress:headless",
     "analyze": "npm run build && npx vite-bundle-analyzer out",
     "build:analyze": "npm run build && open out/bundle-analysis.html"
   },

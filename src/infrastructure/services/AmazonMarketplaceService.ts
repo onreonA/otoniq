@@ -236,7 +236,11 @@ export class AmazonMarketplaceService {
       totalRevenue: 45678.9,
       averageOrderValue: 292.81,
       topProducts: [
-        { sku: 'OTONIQ-PROD-001', title: 'Premium Bluetooth Kulaklık', sales: 45 },
+        {
+          sku: 'OTONIQ-PROD-001',
+          title: 'Premium Bluetooth Kulaklık',
+          sales: 45,
+        },
         { sku: 'OTONIQ-PROD-002', title: 'Akıllı Saat', sales: 38 },
         { sku: 'OTONIQ-PROD-003', title: 'Kablosuz Şarj Cihazı', sales: 29 },
       ],
@@ -263,4 +267,3 @@ export class AmazonMarketplaceService {
     };
   }
 }
-

@@ -11,7 +11,9 @@ export interface TelegramMessage {
   text: string;
   parseMode?: 'Markdown' | 'HTML';
   replyMarkup?: {
-    inlineKeyboard?: Array<Array<{ text: string; callbackData?: string; url?: string }>>;
+    inlineKeyboard?: Array<
+      Array<{ text: string; callbackData?: string; url?: string }>
+    >;
     keyboard?: Array<Array<{ text: string }>>;
     removeKeyboard?: boolean;
   };
@@ -101,7 +103,9 @@ export class TelegramService {
     }
   ): Promise<number> {
     const itemsList = orderDetails.items
-      .map((item) => `  • ${item.name} x${item.quantity} - ₺${item.price.toFixed(2)}`)
+      .map(
+        item => `  • ${item.name} x${item.quantity} - ₺${item.price.toFixed(2)}`
+      )
       .join('\n');
 
     const message = `
@@ -165,7 +169,7 @@ _Otoniq.ai Otomasyon Sistemi_
     products: Array<{ name: string; currentStock: number; threshold: number }>
   ): Promise<number> {
     const productsList = products
-      .map((p) => `  ⚠️ ${p.name}: ${p.currentStock} adet (Min: ${p.threshold})`)
+      .map(p => `  ⚠️ ${p.name}: ${p.currentStock} adet (Min: ${p.threshold})`)
       .join('\n');
 
     const message = `
@@ -191,8 +195,8 @@ _Otoniq.ai Otomasyon Sistemi_
     text: string,
     buttons: Array<Array<{ text: string; callbackData?: string; url?: string }>>
   ): Promise<number> {
-    const inlineKeyboard = buttons.map((row) =>
-      row.map((btn) => ({
+    const inlineKeyboard = buttons.map(row =>
+      row.map(btn => ({
         text: btn.text,
         callback_data: btn.callbackData,
         url: btn.url,
@@ -385,7 +389,7 @@ _Otoniq.ai Otomasyon Sistemi_
       link: string;
     }>
   ): Promise<number> {
-    const productButtons = products.slice(0, 3).map((product) => [
+    const productButtons = products.slice(0, 3).map(product => [
       {
         text: `${product.name} - ₺${product.price}`,
         url: product.link,
@@ -399,4 +403,3 @@ _Otoniq.ai Otomasyon Sistemi_
     );
   }
 }
-

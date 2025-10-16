@@ -21,6 +21,7 @@ export default function Login() {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+  const [useBackupCode, setUseBackupCode] = useState(false);
 
   const { login, isLoading, error } = useAuth();
   const { checkLimit } = useRateLimit('/auth/login', 'ip');
@@ -282,16 +283,22 @@ export default function Login() {
                 <button
                   type='button'
                   onClick={() => {
-                    // Toggle between authenticator code and backup code
-                    // For now, just show a message
-                    toast.info(
-                      'Yedek kod özelliği yakında eklenecek. Şimdilik Authenticator kodunu kullanın.'
-                    );
+                    setUseBackupCode(!useBackupCode);
+                    setTwoFactorCode('');
                   }}
-                  className='text-sm text-blue-400 hover:text-blue-300 transition-colors'
+                  className='text-sm text-blue-400 hover:text-blue-300 transition-colors flex items-center justify-center gap-2 mx-auto'
                 >
-                  Yedek kod kullan
+                  <Key className='w-4 h-4' />
+                  {useBackupCode
+                    ? 'Authenticator kodu kullan'
+                    : 'Yedek kod kullan'}
                 </button>
+                {useBackupCode && (
+                  <p className='text-xs text-yellow-400 mt-2 flex items-center justify-center gap-1'>
+                    <AlertTriangle className='w-3 h-3' />
+                    Her yedek kod yalnızca bir kez kullanılabilir
+                  </p>
+                )}
               </div>
             </div>
           )}

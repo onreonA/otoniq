@@ -119,10 +119,7 @@ export default function EmailCampaignsPage() {
             <div>
               <div className='text-gray-400 text-sm'>Gönderilen</div>
               <div className='text-2xl font-bold text-white'>
-                {campaigns.reduce(
-                  (sum, c) => sum + (c.sent_count || 0),
-                  0
-                )}
+                {campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0)}
               </div>
             </div>
           </div>
@@ -232,7 +229,7 @@ export default function EmailCampaignsPage() {
                   Henüz kampanya oluşturulmamış
                 </div>
               ) : (
-                campaigns.map((campaign) => (
+                campaigns.map(campaign => (
                   <div
                     key={campaign.id}
                     className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all'
@@ -260,9 +257,9 @@ export default function EmailCampaignsPage() {
                             <Calendar size={16} />
                             <span>
                               Planlandı:{' '}
-                              {new Date(
-                                campaign.scheduled_at
-                              ).toLocaleString('tr-TR')}
+                              {new Date(campaign.scheduled_at).toLocaleString(
+                                'tr-TR'
+                              )}
                             </span>
                           </div>
                         )}
@@ -278,9 +275,7 @@ export default function EmailCampaignsPage() {
                         </div>
                       </div>
                       <div>
-                        <div className='text-gray-400 text-xs mb-1'>
-                          Açılan
-                        </div>
+                        <div className='text-gray-400 text-xs mb-1'>Açılan</div>
                         <div className='text-white font-semibold'>
                           {campaign.opened_count || 0}
                         </div>
@@ -294,9 +289,7 @@ export default function EmailCampaignsPage() {
                         </div>
                       </div>
                       <div>
-                        <div className='text-gray-400 text-xs mb-1'>
-                          İptal
-                        </div>
+                        <div className='text-gray-400 text-xs mb-1'>İptal</div>
                         <div className='text-white font-semibold'>
                           {campaign.unsubscribed_count || 0}
                         </div>
@@ -326,4 +319,3 @@ export default function EmailCampaignsPage() {
     </div>
   );
 }
-

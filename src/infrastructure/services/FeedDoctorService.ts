@@ -243,7 +243,11 @@ export class FeedDoctorService {
         aiAnalysis.issues.forEach(issue => {
           issues.push({
             type: issue.category,
-            severity: issue.severity as 'info' | 'warning' | 'error' | 'critical',
+            severity: issue.severity as
+              | 'info'
+              | 'warning'
+              | 'error'
+              | 'critical',
             message: issue.message,
             field: issue.category,
           });
@@ -309,7 +313,13 @@ export class FeedDoctorService {
         priceScore: priceAnalysis.score,
         analysisData: {
           productName: product.name,
-          analyzedFields: ['title', 'description', 'images', 'category', 'price'],
+          analyzedFields: [
+            'title',
+            'description',
+            'images',
+            'category',
+            'price',
+          ],
           rulesApplied: rules.length,
         },
         issues,

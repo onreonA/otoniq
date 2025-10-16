@@ -565,27 +565,6 @@ export class NotificationService {
     return data;
   }
 
-  private async getUserPreferences(
-    userId: string,
-    tenantId: string,
-    notificationTypeId: string
-  ): Promise<NotificationPreference | null> {
-    const { data, error } = await supabase
-      .from('notification_preferences')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('tenant_id', tenantId)
-      .eq('notification_type_id', notificationTypeId)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 = no rows found
-      console.error('❌ Failed to get user preferences:', error);
-      return null;
-    }
-
-    return data;
-  }
 
   private determineChannels(
     requestedChannels?: NotificationChannel,

@@ -11,7 +11,12 @@ export interface CanvaDesignRequest {
   title: string;
   width?: number;
   height?: number;
-  format?: 'instagram-post' | 'facebook-post' | 'twitter-post' | 'story' | 'custom';
+  format?:
+    | 'instagram-post'
+    | 'facebook-post'
+    | 'twitter-post'
+    | 'story'
+    | 'custom';
   elements?: CanvaElement[];
 }
 
@@ -71,10 +76,10 @@ export class CanvaService {
 
     try {
       const client = this.getClient();
-      
+
       // Get dimensions based on format
       const dimensions = this.getFormatDimensions(request.format || 'custom');
-      
+
       const response = await client.post('/designs', {
         title: request.title,
         width: request.width || dimensions.width,
@@ -106,7 +111,10 @@ export class CanvaService {
   /**
    * Add elements to an existing design
    */
-  static async addElements(designId: string, elements: CanvaElement[]): Promise<void> {
+  static async addElements(
+    designId: string,
+    elements: CanvaElement[]
+  ): Promise<void> {
     if (!this.isConfigured()) return;
 
     try {
@@ -173,8 +181,11 @@ export class CanvaService {
     platform: 'instagram' | 'facebook' | 'twitter'
   ): Promise<CanvaDesign> {
     const dimensions = this.getFormatDimensions(
-      platform === 'instagram' ? 'instagram-post' : 
-      platform === 'facebook' ? 'facebook-post' : 'twitter-post'
+      platform === 'instagram'
+        ? 'instagram-post'
+        : platform === 'facebook'
+          ? 'facebook-post'
+          : 'twitter-post'
     );
 
     const design = await this.createDesign({
@@ -216,9 +227,10 @@ export class CanvaService {
   /**
    * Get format dimensions
    */
-  private static getFormatDimensions(
-    format: string
-  ): { width: number; height: number } {
+  private static getFormatDimensions(format: string): {
+    width: number;
+    height: number;
+  } {
     const formats: Record<string, { width: number; height: number }> = {
       'instagram-post': { width: 1080, height: 1080 },
       'instagram-story': { width: 1080, height: 1920 },
@@ -253,7 +265,9 @@ export class CanvaService {
    */
   static async getTemplates(
     category?: 'social-media' | 'marketing' | 'branding' | 'all'
-  ): Promise<Array<{ id: string; title: string; thumbnailUrl: string; category: string }>> {
+  ): Promise<
+    Array<{ id: string; title: string; thumbnailUrl: string; category: string }>
+  > {
     if (!this.isConfigured()) {
       return this.getMockTemplates();
     }
@@ -347,7 +361,7 @@ export class CanvaService {
         designs.push(design);
 
         // Add delay to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
         console.error(`Error generating design for ${product.name}:`, error);
       }
@@ -356,4 +370,3 @@ export class CanvaService {
     return designs;
   }
 }
-

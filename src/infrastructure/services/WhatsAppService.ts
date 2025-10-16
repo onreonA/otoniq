@@ -40,16 +40,21 @@ export interface WhatsAppConversation {
 
 export class WhatsAppService {
   private static readonly API_URL = 'https://graph.facebook.com/v18.0';
-  private static readonly PHONE_NUMBER_ID = import.meta.env.VITE_WHATSAPP_PHONE_NUMBER_ID;
-  private static readonly ACCESS_TOKEN = import.meta.env.VITE_WHATSAPP_ACCESS_TOKEN;
+  private static readonly PHONE_NUMBER_ID = import.meta.env
+    .VITE_WHATSAPP_PHONE_NUMBER_ID;
+  private static readonly ACCESS_TOKEN = import.meta.env
+    .VITE_WHATSAPP_ACCESS_TOKEN;
 
   /**
    * Check if WhatsApp is configured
    */
   static isConfigured(): boolean {
-    return !!(this.PHONE_NUMBER_ID && this.ACCESS_TOKEN && 
-              this.PHONE_NUMBER_ID !== 'your-phone-number-id' &&
-              this.ACCESS_TOKEN !== 'your-access-token');
+    return !!(
+      this.PHONE_NUMBER_ID &&
+      this.ACCESS_TOKEN &&
+      this.PHONE_NUMBER_ID !== 'your-phone-number-id' &&
+      this.ACCESS_TOKEN !== 'your-access-token'
+    );
   }
 
   /**
@@ -68,9 +73,17 @@ export class WhatsAppService {
   /**
    * Send a text message
    */
-  static async sendTextMessage(phoneNumber: string, message: string): Promise<string> {
+  static async sendTextMessage(
+    phoneNumber: string,
+    message: string
+  ): Promise<string> {
     if (!this.isConfigured()) {
-      console.log('WhatsApp Mock: Sending message to', phoneNumber, ':', message);
+      console.log(
+        'WhatsApp Mock: Sending message to',
+        phoneNumber,
+        ':',
+        message
+      );
       return `mock-message-${Date.now()}`;
     }
 
@@ -105,7 +118,9 @@ export class WhatsAppService {
     }
   ): Promise<string> {
     const itemsList = orderDetails.items
-      .map((item) => `• ${item.name} x${item.quantity} - ₺${item.price.toFixed(2)}`)
+      .map(
+        item => `• ${item.name} x${item.quantity} - ₺${item.price.toFixed(2)}`
+      )
       .join('\n');
 
     const message = `
@@ -163,7 +178,7 @@ Kargonuzu takip etmek için: https://kargotakip.com/${trackingDetails.trackingNu
     products: Array<{ name: string; currentStock: number; threshold: number }>
   ): Promise<string> {
     const productsList = products
-      .map((p) => `⚠️ ${p.name}: ${p.currentStock} adet (Min: ${p.threshold})`)
+      .map(p => `⚠️ ${p.name}: ${p.currentStock} adet (Min: ${p.threshold})`)
       .join('\n');
 
     const message = `
@@ -191,7 +206,12 @@ _Otoniq.ai Otomasyon Sistemi_
     parameters: string[]
   ): Promise<string> {
     if (!this.isConfigured()) {
-      console.log('WhatsApp Mock: Sending template', templateName, 'to', phoneNumber);
+      console.log(
+        'WhatsApp Mock: Sending template',
+        templateName,
+        'to',
+        phoneNumber
+      );
       return `mock-template-${Date.now()}`;
     }
 
@@ -209,7 +229,7 @@ _Otoniq.ai Otomasyon Sistemi_
           components: [
             {
               type: 'body',
-              parameters: parameters.map((text) => ({
+              parameters: parameters.map(text => ({
                 type: 'text',
                 text,
               })),
@@ -300,7 +320,7 @@ _Otoniq.ai Otomasyon Sistemi_
             text: bodyText,
           },
           action: {
-            buttons: buttons.map((btn) => ({
+            buttons: buttons.map(btn => ({
               type: 'reply',
               reply: {
                 id: btn.id,
@@ -353,4 +373,3 @@ _Otoniq.ai Otomasyon Sistemi_
     ];
   }
 }
-

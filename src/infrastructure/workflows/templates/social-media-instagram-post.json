@@ -99,17 +99,16 @@
   ],
   "connections": {
     "Schedule Posts (10 AM, 2 PM, 6 PM)": {
-      "main": [[{"node": "Get Scheduled Posts", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Get Scheduled Posts", "type": "main", "index": 0 }]]
     },
     "Get Scheduled Posts": {
-      "main": [[{"node": "Has Posts to Publish", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Has Posts to Publish", "type": "main", "index": 0 }]]
     },
     "Has Posts to Publish": {
-      "main": [[{"node": "Post to Instagram", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Post to Instagram", "type": "main", "index": 0 }]]
     },
     "Post to Instagram": {
-      "main": [[{"node": "Update Post Status", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Update Post Status", "type": "main", "index": 0 }]]
     }
   }
 }
-

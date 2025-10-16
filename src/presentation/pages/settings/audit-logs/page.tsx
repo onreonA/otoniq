@@ -139,17 +139,19 @@ export default function AuditLogsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className='flex justify-between items-center'>
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Audit Logları</h1>
-          <p className="text-gray-400">Sistem aktivitelerini ve güvenlik olaylarını izleyin</p>
+          <h1 className='text-3xl font-bold text-white mb-2'>Audit Logları</h1>
+          <p className='text-gray-400'>
+            Sistem aktivitelerini ve güvenlik olaylarını izleyin
+          </p>
         </div>
         <button
           onClick={exportLogs}
           disabled={logs.length === 0}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className='px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2'
         >
           <Download size={18} />
           CSV Olarak İndir
@@ -157,161 +159,169 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Filter size={20} className="text-blue-400" />
-          <h2 className="text-lg font-semibold text-white">Filtreler</h2>
+      <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
+        <div className='flex items-center gap-2 mb-4'>
+          <Filter size={20} className='text-blue-400' />
+          <h2 className='text-lg font-semibold text-white'>Filtreler</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           {/* Action Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className='block text-sm font-medium text-gray-300 mb-2'>
               Aksiyon
             </label>
             <select
               value={filterAction}
               onChange={e => setFilterAction(e.target.value)}
-              className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-500"
+              className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-500'
             >
-              <option value="all">Tümü</option>
-              <option value="create">Oluşturma</option>
-              <option value="update">Güncelleme</option>
-              <option value="delete">Silme</option>
-              <option value="login">Giriş</option>
-              <option value="logout">Çıkış</option>
-              <option value="export">Dışa Aktarma</option>
+              <option value='all'>Tümü</option>
+              <option value='create'>Oluşturma</option>
+              <option value='update'>Güncelleme</option>
+              <option value='delete'>Silme</option>
+              <option value='login'>Giriş</option>
+              <option value='logout'>Çıkış</option>
+              <option value='export'>Dışa Aktarma</option>
             </select>
           </div>
 
           {/* Resource Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className='block text-sm font-medium text-gray-300 mb-2'>
               Kaynak Tipi
             </label>
             <select
               value={filterResource}
               onChange={e => setFilterResource(e.target.value)}
-              className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-500"
+              className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-500'
             >
-              <option value="all">Tümü</option>
-              <option value="product">Ürün</option>
-              <option value="order">Sipariş</option>
-              <option value="user">Kullanıcı</option>
-              <option value="workflow">Workflow</option>
-              <option value="integration">Entegrasyon</option>
+              <option value='all'>Tümü</option>
+              <option value='product'>Ürün</option>
+              <option value='order'>Sipariş</option>
+              <option value='user'>Kullanıcı</option>
+              <option value='workflow'>Workflow</option>
+              <option value='integration'>Entegrasyon</option>
             </select>
           </div>
 
           {/* Date Range Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className='block text-sm font-medium text-gray-300 mb-2'>
               Zaman Aralığı
             </label>
             <select
               value={dateRange}
               onChange={e => setDateRange(e.target.value)}
-              className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-500"
+              className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-blue-500'
             >
-              <option value="1">Son 24 Saat</option>
-              <option value="7">Son 7 Gün</option>
-              <option value="30">Son 30 Gün</option>
-              <option value="90">Son 90 Gün</option>
-              <option value="all">Tümü</option>
+              <option value='1'>Son 24 Saat</option>
+              <option value='7'>Son 7 Gün</option>
+              <option value='30'>Son 30 Gün</option>
+              <option value='90'>Son 90 Gün</option>
+              <option value='all'>Tümü</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Logs Table */}
-      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-white/10 border-b border-white/10">
+      <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden'>
+        <div className='overflow-x-auto'>
+          <table className='w-full'>
+            <thead className='bg-white/10 border-b border-white/10'>
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                <th className='px-6 py-4 text-left text-sm font-semibold text-gray-300'>
                   Zaman
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                <th className='px-6 py-4 text-left text-sm font-semibold text-gray-300'>
                   Kullanıcı
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                <th className='px-6 py-4 text-left text-sm font-semibold text-gray-300'>
                   Aksiyon
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                <th className='px-6 py-4 text-left text-sm font-semibold text-gray-300'>
                   Kaynak
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                <th className='px-6 py-4 text-left text-sm font-semibold text-gray-300'>
                   IP Adresi
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">
+                <th className='px-6 py-4 text-left text-sm font-semibold text-gray-300'>
                   Detaylar
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/10">
+            <tbody className='divide-y divide-white/10'>
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <div className="flex items-center justify-center gap-2 text-gray-400">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                  <td colSpan={6} className='px-6 py-12 text-center'>
+                    <div className='flex items-center justify-center gap-2 text-gray-400'>
+                      <div className='animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500'></div>
                       Yükleniyor...
                     </div>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                  <td
+                    colSpan={6}
+                    className='px-6 py-12 text-center text-gray-400'
+                  >
                     Audit log bulunamadı
                   </td>
                 </tr>
               ) : (
                 logs.map(log => (
-                  <tr key={log.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-300">
-                      <div className="flex items-center gap-2">
-                        <Clock size={16} className="text-blue-400" />
+                  <tr
+                    key={log.id}
+                    className='hover:bg-white/5 transition-colors'
+                  >
+                    <td className='px-6 py-4 text-sm text-gray-300'>
+                      <div className='flex items-center gap-2'>
+                        <Clock size={16} className='text-blue-400' />
                         {new Date(log.created_at).toLocaleString('tr-TR')}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">
-                      <div className="flex items-center gap-2">
-                        <User size={16} className="text-purple-400" />
+                    <td className='px-6 py-4 text-sm text-gray-300'>
+                      <div className='flex items-center gap-2'>
+                        <User size={16} className='text-purple-400' />
                         {log.user_email || 'System'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className={`flex items-center gap-2 font-medium ${getActionColor(log.action)}`}>
+                    <td className='px-6 py-4 text-sm'>
+                      <div
+                        className={`flex items-center gap-2 font-medium ${getActionColor(log.action)}`}
+                      >
                         <span>{getActionIcon(log.action)}</span>
                         {log.action}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">
-                      <div className="flex items-center gap-2">
-                        <FileText size={16} className="text-green-400" />
+                    <td className='px-6 py-4 text-sm text-gray-300'>
+                      <div className='flex items-center gap-2'>
+                        <FileText size={16} className='text-green-400' />
                         {log.resource_type}
                         {log.resource_id && (
-                          <span className="text-gray-500 text-xs">
+                          <span className='text-gray-500 text-xs'>
                             ({log.resource_id.slice(0, 8)}...)
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400 font-mono">
+                    <td className='px-6 py-4 text-sm text-gray-400 font-mono'>
                       {log.ip_address || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className='px-6 py-4 text-sm'>
                       {log.metadata && (
                         <button
                           onClick={() => {
                             toast(
-                              <pre className="text-xs max-w-md overflow-auto">
+                              <pre className='text-xs max-w-md overflow-auto'>
                                 {JSON.stringify(log.metadata, null, 2)}
                               </pre>,
                               { duration: 5000 }
                             );
                           }}
-                          className="text-blue-400 hover:text-blue-300 transition-colors"
+                          className='text-blue-400 hover:text-blue-300 transition-colors'
                         >
                           Görüntüle
                         </button>
@@ -326,26 +336,26 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-          <div className="text-gray-400 text-sm mb-2">Toplam Log</div>
-          <div className="text-3xl font-bold text-white">{logs.length}</div>
+      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
+          <div className='text-gray-400 text-sm mb-2'>Toplam Log</div>
+          <div className='text-3xl font-bold text-white'>{logs.length}</div>
         </div>
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-          <div className="text-gray-400 text-sm mb-2">Oluşturma</div>
-          <div className="text-3xl font-bold text-green-400">
+        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
+          <div className='text-gray-400 text-sm mb-2'>Oluşturma</div>
+          <div className='text-3xl font-bold text-green-400'>
             {logs.filter(l => l.action === 'create').length}
           </div>
         </div>
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-          <div className="text-gray-400 text-sm mb-2">Güncelleme</div>
-          <div className="text-3xl font-bold text-blue-400">
+        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
+          <div className='text-gray-400 text-sm mb-2'>Güncelleme</div>
+          <div className='text-3xl font-bold text-blue-400'>
             {logs.filter(l => l.action === 'update').length}
           </div>
         </div>
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-          <div className="text-gray-400 text-sm mb-2">Silme</div>
-          <div className="text-3xl font-bold text-red-400">
+        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6'>
+          <div className='text-gray-400 text-sm mb-2'>Silme</div>
+          <div className='text-3xl font-bold text-red-400'>
             {logs.filter(l => l.action === 'delete').length}
           </div>
         </div>
@@ -353,4 +363,3 @@ export default function AuditLogsPage() {
     </div>
   );
 }
-

@@ -124,25 +124,22 @@
   ],
   "connections": {
     "Sync Every 12 Hours": {
-      "main": [[{"node": "Get Products", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Get Products", "type": "main", "index": 0 }]]
     },
     "Get Products": {
-      "main": [[{"node": "Split into Batches", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Split into Batches", "type": "main", "index": 0 }]]
     },
     "Split into Batches": {
-      "main": [
-        [{"node": "Analyze Product", "type": "main", "index": 0}]
-      ]
+      "main": [[{ "node": "Analyze Product", "type": "main", "index": 0 }]]
     },
     "Analyze Product": {
-      "main": [[{"node": "Save Analysis", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Save Analysis", "type": "main", "index": 0 }]]
     },
     "Save Analysis": {
-      "main": [[{"node": "Wait 2s", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Wait 2s", "type": "main", "index": 0 }]]
     },
     "Wait 2s": {
-      "main": [[{"node": "Split into Batches", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Split into Batches", "type": "main", "index": 0 }]]
     }
   }
 }
-

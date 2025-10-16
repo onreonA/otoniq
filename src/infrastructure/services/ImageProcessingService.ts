@@ -37,7 +37,7 @@ export class ImageProcessingService {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -82,7 +82,7 @@ export class ImageProcessingService {
         ctx.putImageData(imageData, 0, 0);
 
         // Convert to blob and return URL
-        canvas.toBlob((blob) => {
+        canvas.toBlob(blob => {
           if (blob) {
             resolve(URL.createObjectURL(blob));
           } else {
@@ -107,9 +107,12 @@ export class ImageProcessingService {
   /**
    * Apply brightness adjustment
    */
-  private static applyBrightness(data: Uint8ClampedArray, brightness: number): void {
+  private static applyBrightness(
+    data: Uint8ClampedArray,
+    brightness: number
+  ): void {
     const factor = (brightness / 100) * 255;
-    
+
     for (let i = 0; i < data.length; i += 4) {
       data[i] = Math.max(0, Math.min(255, data[i] + factor));
       data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + factor));
@@ -120,28 +123,46 @@ export class ImageProcessingService {
   /**
    * Apply contrast adjustment
    */
-  private static applyContrast(data: Uint8ClampedArray, contrast: number): void {
+  private static applyContrast(
+    data: Uint8ClampedArray,
+    contrast: number
+  ): void {
     const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
 
     for (let i = 0; i < data.length; i += 4) {
       data[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128));
-      data[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128));
-      data[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128));
+      data[i + 1] = Math.max(
+        0,
+        Math.min(255, factor * (data[i + 1] - 128) + 128)
+      );
+      data[i + 2] = Math.max(
+        0,
+        Math.min(255, factor * (data[i + 2] - 128) + 128)
+      );
     }
   }
 
   /**
    * Apply saturation adjustment
    */
-  private static applySaturation(data: Uint8ClampedArray, saturation: number): void {
+  private static applySaturation(
+    data: Uint8ClampedArray,
+    saturation: number
+  ): void {
     const factor = (saturation + 100) / 100;
 
     for (let i = 0; i < data.length; i += 4) {
       const gray = 0.2989 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-      
+
       data[i] = Math.max(0, Math.min(255, gray + factor * (data[i] - gray)));
-      data[i + 1] = Math.max(0, Math.min(255, gray + factor * (data[i + 1] - gray)));
-      data[i + 2] = Math.max(0, Math.min(255, gray + factor * (data[i + 2] - gray)));
+      data[i + 1] = Math.max(
+        0,
+        Math.min(255, gray + factor * (data[i + 1] - gray))
+      );
+      data[i + 2] = Math.max(
+        0,
+        Math.min(255, gray + factor * (data[i + 2] - gray))
+      );
     }
   }
 
@@ -184,7 +205,7 @@ export class ImageProcessingService {
 
         ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-        canvas.toBlob((blob) => {
+        canvas.toBlob(blob => {
           if (blob) {
             resolve(URL.createObjectURL(blob));
           } else {
@@ -240,7 +261,7 @@ export class ImageProcessingService {
         ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob(
-          (blob) => {
+          blob => {
             if (blob) {
               const url = URL.createObjectURL(blob);
               resolve({
@@ -265,7 +286,9 @@ export class ImageProcessingService {
   /**
    * Generate image using AI (DALL-E via OpenAI)
    */
-  static async generateImage(options: ImageGenerationOptions): Promise<string[]> {
+  static async generateImage(
+    options: ImageGenerationOptions
+  ): Promise<string[]> {
     // This would integrate with OpenAI DALL-E API
     // For now, return placeholder
     console.log('Generating image with prompt:', options.prompt);
@@ -285,7 +308,10 @@ export class ImageProcessingService {
   /**
    * Extract dominant colors from image
    */
-  static async extractColors(imageUrl: string, count: number = 5): Promise<string[]> {
+  static async extractColors(
+    imageUrl: string,
+    count: number = 5
+  ): Promise<string[]> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
@@ -327,7 +353,7 @@ export class ImageProcessingService {
           .map(([color]) => {
             // Convert to hex
             const rgb = color.match(/\d+/g)!.map(Number);
-            return `#${rgb.map((x) => x.toString(16).padStart(2, '0')).join('')}`;
+            return `#${rgb.map(x => x.toString(16).padStart(2, '0')).join('')}`;
           });
 
         resolve(sortedColors);
@@ -364,18 +390,19 @@ export class ImageProcessingService {
       ctx.fillRect(0, 0, width, height);
 
       const imagesLoaded = imageUrls.map(
-        (url) =>
+        url =>
           new Promise<HTMLImageElement>((resolve, reject) => {
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+            img.onerror = () =>
+              reject(new Error(`Failed to load image: ${url}`));
             img.src = url;
           })
       );
 
       Promise.all(imagesLoaded)
-        .then((images) => {
+        .then(images => {
           if (layout === 'grid') {
             // Simple grid layout
             const cols = Math.ceil(Math.sqrt(images.length));
@@ -393,7 +420,7 @@ export class ImageProcessingService {
             });
           }
 
-          canvas.toBlob((blob) => {
+          canvas.toBlob(blob => {
             if (blob) {
               resolve(URL.createObjectURL(blob));
             } else {
@@ -412,7 +439,12 @@ export class ImageProcessingService {
     imageUrl: string,
     watermarkText: string,
     options?: {
-      position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center';
+      position?:
+        | 'bottom-right'
+        | 'bottom-left'
+        | 'top-right'
+        | 'top-left'
+        | 'center';
       fontSize?: number;
       color?: string;
       opacity?: number;
@@ -473,7 +505,7 @@ export class ImageProcessingService {
 
         ctx.fillText(watermarkText, x, y);
 
-        canvas.toBlob((blob) => {
+        canvas.toBlob(blob => {
           if (blob) {
             resolve(URL.createObjectURL(blob));
           } else {
@@ -487,4 +519,3 @@ export class ImageProcessingService {
     });
   }
 }
-

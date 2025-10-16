@@ -49,7 +49,8 @@ export interface ProductAnalysisResult {
 
 export class OpenAIService {
   private static readonly API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-  private static readonly API_URL = 'https://api.openai.com/v1/chat/completions';
+  private static readonly API_URL =
+    'https://api.openai.com/v1/chat/completions';
   private static readonly MODEL = 'gpt-4-turbo-preview';
 
   /**
@@ -112,9 +113,7 @@ export class OpenAIService {
   /**
    * Build analysis prompt for OpenAI
    */
-  private static buildAnalysisPrompt(
-    request: ProductAnalysisRequest
-  ): string {
+  private static buildAnalysisPrompt(request: ProductAnalysisRequest): string {
     return `Analyze this e-commerce product and provide detailed optimization suggestions:
 
 **Product Name**: ${request.productName}
@@ -163,9 +162,7 @@ Please analyze and return JSON with the following structure:
   /**
    * Normalize AI response to match our interface
    */
-  private static normalizeAnalysisResult(
-    analysis: any
-  ): ProductAnalysisResult {
+  private static normalizeAnalysisResult(analysis: any): ProductAnalysisResult {
     return {
       score: analysis.score || 50,
       issues: analysis.issues || [],
@@ -311,13 +308,13 @@ Please analyze and return JSON with the following structure:
     for (let i = 0; i < products.length; i += batchSize) {
       const batch = products.slice(i, i + batchSize);
       const batchResults = await Promise.all(
-        batch.map((product) => this.analyzeProduct(product))
+        batch.map(product => this.analyzeProduct(product))
       );
       results.push(...batchResults);
 
       // Add delay between batches to avoid rate limiting
       if (i + batchSize < products.length) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
@@ -327,7 +324,10 @@ Please analyze and return JSON with the following structure:
   /**
    * Generate SEO-optimized product title
    */
-  static async generateSEOTitle(productName: string, category?: string): Promise<string> {
+  static async generateSEOTitle(
+    productName: string,
+    category?: string
+  ): Promise<string> {
     if (!this.isConfigured()) {
       return `${productName} - Premium Kalite | ${category || 'Online Satış'}`;
     }
@@ -340,7 +340,8 @@ Please analyze and return JSON with the following structure:
           messages: [
             {
               role: 'system',
-              content: 'You are an SEO expert. Generate SEO-optimized product titles for e-commerce.',
+              content:
+                'You are an SEO expert. Generate SEO-optimized product titles for e-commerce.',
             },
             {
               role: 'user',
@@ -365,4 +366,3 @@ Please analyze and return JSON with the following structure:
     }
   }
 }
-

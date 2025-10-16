@@ -8,7 +8,13 @@ const supabase = createClient(
 export interface SocialMediaAccount {
   id: string;
   tenant_id: string;
-  platform: 'instagram' | 'facebook' | 'twitter' | 'linkedin' | 'tiktok' | 'youtube';
+  platform:
+    | 'instagram'
+    | 'facebook'
+    | 'twitter'
+    | 'linkedin'
+    | 'tiktok'
+    | 'youtube';
   account_name: string;
   account_username: string;
   account_id: string;
@@ -323,13 +329,16 @@ export class SocialMediaService {
 
       return {
         totalAccounts: accounts.length,
-        connectedAccounts: accounts.filter((a) => a.is_connected).length,
+        connectedAccounts: accounts.filter(a => a.is_connected).length,
         totalPosts: posts.length,
-        publishedPosts: posts.filter((p) => p.status === 'published').length,
-        scheduledPosts: posts.filter((p) => p.status === 'scheduled').length,
+        publishedPosts: posts.filter(p => p.status === 'published').length,
+        scheduledPosts: posts.filter(p => p.status === 'scheduled').length,
         totalEngagement: posts.reduce(
           (sum, p) =>
-            sum + (p.likes_count || 0) + (p.comments_count || 0) + (p.shares_count || 0),
+            sum +
+            (p.likes_count || 0) +
+            (p.comments_count || 0) +
+            (p.shares_count || 0),
           0
         ),
       };

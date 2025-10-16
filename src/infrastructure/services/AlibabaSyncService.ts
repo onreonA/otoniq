@@ -71,7 +71,7 @@ export class AlibabaSyncService {
   ): Promise<SyncResult> {
     const errors: string[] = [];
     let syncedCount = 0;
-    let skippedCount = 0;
+    const skippedCount = 0;
 
     try {
       // TODO: Implement full sync logic

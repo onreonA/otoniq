@@ -28,19 +28,19 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
     {
       id: '1',
       type: 'input',
-      data: { 
+      data: {
         label: (
-          <div className="text-center">
-            <div className="font-bold text-blue-600">⏰ Trigger</div>
-            <div className="text-xs text-gray-600 mt-1">Cron Schedule</div>
-            <div className="text-xs text-gray-500">Daily at 09:00</div>
+          <div className='text-center'>
+            <div className='font-bold text-blue-600'>⏰ Trigger</div>
+            <div className='text-xs text-gray-600 mt-1'>Cron Schedule</div>
+            <div className='text-xs text-gray-500'>Daily at 09:00</div>
           </div>
-        ) 
+        ),
       },
       position: { x: 250, y: 50 },
-      style: { 
-        background: '#3b82f6', 
-        color: 'white', 
+      style: {
+        background: '#3b82f6',
+        color: 'white',
         border: '2px solid #2563eb',
         borderRadius: '12px',
         padding: '16px',
@@ -49,19 +49,19 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
     },
     {
       id: '2',
-      data: { 
+      data: {
         label: (
-          <div className="text-center">
-            <div className="font-bold text-purple-600">📊 Fetch Data</div>
-            <div className="text-xs text-gray-600 mt-1">Supabase Query</div>
-            <div className="text-xs text-gray-500">Get sales data</div>
+          <div className='text-center'>
+            <div className='font-bold text-purple-600'>📊 Fetch Data</div>
+            <div className='text-xs text-gray-600 mt-1'>Supabase Query</div>
+            <div className='text-xs text-gray-500'>Get sales data</div>
           </div>
-        ) 
+        ),
       },
       position: { x: 250, y: 180 },
-      style: { 
-        background: '#a855f7', 
-        color: 'white', 
+      style: {
+        background: '#a855f7',
+        color: 'white',
         border: '2px solid #9333ea',
         borderRadius: '12px',
         padding: '16px',
@@ -70,19 +70,19 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
     },
     {
       id: '3',
-      data: { 
+      data: {
         label: (
-          <div className="text-center">
-            <div className="font-bold text-purple-600">⚙️ Process</div>
-            <div className="text-xs text-gray-600 mt-1">Data Analysis</div>
-            <div className="text-xs text-gray-500">Calculate metrics</div>
+          <div className='text-center'>
+            <div className='font-bold text-purple-600'>⚙️ Process</div>
+            <div className='text-xs text-gray-600 mt-1'>Data Analysis</div>
+            <div className='text-xs text-gray-500'>Calculate metrics</div>
           </div>
-        ) 
+        ),
       },
       position: { x: 250, y: 310 },
-      style: { 
-        background: '#a855f7', 
-        color: 'white', 
+      style: {
+        background: '#a855f7',
+        color: 'white',
         border: '2px solid #9333ea',
         borderRadius: '12px',
         padding: '16px',
@@ -91,19 +91,19 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
     },
     {
       id: '4',
-      data: { 
+      data: {
         label: (
-          <div className="text-center">
-            <div className="font-bold text-purple-600">📄 Generate</div>
-            <div className="text-xs text-gray-600 mt-1">PDF Report</div>
-            <div className="text-xs text-gray-500">Format data</div>
+          <div className='text-center'>
+            <div className='font-bold text-purple-600'>📄 Generate</div>
+            <div className='text-xs text-gray-600 mt-1'>PDF Report</div>
+            <div className='text-xs text-gray-500'>Format data</div>
           </div>
-        ) 
+        ),
       },
       position: { x: 250, y: 440 },
-      style: { 
-        background: '#a855f7', 
-        color: 'white', 
+      style: {
+        background: '#a855f7',
+        color: 'white',
         border: '2px solid #9333ea',
         borderRadius: '12px',
         padding: '16px',
@@ -113,19 +113,19 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
     {
       id: '5',
       type: 'output',
-      data: { 
+      data: {
         label: (
-          <div className="text-center">
-            <div className="font-bold text-green-600">✉️ Send Email</div>
-            <div className="text-xs text-gray-600 mt-1">Email Service</div>
-            <div className="text-xs text-gray-500">Deliver report</div>
+          <div className='text-center'>
+            <div className='font-bold text-green-600'>✉️ Send Email</div>
+            <div className='text-xs text-gray-600 mt-1'>Email Service</div>
+            <div className='text-xs text-gray-500'>Deliver report</div>
           </div>
-        ) 
+        ),
       },
       position: { x: 250, y: 570 },
-      style: { 
-        background: '#10b981', 
-        color: 'white', 
+      style: {
+        background: '#10b981',
+        color: 'white',
         border: '2px solid #059669',
         borderRadius: '12px',
         padding: '16px',
@@ -174,7 +174,7 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) => setEdges(eds => addEdge(params, eds)),
     [setEdges]
   );
 
@@ -185,7 +185,14 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
           <i className='ri-flow-chart'></i>
           Workflow Diyagramı
         </h3>
-        <div style={{ height: '500px', backgroundColor: '#1a1a1a', borderRadius: '12px', border: '1px solid #333' }}>
+        <div
+          style={{
+            height: '500px',
+            backgroundColor: '#1a1a1a',
+            borderRadius: '12px',
+            border: '1px solid #333',
+          }}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -193,12 +200,12 @@ export default function WorkflowTab({ workflow }: WorkflowTabProps) {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             fitView
-            attributionPosition="bottom-left"
+            attributionPosition='bottom-left'
           >
-            <Background color="#333" gap={16} />
+            <Background color='#333' gap={16} />
             <Controls />
-            <MiniMap 
-              nodeColor={(node) => {
+            <MiniMap
+              nodeColor={node => {
                 if (node.type === 'input') return '#3b82f6';
                 if (node.type === 'output') return '#10b981';
                 return '#a855f7';

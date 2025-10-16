@@ -1,0 +1,190 @@
+{
+  "name": "Social Media Auto-Post",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10,14,18 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule 3x Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/rpc/get_pending_social_posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.VITE_SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.VITE_SUPABASE_ANON_KEY}}"
+            }
+          ]
+        }
+      },
+      "name": "Get Pending Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.posts?.length || 0}}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "Has Posts",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "posts",
+        "options": {}
+      },
+      "name": "Split Posts",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "post",
+        "pageId": "={{$json.platform_account_id}}",
+        "message": "={{$json.content}}",
+        "additionalFields": {
+          "link": "={{$json.link || ''}}",
+          "published": true
+        }
+      },
+      "name": "Post to Facebook",
+      "type": "n8n-nodes-base.facebook",
+      "typeVersion": 1,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "resource": "tweet",
+        "operation": "create",
+        "text": "={{$json.content}}",
+        "additionalFields": {}
+      },
+      "name": "Post to Twitter",
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 1,
+      "position": [1050, 350]
+    },
+    {
+      "parameters": {
+        "operation": "createPost",
+        "userId": "={{$json.platform_account_id}}",
+        "caption": "={{$json.content}}",
+        "mediaUrl": "={{$json.media_url}}"
+      },
+      "name": "Post to Instagram",
+      "type": "n8n-nodes-base.instagram",
+      "typeVersion": 1,
+      "position": [1050, 500]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.VITE_SUPABASE_URL}}/rest/v1/social_media_posts",
+        "method": "PATCH",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.VITE_SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.VITE_SUPABASE_ANON_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "eq.{{$json.id}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "published"
+            },
+            {
+              "name": "published_at",
+              "value": "={{new Date().toISOString()}}"
+            }
+          ]
+        }
+      },
+      "name": "Update Post Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Schedule 3x Daily": {
+      "main": [[{ "node": "Get Pending Posts", "type": "main", "index": 0 }]]
+    },
+    "Get Pending Posts": {
+      "main": [[{ "node": "Has Posts", "type": "main", "index": 0 }]]
+    },
+    "Has Posts": {
+      "main": [[{ "node": "Split Posts", "type": "main", "index": 0 }]]
+    },
+    "Split Posts": {
+      "main": [
+        [
+          { "node": "Post to Facebook", "type": "main", "index": 0 },
+          { "node": "Post to Twitter", "type": "main", "index": 0 },
+          { "node": "Post to Instagram", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Post to Facebook": {
+      "main": [[{ "node": "Update Post Status", "type": "main", "index": 0 }]]
+    },
+    "Post to Twitter": {
+      "main": [[{ "node": "Update Post Status", "type": "main", "index": 0 }]]
+    },
+    "Post to Instagram": {
+      "main": [[{ "node": "Update Post Status", "type": "main", "index": 0 }]]
+    }
+  }
+}

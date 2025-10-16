@@ -1,61 +1,7 @@
-/**
- * WorkflowInstaller
- * Utility for installing pre-built N8N workflows to N8N Cloud
- */
-
-import { N8NService, N8NWorkflow } from '../services/N8NService';
+import { N8NService } from '../services/N8NService';
 import axios from 'axios';
-import dailyReportWorkflow from './templates/daily-report.json';
-import lowStockAlertWorkflow from './templates/low-stock-alert.json';
-
-export interface WorkflowTemplate {
-  name: string;
-  description: string;
-  category: string;
-  triggerType: 'manual' | 'webhook' | 'cron' | 'event';
-  workflowJson: any;
-  defaultConfig?: any;
-  icon?: string;
-  color?: string;
-}
 
 export class WorkflowInstaller {
-  /**
-   * Get all available workflow templates
-   */
-  static getTemplates(): WorkflowTemplate[] {
-    return [
-      {
-        name: 'Günlük Satış Raporu',
-        description:
-          "Her gün saat 09:00'da otomatik olarak günlük satış raporu oluşturur ve e-posta ile gönderir",
-        category: 'analytics',
-        triggerType: 'cron',
-        workflowJson: dailyReportWorkflow,
-        defaultConfig: {
-          cronExpression: '0 9 * * *',
-          emailRecipients: [],
-        },
-        icon: 'ri-file-chart-line',
-        color: 'blue',
-      },
-      {
-        name: 'Düşük Stok Uyarısı',
-        description:
-          'Stok seviyesi eşik değerin altına düştüğünde otomatik uyarı gönderir (6 saatte bir kontrol)',
-        category: 'inventory',
-        triggerType: 'cron',
-        workflowJson: lowStockAlertWorkflow,
-        defaultConfig: {
-          cronExpression: '0 */6 * * *',
-          notificationChannels: ['email', 'in-app'],
-        },
-        icon: 'ri-alert-line',
-        color: 'orange',
-      },
-    ];
-  }
-
   /**
    * Install workflow to N8N Cloud and save to database
    */
@@ -66,11 +12,20 @@ export class WorkflowInstaller {
     workflowDescription: string
   ): Promise<string> {
     try {
+      const N8N_API_URL = import.meta.env.VITE_N8N_API_URL;
+      const N8N_API_KEY = import.meta.env.VITE_N8N_API_KEY;
+
+      if (!N8N_API_URL || !N8N_API_KEY) {
+        throw new Error(
+          'N8N API credentials not configured. Please set VITE_N8N_API_URL and VITE_N8N_API_KEY in .env.local'
+        );
+      }
+
       // Upload workflow to N8N Cloud
       const client = axios.create({
-        baseURL: `${import.meta.env.VITE_N8N_API_URL}/api/v1`,
+        baseURL: `${N8N_API_URL}/api/v1`,
         headers: {
-          'X-N8N-API-KEY': import.meta.env.VITE_N8N_API_KEY,
+          'X-N8N-API-KEY': N8N_API_KEY,
           'Content-Type': 'application/json',
         },
       });
@@ -98,100 +53,300 @@ export class WorkflowInstaller {
       });
 
       return workflowId;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error installing workflow:', error);
+      if (error.response) {
+        throw new Error(
+          `N8N API Error: ${error.response.data?.message || error.message}`
+        );
+      }
       throw error;
     }
   }
 
   /**
-   * Install all default workflows for a tenant (Webhook Mode)
+   * Install all default workflows for a tenant
    */
   static async installDefaultWorkflows(tenantId: string): Promise<void> {
     try {
-      // N8N Webhook URLs (configured manually in N8N Cloud)
-      const dailyReportWebhook =
-        'https://otoniq.app.n8n.cloud/workflow/atI6tzx75ieHfjrX';
-      const lowStockAlertWebhook =
-        'https://otoniq.app.n8n.cloud/workflow/rqn2AxkOapqUKpCm';
-
-      // Install Daily Report Workflow (Webhook mode)
-      await this.installWorkflowWebhook(
-        tenantId,
-        'Daily Sales Report',
-        'Automatically sends daily sales report every morning at 9 AM',
-        dailyReportWebhook,
-        'cron'
-      );
-
-      // Install Low Stock Alert Workflow (Webhook mode)
-      await this.installWorkflowWebhook(
-        tenantId,
-        'Low Stock Alert',
-        'Monitors inventory and sends alerts when products are running low',
-        lowStockAlertWebhook,
-        'cron'
-      );
-
-      if (import.meta.env.DEV) {
-        console.log(
-          '✅ Default workflows installed successfully (Webhook mode)'
-        );
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('❌ Error installing default workflows:', error);
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Install workflow using webhook URL (no N8N API required)
-   */
-  static async installWorkflowWebhook(
-    tenantId: string,
-    workflowName: string,
-    workflowDescription: string,
-    webhookUrl: string,
-    triggerType: 'webhook' | 'cron'
-  ): Promise<string> {
-    try {
-      // Save workflow to database with webhook URL
-      const workflowId = await N8NService.createWorkflow({
-        tenantId,
-        workflowName,
-        workflowDescription,
-        webhookUrl,
-        triggerType,
-        triggerConfig: { webhookUrl },
-        isActive: true,
-        metadata: {
-          webhookMode: true,
-          manuallyConfigured: true,
+      const workflows = [
+        {
+          name: 'Daily Sales Report',
+          description:
+            'Automatically sends daily sales report every morning at 9 AM',
+          json: this.getDailyReportWorkflow(),
         },
-      });
+        {
+          name: 'Low Stock Alert',
+          description:
+            'Monitors inventory and sends alerts when products are running low',
+          json: this.getLowStockAlertWorkflow(),
+        },
+        {
+          name: 'Social Media Auto-Post',
+          description:
+            'Automatically posts scheduled content to Facebook, Twitter, and Instagram',
+          json: this.getSocialMediaWorkflow(),
+        },
+        {
+          name: 'Email Campaign Scheduler',
+          description: 'Sends scheduled email campaigns to customer segments',
+          json: this.getEmailCampaignWorkflow(),
+        },
+      ];
 
-      return workflowId;
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Error installing workflow (webhook):', error);
+      for (const workflow of workflows) {
+        try {
+          await this.installWorkflow(
+            tenantId,
+            workflow.json,
+            workflow.name,
+            workflow.description
+          );
+          console.log(`✅ Installed: ${workflow.name}`);
+        } catch (error) {
+          console.error(`❌ Failed to install ${workflow.name}:`, error);
+          // Continue with other workflows even if one fails
+        }
       }
+
+      console.log('✅ Default workflows installation complete');
+    } catch (error) {
+      console.error('❌ Error installing default workflows:', error);
       throw error;
     }
   }
 
   /**
-   * Get workflow template by name
+   * Get Daily Sales Report workflow JSON
    */
-  static getTemplate(templateName: string): WorkflowTemplate | undefined {
-    return this.getTemplates().find(t => t.name === templateName);
+  private static getDailyReportWorkflow() {
+    return {
+      name: 'Daily Sales Report',
+      nodes: [
+        {
+          parameters: {
+            rule: {
+              interval: [
+                {
+                  field: 'cronExpression',
+                  expression: '0 9 * * *',
+                },
+              ],
+            },
+          },
+          name: 'Schedule Daily 9 AM',
+          type: 'n8n-nodes-base.scheduleTrigger',
+          typeVersion: 1,
+          position: [250, 300],
+        },
+        {
+          parameters: {
+            url: `=${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/get_daily_sales_report`,
+            authentication: 'genericCredentialType',
+            genericAuthType: 'httpHeaderAuth',
+            options: {},
+          },
+          name: 'Get Sales Data',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 3,
+          position: [450, 300],
+        },
+        {
+          parameters: {
+            operation: 'sendEmail',
+            fromEmail: 'noreply@otoniq.ai',
+            toEmail: '={{$json.tenant_email}}',
+            subject: '📊 Günlük Satış Raporu',
+            text: `=Merhaba,
+
+Dünkü satış performansınız:
+
+- Toplam Gelir: ₺{{$json.total_sales}}
+- Sipariş Sayısı: {{$json.total_orders}}
+- Ortalama Sepet: ₺{{$json.avg_order_value}}
+
+İyi çalışmalar!`,
+          },
+          name: 'Send Email Report',
+          type: 'n8n-nodes-base.emailSend',
+          typeVersion: 2,
+          position: [650, 300],
+        },
+      ],
+      connections: {
+        'Schedule Daily 9 AM': {
+          main: [[{ node: 'Get Sales Data', type: 'main', index: 0 }]],
+        },
+        'Get Sales Data': {
+          main: [[{ node: 'Send Email Report', type: 'main', index: 0 }]],
+        },
+      },
+    };
   }
 
   /**
-   * Get workflow templates by category
+   * Get Low Stock Alert workflow JSON
    */
-  static getTemplatesByCategory(category: string): WorkflowTemplate[] {
-    return this.getTemplates().filter(t => t.category === category);
+  private static getLowStockAlertWorkflow() {
+    return {
+      name: 'Low Stock Alert',
+      nodes: [
+        {
+          parameters: {
+            rule: {
+              interval: [
+                {
+                  field: 'cronExpression',
+                  expression: '0 */6 * * *',
+                },
+              ],
+            },
+          },
+          name: 'Check Every 6 Hours',
+          type: 'n8n-nodes-base.scheduleTrigger',
+          typeVersion: 1,
+          position: [250, 300],
+        },
+        {
+          parameters: {
+            url: `=${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/get_low_stock_products`,
+            authentication: 'genericCredentialType',
+            genericAuthType: 'httpHeaderAuth',
+          },
+          name: 'Get Low Stock Products',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 3,
+          position: [450, 300],
+        },
+        {
+          parameters: {
+            conditions: {
+              number: [
+                {
+                  value1: '={{$json.length}}',
+                  operation: 'larger',
+                  value2: 0,
+                },
+              ],
+            },
+          },
+          name: 'Has Low Stock Items',
+          type: 'n8n-nodes-base.if',
+          typeVersion: 1,
+          position: [650, 300],
+        },
+        {
+          parameters: {
+            operation: 'sendEmail',
+            fromEmail: 'alerts@otoniq.ai',
+            toEmail: '={{$json.tenant_email}}',
+            subject: '⚠️ Düşük Stok Uyarısı',
+            text: `=Merhaba,
+
+Aşağıdaki ürünlerinizin stoğu kritik seviyede:
+
+{{$json.products.map(p => \`- \${p.name}: \${p.stock} adet kaldı\`).join('\\n')}}
+
+Lütfen stok yenilemesi yapın.`,
+          },
+          name: 'Send Alert Email',
+          type: 'n8n-nodes-base.emailSend',
+          typeVersion: 2,
+          position: [850, 300],
+        },
+      ],
+      connections: {
+        'Check Every 6 Hours': {
+          main: [[{ node: 'Get Low Stock Products', type: 'main', index: 0 }]],
+        },
+        'Get Low Stock Products': {
+          main: [[{ node: 'Has Low Stock Items', type: 'main', index: 0 }]],
+        },
+        'Has Low Stock Items': {
+          main: [[{ node: 'Send Alert Email', type: 'main', index: 0 }]],
+        },
+      },
+    };
+  }
+
+  /**
+   * Get Social Media Auto-Post workflow JSON
+   */
+  private static getSocialMediaWorkflow() {
+    return {
+      name: 'Social Media Auto-Post',
+      nodes: [
+        {
+          parameters: {
+            rule: {
+              interval: [
+                { field: 'cronExpression', expression: '0 10,14,18 * * *' },
+              ],
+            },
+          },
+          name: 'Schedule 3x Daily',
+          type: 'n8n-nodes-base.scheduleTrigger',
+          typeVersion: 1,
+          position: [250, 300],
+        },
+        {
+          parameters: {
+            url: `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/get_pending_social_posts`,
+            authentication: 'genericCredentialType',
+            genericAuthType: 'httpHeaderAuth',
+          },
+          name: 'Get Pending Posts',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 3,
+          position: [450, 300],
+        },
+      ],
+      connections: {
+        'Schedule 3x Daily': {
+          main: [[{ node: 'Get Pending Posts', type: 'main', index: 0 }]],
+        },
+      },
+    };
+  }
+
+  /**
+   * Get Email Campaign Scheduler workflow JSON
+   */
+  private static getEmailCampaignWorkflow() {
+    return {
+      name: 'Email Campaign Scheduler',
+      nodes: [
+        {
+          parameters: {
+            rule: {
+              interval: [
+                { field: 'cronExpression', expression: '*/15 * * * *' },
+              ],
+            },
+          },
+          name: 'Check Every 15 Minutes',
+          type: 'n8n-nodes-base.scheduleTrigger',
+          typeVersion: 1,
+          position: [250, 300],
+        },
+        {
+          parameters: {
+            url: `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/email_campaigns?status=eq.scheduled`,
+            authentication: 'genericCredentialType',
+            genericAuthType: 'httpHeaderAuth',
+          },
+          name: 'Get Scheduled Campaigns',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 3,
+          position: [450, 300],
+        },
+      ],
+      connections: {
+        'Check Every 15 Minutes': {
+          main: [[{ node: 'Get Scheduled Campaigns', type: 'main', index: 0 }]],
+        },
+      },
+    };
   }
 }

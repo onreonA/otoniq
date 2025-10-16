@@ -16,7 +16,7 @@ import { useInventory } from '../../hooks/useInventory';
 import type {
   StockLevel,
   StockMovement,
-  Warehouse,
+  Warehouse as WarehouseType,
 } from '../../../domain/entities/Inventory';
 
 type TabType = 'stock' | 'movements' | 'warehouses';

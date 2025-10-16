@@ -55,9 +55,7 @@ const NotificationSettingsPage = lazy(
 );
 const AuditLogsPage = lazy(() => import('../pages/settings/audit-logs/page'));
 const SocialMediaPage = lazy(() => import('../pages/social-media/page'));
-const EmailCampaignsPage = lazy(
-  () => import('../pages/email-campaigns/page')
-);
+const EmailCampaignsPage = lazy(() => import('../pages/email-campaigns/page'));
 const PitchDeckPage = lazy(() => import('../pages/pitch-deck/page'));
 const OnePagerPage = lazy(() => import('../pages/one-pager/page'));
 const SalesToolkitPage = lazy(() => import('../pages/sales-toolkit/page'));

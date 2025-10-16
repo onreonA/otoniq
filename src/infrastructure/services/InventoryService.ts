@@ -281,7 +281,7 @@ export class InventoryService {
         );
         break;
 
-      case 'adjustment':
+      case 'adjustment': {
         // Calculate adjustment quantity (new quantity - current quantity)
         const currentStock =
           await this.repository.getStockLevelByProductAndWarehouse(
@@ -301,6 +301,7 @@ export class InventoryService {
           );
         }
         break;
+      }
     }
   }
 

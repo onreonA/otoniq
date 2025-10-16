@@ -45,7 +45,8 @@ export interface HepsiburadaOrder {
 }
 
 export class HepsiburadaService {
-  private static readonly MERCHANT_ID = import.meta.env.VITE_HEPSIBURADA_MERCHANT_ID;
+  private static readonly MERCHANT_ID = import.meta.env
+    .VITE_HEPSIBURADA_MERCHANT_ID;
   private static readonly USERNAME = import.meta.env.VITE_HEPSIBURADA_USERNAME;
   private static readonly PASSWORD = import.meta.env.VITE_HEPSIBURADA_PASSWORD;
   private static readonly API_URL = 'https://listing-external.hepsiburada.com/';
@@ -204,7 +205,12 @@ export class HepsiburadaService {
     stock: number
   ): Promise<{ success: boolean; error?: string }> {
     if (!this.isConfigured()) {
-      console.log('Hepsiburada Mock: Updating stock for', merchantSku, 'to', stock);
+      console.log(
+        'Hepsiburada Mock: Updating stock for',
+        merchantSku,
+        'to',
+        stock
+      );
       return { success: true };
     }
 
@@ -239,7 +245,12 @@ export class HepsiburadaService {
     cargoCompany: string
   ): Promise<{ success: boolean; error?: string }> {
     if (!this.isConfigured()) {
-      console.log('Hepsiburada Mock: Updating order', orderNumber, 'to', status);
+      console.log(
+        'Hepsiburada Mock: Updating order',
+        orderNumber,
+        'to',
+        status
+      );
       return { success: true };
     }
 
@@ -258,7 +269,11 @@ export class HepsiburadaService {
     totalRevenue: number;
     averageOrderValue: number;
     commission: number;
-    topProducts: Array<{ merchantSku: string; productName: string; sales: number }>;
+    topProducts: Array<{
+      merchantSku: string;
+      productName: string;
+      sales: number;
+    }>;
   }> {
     // Mock data
     return {
@@ -267,8 +282,16 @@ export class HepsiburadaService {
       averageOrderValue: 2695.85,
       commission: 35185.18, // 15% average commission
       topProducts: [
-        { merchantSku: 'HB-PROD-001', productName: 'Samsung Galaxy A54', sales: 32 },
-        { merchantSku: 'HB-PROD-002', productName: 'Apple AirPods Pro', sales: 28 },
+        {
+          merchantSku: 'HB-PROD-001',
+          productName: 'Samsung Galaxy A54',
+          sales: 32,
+        },
+        {
+          merchantSku: 'HB-PROD-002',
+          productName: 'Apple AirPods Pro',
+          sales: 28,
+        },
         { merchantSku: 'HB-PROD-003', productName: 'JBL Charge 5', sales: 19 },
       ],
     };
@@ -293,4 +316,3 @@ export class HepsiburadaService {
     ];
   }
 }
-

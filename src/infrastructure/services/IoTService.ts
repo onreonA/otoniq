@@ -8,7 +8,13 @@ export interface IoTDevice {
   id: string;
   tenantId: string;
   deviceName: string;
-  deviceType: 'temperature' | 'humidity' | 'motion' | 'counter' | 'camera' | 'beacon';
+  deviceType:
+    | 'temperature'
+    | 'humidity'
+    | 'motion'
+    | 'counter'
+    | 'camera'
+    | 'beacon';
   deviceId: string;
   status: 'online' | 'offline' | 'error';
   lastSeen?: string;
@@ -30,7 +36,11 @@ export interface IoTReading {
 export interface IoTAlert {
   id: string;
   deviceId: string;
-  alertType: 'threshold_exceeded' | 'device_offline' | 'battery_low' | 'anomaly_detected';
+  alertType:
+    | 'threshold_exceeded'
+    | 'device_offline'
+    | 'battery_low'
+    | 'anomaly_detected';
   severity: 'info' | 'warning' | 'critical';
   message: string;
   triggeredAt: string;
@@ -155,7 +165,8 @@ export class IoTService {
         deviceId: 'CAM-004',
         alertType: 'device_offline',
         severity: 'critical',
-        message: 'Güvenlik Kamerası 1 çevrimdışı - 2 saat boyunca yanıt vermiyor',
+        message:
+          'Güvenlik Kamerası 1 çevrimdışı - 2 saat boyunca yanıt vermiyor',
         triggeredAt: new Date(Date.now() - 7200000).toISOString(),
         acknowledged: false,
       },
@@ -189,9 +200,9 @@ export class IoTService {
     parameters?: any
   ): Promise<boolean> {
     console.log(`Sending command ${command} to device ${deviceId}`, parameters);
-    
+
     // In production, this would call IoT platform API
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(() => resolve(true), 1000);
     });
   }
@@ -201,9 +212,9 @@ export class IoTService {
    */
   static async acknowledgeAlert(alertId: string): Promise<boolean> {
     console.log(`Acknowledging alert ${alertId}`);
-    
+
     // In production, update alert status in database
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(() => resolve(true), 500);
     });
   }
@@ -276,18 +287,19 @@ export class IoTService {
     devicesByType: Record<string, number>;
   } {
     const totalDevices = devices.length;
-    const onlineDevices = devices.filter((d) => d.status === 'online').length;
-    const offlineDevices = devices.filter((d) => d.status === 'offline').length;
+    const onlineDevices = devices.filter(d => d.status === 'online').length;
+    const offlineDevices = devices.filter(d => d.status === 'offline').length;
     const lowBatteryDevices = devices.filter(
-      (d) => d.batteryLevel !== undefined && d.batteryLevel < 20
+      d => d.batteryLevel !== undefined && d.batteryLevel < 20
     ).length;
 
     const batteryLevels = devices
-      .filter((d) => d.batteryLevel !== undefined)
-      .map((d) => d.batteryLevel!);
+      .filter(d => d.batteryLevel !== undefined)
+      .map(d => d.batteryLevel!);
     const averageBatteryLevel =
       batteryLevels.length > 0
-        ? batteryLevels.reduce((sum, level) => sum + level, 0) / batteryLevels.length
+        ? batteryLevels.reduce((sum, level) => sum + level, 0) /
+          batteryLevels.length
         : 0;
 
     const devicesByType = devices.reduce(
@@ -311,7 +323,10 @@ export class IoTService {
   /**
    * Export device data to CSV
    */
-  static exportDeviceData(devices: IoTDevice[], readings: Map<string, IoTReading[]>): string {
+  static exportDeviceData(
+    devices: IoTDevice[],
+    readings: Map<string, IoTReading[]>
+  ): string {
     const headers = [
       'Device ID',
       'Device Name',
@@ -323,7 +338,7 @@ export class IoTService {
       'Latest Reading',
     ];
 
-    const rows = devices.map((device) => {
+    const rows = devices.map(device => {
       const deviceReadings = readings.get(device.id) || [];
       const latestReading = deviceReadings[deviceReadings.length - 1];
 
@@ -339,7 +354,6 @@ export class IoTService {
       ];
     });
 
-    return [headers, ...rows].map((row) => row.join(',')).join('\n');
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
   }
 }
-

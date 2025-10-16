@@ -153,14 +153,9 @@ function getUserId(): string | null {
  * Get client IP address
  */
 async function getIPAddress(): Promise<string | null> {
-  try {
-    // In production, this would come from the server
-    // For now, use a placeholder
-    return 'client-ip';
-  } catch (error) {
-    console.error('Error getting IP address:', error);
-    return null;
-  }
+  // In production, this would come from the server
+  // For now, use a placeholder
+  return 'client-ip';
 }
 
 /**

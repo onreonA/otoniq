@@ -137,26 +137,43 @@
   ],
   "connections": {
     "Webhook Trigger": {
-      "main": [[{"node": "Get Campaign Details", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Get Campaign Details", "type": "main", "index": 0 }]]
     },
     "Get Campaign Details": {
-      "main": [[{"node": "Get Recipients", "type": "main", "index": 0}]]
+      "main": [[{ "node": "Get Recipients", "type": "main", "index": 0 }]]
     },
     "Get Recipients": {
-      "main": [[{"node": "Split Recipients into Batches", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Split Recipients into Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Split Recipients into Batches": {
       "main": [
-        [{"node": "Send Email", "type": "main", "index": 0}],
-        [{"node": "Update Campaign Status", "type": "main", "index": 0}]
+        [{ "node": "Send Email", "type": "main", "index": 0 }],
+        [{ "node": "Update Campaign Status", "type": "main", "index": 0 }]
       ]
     },
     "Send Email": {
-      "main": [[{"node": "Update Recipient Status", "type": "main", "index": 0}]]
+      "main": [
+        [{ "node": "Update Recipient Status", "type": "main", "index": 0 }]
+      ]
     },
     "Update Recipient Status": {
-      "main": [[{"node": "Split Recipients into Batches", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Split Recipients into Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   }
 }
-

@@ -1,84 +1,34 @@
-# 🚀 Otoniq.AI - E-Commerce & E-Export Automation Platform
+# 🚀 Otoniq.ai - E-Commerce & E-Export Automation Platform
 
-**AI-Powered Multi-Tenant E-Commerce ERP Platform**
+> AI-powered e-commerce automation platform with multi-marketplace integration, N8N workflows, and comprehensive business intelligence.
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-7.1-purple)](https://vitejs.dev/)
-[![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-cyan)](https://tailwindcss.com/)
+[![Production Ready](https://img.shields.io/badge/status-production%20ready-brightgreen)]()
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-green)]()
 
 ---
 
-## 📖 Overview
+## 🎯 Project Overview
 
-Otoniq.AI is a comprehensive, production-ready e-commerce and e-export automation platform designed for multi-tenant SaaS deployment. Built with Clean Architecture principles, it provides enterprise-grade product management, inventory tracking, order processing, customer relationship management (CRM), and seamless integration with major ERP systems (Odoo) and e-commerce platforms (Shopify).
+**Otoniq.ai** is a comprehensive e-commerce automation platform designed for e-export and e-commerce companies. It manages entire business processes with full AI integration, including:
 
-### 🎯 Key Features
-
-- ✅ **Multi-Tenant Architecture** - Complete tenant isolation with Row Level Security (RLS)
-- ✅ **Product Management** - Full CRUD with real-time Supabase integration
-- ✅ **Category Management** - Tree structure with hierarchical organization
-- ✅ **Inventory Management** - Multi-warehouse support, stock tracking, movement history
-- ✅ **Order Management** - Complete order lifecycle with status tracking
-- ✅ **Customer CRM** - Segmentation, analytics, lifetime value tracking
-- ✅ **ERP Integration** - Odoo sync with comprehensive logging
-- ✅ **E-Commerce Integration** - Shopify API integration
-- ✅ **Marketplace Support** - Trendyol, Amazon, etc. (extensible)
-- ✅ **Integration Logging** - Complete audit trail for all sync operations
-- ✅ **Admin Panel** - Super admin controls, user & tenant management
-- ✅ **Analytics Dashboard** - Real-time KPIs and performance metrics
-- ✅ **Responsive Design** - Mobile-first UI with TailwindCSS
+- 🤖 **AI-Powered Product Analysis** (GPT-4)
+- 🛒 **8 Marketplace Integrations** (Shopify, Amazon, Trendyol, etc.)
+- ⚡ **N8N Workflow Automation**
+- 📱 **Multi-Channel Communication** (WhatsApp, Telegram)
+- 🎨 **Visual Content Automation** (Canva, Image Processing)
+- 🔌 **IoT Device Monitoring**
+- 📊 **Advanced Analytics & Reporting**
 
 ---
 
-## 🏗️ Architecture
+## 📚 Documentation
 
-### Clean Architecture Layers
-
-```
-┌─────────────────────────────────────────┐
-│         Presentation Layer              │
-│  (React Components, Hooks, Pages)       │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│         Application Layer               │
-│     (Use Cases, DTOs)                   │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│         Domain Layer                    │
-│   (Entities, Repository Interfaces)     │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│       Infrastructure Layer              │
-│  (Supabase, Services, Implementations)  │
-└─────────────────────────────────────────┘
-```
-
-### Tech Stack
-
-**Frontend:**
-- React 19 + TypeScript 5.3
-- Vite 7.1 (Build tool)
-- TailwindCSS 3.4 (Styling)
-- React Router Dom (Routing)
-- Framer Motion (Animations)
-- Zustand (State management)
-- React Hook Form + Zod (Forms & validation)
-- Recharts (Analytics charts)
-- React Hot Toast (Notifications)
-
-**Backend:**
-- Supabase (PostgreSQL + Auth + RLS)
-- Supabase Edge Functions (API gateway)
-
-**External Integrations:**
-- Odoo ERP (XML-RPC / JSON-RPC)
-- Shopify (REST API)
-- Trendyol Marketplace
+- 📖 **[FEATURES.md](./FEATURES.md)** - Complete feature list (200+ features)
+- 🚀 **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Production deployment guide
+- 🧪 **[TESTING.md](./TESTING.md)** - Testing infrastructure & guide
+- 🔐 **[SECURITY_N8N_SETUP.md](./SECURITY_N8N_SETUP.md)** - Security & N8N setup guide
+- 📦 **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System architecture (coming soon)
 
 ---
 
@@ -86,9 +36,10 @@ Otoniq.AI is a comprehensive, production-ready e-commerce and e-export automatio
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Supabase account
+- N8N Cloud account (optional but recommended)
 
 ### Installation
 
@@ -100,234 +51,198 @@ cd otoniq
 # Install dependencies
 npm install
 
-# Configure environment variables
+# Setup environment variables
 cp .env.example .env.local
-# Edit .env.local with your Supabase credentials
+# Edit .env.local with your credentials
 
-# Run database migrations
-# (Instructions in src/infrastructure/database/supabase/migrations/README.md)
-
-# Start development server
+# Run development server
 npm run dev
 ```
 
-### Environment Variables
-
-Create `.env.local`:
-
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
----
-
-## 📁 Project Structure
-
-```
-src/
-├── domain/                    # Domain Layer (Business Logic)
-│   ├── entities/             # Core business entities
-│   │   ├── Category.ts
-│   │   ├── Customer.ts
-│   │   ├── IntegrationLog.ts
-│   │   ├── Inventory.ts
-│   │   ├── Order.ts
-│   │   └── Product.ts
-│   └── repositories/         # Repository interfaces
-│       ├── ICategoryRepository.ts
-│       ├── ICustomerRepository.ts
-│       ├── IIntegrationLogRepository.ts
-│       ├── IInventoryRepository.ts
-│       └── IOrderRepository.ts
-│
-├── application/              # Application Layer (Use Cases)
-│   └── use-cases/
-│       ├── product/
-│       ├── odoo/
-│       └── shopify/
-│
-├── infrastructure/           # Infrastructure Layer (External)
-│   ├── database/supabase/
-│   │   ├── migrations/      # SQL migrations (001-011)
-│   │   └── repositories/    # Supabase implementations
-│   │       ├── SupabaseCategoryRepository.ts
-│   │       ├── SupabaseCustomerRepository.ts
-│   │       ├── SupabaseIntegrationLogRepository.ts
-│   │       ├── SupabaseInventoryRepository.ts
-│   │       └── SupabaseOrderRepository.ts
-│   └── services/            # Business logic services
-│       ├── CategoryService.ts
-│       ├── CustomerService.ts
-│       ├── IntegrationLogService.ts
-│       ├── InventoryService.ts
-│       ├── OdooSyncService.ts
-│       ├── OrderService.ts
-│       └── ShopifySyncService.ts
-│
-└── presentation/             # Presentation Layer (UI)
-    ├── components/
-    │   ├── common/          # Reusable UI components
-    │   │   ├── ErrorBoundary.tsx
-    │   │   ├── PageHeader.tsx
-    │   │   ├── StatsGrid.tsx
-    │   │   └── StatusBadge.tsx
-    │   ├── feature/         # Feature-specific components
-    │   └── layout/          # Layout components
-    ├── hooks/               # Custom React hooks
-    │   ├── useAuth.ts
-    │   ├── useCategories.ts
-    │   ├── useCustomers.ts
-    │   ├── useIntegrationLogs.ts
-    │   ├── useInventory.ts
-    │   └── useOrders.ts
-    ├── pages/               # Page components
-    │   ├── categories/
-    │   ├── customers/
-    │   ├── dashboard/
-    │   ├── inventory/
-    │   ├── orders/
-    │   ├── products/
-    │   └── integrations/
-    └── router/              # Routing configuration
-```
-
----
-
-## 🗄️ Database Schema
-
-### Core Tables (11 Migrations)
-
-1. **001_initial_schema.sql** - Users, Tenants, Products, basic tables
-2. **002_marketplace_schema.sql** - Marketplace connections
-3. **003_marketplace_schema.sql** - Extended marketplace features
-4. **004_orders_automation_schema.sql** - Orders and automation
-5. **005_fix_products_schema.sql** - Product schema fixes
-6. **006_categories_schema.sql** - Categories with tree structure
-7. **007_inventory_schema.sql** - Warehouses, stock levels, movements
-8. **008_customers_crm_schema.sql** - Customers, addresses, segments
-9. **009_orders_extended_schema.sql** - Order items, shipments, payments
-10. **010_suppliers_schema.sql** - Supplier management
-11. **011_integration_logs_schema.sql** - Integration logging & monitoring
-
-All tables include:
-- ✅ Multi-tenant support (`tenant_id` column)
-- ✅ Row Level Security (RLS) policies
-- ✅ Comprehensive indexes
-- ✅ Foreign key relationships
-- ✅ Audit columns (created_at, updated_at, created_by, updated_by)
-
-See `/src/infrastructure/database/supabase/migrations/README.md` for details.
-
----
-
-## 🔐 Authentication & Authorization
-
-### Multi-Tenancy
-
-- Complete tenant isolation using Supabase RLS
-- Each user belongs to one tenant
-- All data is scoped by `tenant_id`
-- RLS policies enforce tenant boundaries
-
-### Roles
-
-- **Super Admin**: Platform-wide access (admin panel)
-- **Tenant Admin**: Full access within tenant
-- **Tenant User**: Limited access based on permissions
-
----
-
-## 🔌 Integrations
-
-### Odoo ERP
-
-- Product synchronization (all/recent/active)
-- Real-time connection testing
-- Comprehensive error handling
-- Integration logging
-
-### Shopify
-
-- Product sync with pagination
-- Webhook support (planned)
-- Inventory synchronization
-- Integration logging
-
-### Marketplaces
-
-- Trendyol (mock mode + real API)
-- Extensible architecture for additional marketplaces
-
-All integrations track:
-- Success/error counts
-- Duration metrics
-- Entity counts
-- Full request/response logs
-
----
-
-## 📊 Features by Module
-
-### Products
-- ✅ CRUD operations
-- ✅ Search & filtering
-- ✅ Pagination
-- ✅ Bulk operations
-- ✅ Odoo/Shopify sync
-- ✅ Multi-tenant isolation
-
-### Categories
-- ✅ Tree structure (hierarchical)
-- ✅ Drag-and-drop (planned)
-- ✅ Parent-child relationships
-- ✅ Product counts
-- ✅ Real-time updates
-
-### Inventory
-- ✅ Multi-warehouse support
-- ✅ Stock levels tracking
-- ✅ Stock movements history
-- ✅ Low stock alerts
-- ✅ Reserved vs available stock
-
-### Orders
-- ✅ Full order lifecycle
-- ✅ Status management (7 states)
-- ✅ Filtering & search
-- ✅ Analytics & statistics
-- ✅ Customer linking
-
-### Customers (CRM)
-- ✅ Customer segmentation (6 segments)
-- ✅ Lifetime value tracking
-- ✅ Order history
-- ✅ Analytics & KPIs
-- ✅ B2B and B2C support
-
-### Admin Panel
-- ✅ User management
-- ✅ Tenant management
-- ✅ System monitoring
-- ✅ AI model status
-- ✅ Revenue analytics
-
----
-
-## 🧪 Testing
+### Running Tests
 
 ```bash
-# Run tests (coming soon)
-npm run test
+# Unit tests
+npm test
 
-# Type checking
-npm run type-check
+# E2E tests
+npm run e2e
 
-# Linting
-npm run lint
+# Coverage report
+npm run test:coverage
+```
 
-# Format code
-npm run format
+---
+
+## 🎯 Core Features
+
+### 🔐 Security & Authentication
+
+- Multi-tenant architecture with full isolation
+- Two-Factor Authentication (2FA)
+- Session management & refresh tokens
+- Rate limiting & input validation
+- Audit logging & Sentry error tracking
+
+### 📦 Product & Inventory Management
+
+- Complete product CRUD operations
+- Multi-warehouse inventory tracking
+- Stock movement history
+- Category management
+- Bulk operations & import/export
+
+### 🛒 Marketplace Integrations
+
+- **Shopify** - Full sync & webhooks
+- **Odoo ERP** - XML-RPC integration
+- **Trendyol** - Turkish marketplace
+- **Amazon** - SP-API (FBA/FBM)
+- **Hepsiburada** - Turkish marketplace
+- **Alibaba.com** - B2B sourcing
+- Unified dashboard for all marketplaces
+
+### 🤖 AI & Automation
+
+- **Feed Doctor** - AI product analysis (GPT-4)
+- **N8N Workflows** - 10+ automated workflows
+- **Visual Automation** - Canva API integration
+- **Image Processing** - Enhancement & optimization
+- **Social Media** - Auto-posting (5 platforms)
+- **Email Campaigns** - Bulk & drip campaigns
+
+### 💬 Communication
+
+- **WhatsApp Business API** - Order notifications
+- **Telegram Bot** - Admin alerts & commands
+- Multi-channel notification system
+
+### 🔌 IoT & Monitoring
+
+- Device monitoring (temp, humidity, motion)
+- Real-time alerts
+- Device health scoring
+- Battery monitoring
+
+### 📊 Analytics & Reporting
+
+- Real-time dashboard metrics
+- Sales trends & forecasting
+- Top products analysis
+- Multi-marketplace comparison
+- Exportable reports (CSV, PDF)
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+
+- **React 18** with TypeScript
+- **Vite** for blazing fast builds
+- **Tailwind CSS** for styling
+- **React Router** for navigation
+- **Zustand** for state management
+- **React Query** for data fetching
+- **React Flow** for workflow diagrams
+- **Recharts** for data visualization
+
+### Backend & Database
+
+- **Supabase** (PostgreSQL + Auth + Edge Functions)
+- **31+ Database Migrations**
+- Row Level Security (RLS) policies
+- Real-time subscriptions
+
+### Automation & AI
+
+- **N8N Cloud** for workflow automation
+- **OpenAI GPT-4 Turbo** for AI analysis
+- **Canva API** for design generation
+
+### Testing & QA
+
+- **Vitest** for unit tests
+- **Cypress** for E2E tests
+- **Testing Library** for component tests
+- Coverage reporting
+
+### DevOps & Monitoring
+
+- **Vercel** for deployment
+- **Sentry** for error tracking
+- **GitHub Actions** for CI/CD
+- **Supabase Logs** for monitoring
+
+---
+
+## 📊 Project Statistics
+
+- **150+** Features Implemented
+- **15+** Third-party Integrations
+- **8** Marketplace Connections
+- **31+** Database Migrations
+- **20+** Services & Repositories
+- **50+** UI Pages
+- **10+** N8N Workflows
+- **5** Social Media Platforms
+
+---
+
+## 🗂️ Project Structure
+
+```
+otoniq/
+├── src/
+│   ├── application/           # Use cases & business logic
+│   ├── domain/               # Domain entities & interfaces
+│   ├── infrastructure/       # External services & implementations
+│   │   ├── database/        # Supabase migrations & queries
+│   │   ├── services/        # API integrations
+│   │   └── workflows/       # N8N workflow templates
+│   └── presentation/        # UI components & pages
+│       ├── components/      # Reusable components
+│       ├── pages/          # Route pages
+│       ├── hooks/          # Custom React hooks
+│       └── store/          # State management
+├── cypress/                 # E2E tests
+├── public/                  # Static assets
+├── DEPLOYMENT.md           # Deployment guide
+├── FEATURES.md            # Feature documentation
+└── TESTING.md            # Testing guide
+```
+
+---
+
+## 🔐 Environment Variables
+
+Required environment variables (see `.env.example`):
+
+```bash
+# Supabase
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_SUPABASE_SERVICE_KEY=
+
+# N8N Cloud
+VITE_N8N_API_URL=
+VITE_N8N_API_KEY=
+
+# OpenAI
+VITE_OPENAI_API_KEY=
+
+# Canva
+VITE_CANVA_API_KEY=
+
+# WhatsApp Business
+VITE_WHATSAPP_PHONE_NUMBER_ID=
+VITE_WHATSAPP_ACCESS_TOKEN=
+
+# Telegram
+VITE_TELEGRAM_BOT_TOKEN=
+
+# Sentry
+VITE_SENTRY_DSN=
 ```
 
 ---
@@ -341,94 +256,102 @@ npm run format
 npm i -g vercel
 
 # Deploy
-vercel
-
-# Set environment variables in Vercel dashboard
-# VITE_SUPABASE_URL
-# VITE_SUPABASE_ANON_KEY
+vercel --prod
 ```
 
-### Build for Production
+### Manual Deployment
 
 ```bash
+# Build
 npm run build
 
-# Output in /dist folder
+# Preview
+npm run preview
+
+# Deploy dist/ folder to your hosting
 ```
 
----
-
-## 📈 Performance
-
-- ✅ Code splitting with React.lazy()
-- ✅ Optimized bundle size
-- ✅ Lazy loading routes
-- ✅ Efficient re-renders (React 19)
-- ✅ Supabase connection pooling
-- ✅ Indexed database queries
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
 ---
 
-## 🛠️ Development Tools
+## 🧪 Testing
 
-- **Vite** - Lightning-fast HMR
-- **TypeScript** - Type safety
-- **ESLint** - Code quality
-- **Prettier** - Code formatting
-- **Supabase CLI** - Database management
+```bash
+# Run all tests
+npm test
+
+# Run specific test
+npm test -- OpenAIService
+
+# E2E tests
+npm run e2e
+
+# Coverage
+npm run test:coverage
+```
+
+See [TESTING.md](./TESTING.md) for complete testing guide.
 
 ---
 
-## 📝 Contributing
+## 📈 Roadmap
 
-This is a private project. Contributions are not currently accepted.
+### ✅ Completed (v1.0.0)
+
+- Core business features
+- Security & authentication
+- 8 marketplace integrations
+- AI-powered automation
+- N8N workflow system
+- Testing infrastructure
+
+### 🔄 In Progress (v1.1.0)
+
+- Advanced AI/ML features
+- Multi-language support
+- GDPR/KVKK compliance
+
+### 📋 Planned (v2.0.0)
+
+- Enterprise features (RBAC, SSO)
+- Predictive analytics
+- Computer vision
+- White-label solution
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
 
 ---
 
 ## 📄 License
 
-Proprietary - All rights reserved
-
----
-
-## 👥 Team
-
-- **Developer**: Ömer Ünsal
-- **AI Assistant**: Claude (Anthropic)
+This project is licensed under the MIT License - see [LICENSE](./LICENSE) file.
 
 ---
 
 ## 📞 Support
 
-For support, contact: [Your Contact Info]
+- **Email**: support@otoniq.ai
+- **Documentation**: https://docs.otoniq.ai
+- **Issues**: https://github.com/onreonA/otoniq/issues
 
 ---
 
-## 🎉 Project Status
+## 🙏 Acknowledgments
 
-**Current Version**: 0.1.0  
-**Status**: 🟢 **87.5% Complete** (Phase 7 of 8 completed)
-
-### Completed Phases:
-- ✅ Phase 1: Integrations Architecture
-- ✅ Phase 2: Categories & Inventory
-- ✅ Phase 3: Orders & Customers
-- ✅ Phase 4: Shared Components
-- ✅ Phase 5: Database Migrations
-- ✅ Phase 6: Repository Layer
-- ✅ Phase 7: Mock→Real Data Migration
-- ⏳ Phase 8: Testing & Polish (In Progress)
-
-### Recent Updates:
-- ✅ All core pages migrated to real data
-- ✅ Integration logging implemented
-- ✅ Error boundary added
-- ✅ Clean Architecture fully implemented
-- ✅ 20,000+ lines of production-grade code
-- ✅ 11 database migrations
-- ✅ Multi-tenant RLS policies
+- **Supabase** for backend infrastructure
+- **N8N** for workflow automation
+- **OpenAI** for AI capabilities
+- **Vercel** for deployment platform
 
 ---
 
-**Built with ❤️ using React, TypeScript, and Supabase**
+**Made with ❤️ by Otoniq Team**
 
+**Version**: 1.0.0  
+**Status**: Production Ready ✅  
+**Last Updated**: January 2025
