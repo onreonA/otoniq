@@ -30,15 +30,20 @@ CREATE TABLE IF NOT EXISTS public.product_images (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexes
+-- Indexes (created immediately after table creation)
 CREATE INDEX IF NOT EXISTS idx_product_images_product_id 
   ON public.product_images(product_id);
+
 CREATE INDEX IF NOT EXISTS idx_product_images_is_primary 
-  ON public.product_images(is_primary) WHERE is_primary = true;
+  ON public.product_images(is_primary) 
+  WHERE is_primary = true;
+
 CREATE INDEX IF NOT EXISTS idx_product_images_position 
   ON public.product_images(product_id, position);
+
 CREATE INDEX IF NOT EXISTS idx_product_images_source_platform 
-  ON public.product_images(source_platform);
+  ON public.product_images(source_platform) 
+  WHERE source_platform IS NOT NULL;
 
 -- RLS
 ALTER TABLE public.product_images ENABLE ROW LEVEL SECURITY;
