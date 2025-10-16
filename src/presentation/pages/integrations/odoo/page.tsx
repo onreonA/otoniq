@@ -380,7 +380,9 @@ const OdooIntegrationPage = () => {
           ? [product.categ_id[1]]
           : ['Uncategorized'],
         status: product.active ? 'active' : 'inactive',
-        published_at: product.create_date ? new Date(product.create_date) : null,
+        published_at: product.create_date
+          ? new Date(product.create_date)
+          : null,
         weight: product.weight || null,
         volume: product.volume || null,
         requires_shipping: product.type !== 'service',
@@ -399,7 +401,9 @@ const OdooIntegrationPage = () => {
 
       // Split products: with barcode vs without barcode
       const productsWithBarcode = transformedProducts.filter(p => p.barcode);
-      const productsWithoutBarcode = transformedProducts.filter(p => !p.barcode);
+      const productsWithoutBarcode = transformedProducts.filter(
+        p => !p.barcode
+      );
 
       let successCount = 0;
       let failCount = 0;

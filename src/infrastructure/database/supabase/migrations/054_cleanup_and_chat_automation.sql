@@ -1,17 +1,23 @@
 -- ============================================================================
--- Migration 054: Chat Automation System (WhatsApp, Telegram, Voice Commands)
+-- Migration 054: Cleanup & Chat Automation System (FRESH START)
 -- ============================================================================
--- This migration creates the complete chat automation infrastructure:
--- - WhatsApp & Telegram conversations and messages
--- - Automated response templates
--- - Voice command recognition and execution
--- - Telegram bot command handlers
--- - Daily analytics and statistics
+-- This migration first drops any existing chat tables, then creates them fresh
+
+-- ============================================================================
+-- CLEANUP: Drop existing tables if any (in reverse dependency order)
+-- ============================================================================
+DROP TABLE IF EXISTS public.chat_stats_daily CASCADE;
+DROP TABLE IF EXISTS public.telegram_bot_commands CASCADE;
+DROP TABLE IF EXISTS public.voice_command_logs CASCADE;
+DROP TABLE IF EXISTS public.voice_commands CASCADE;
+DROP TABLE IF EXISTS public.chat_templates CASCADE;
+DROP TABLE IF EXISTS public.chat_messages CASCADE;
+DROP TABLE IF EXISTS public.chat_conversations CASCADE;
 
 -- ============================================================================
 -- 1. CHAT CONVERSATIONS TABLE
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.chat_conversations (
+CREATE TABLE public.chat_conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
   
@@ -32,8 +38,8 @@ CREATE TABLE IF NOT EXISTS public.chat_conversations (
   
   -- AI Analysis
   sentiment TEXT DEFAULT 'neutral' CHECK (sentiment IN ('positive', 'neutral', 'negative')),
-  sentiment_score DECIMAL(3, 2), -- 0.00 to 1.00
-  intent_category TEXT, -- 'order', 'complaint', 'inquiry', etc.
+  sentiment_score DECIMAL(3, 2),
+  intent_category TEXT,
   
   -- Tags & Classification
   tags TEXT[] DEFAULT '{}',
@@ -55,32 +61,28 @@ CREATE INDEX idx_chat_conversations_status ON public.chat_conversations(status) 
 CREATE INDEX idx_chat_conversations_assigned_agent ON public.chat_conversations(assigned_agent_id) WHERE assigned_agent_id IS NOT NULL;
 CREATE INDEX idx_chat_conversations_last_message ON public.chat_conversations(last_message_at DESC NULLS LAST);
 CREATE INDEX idx_chat_conversations_unread ON public.chat_conversations(unread_count) WHERE unread_count > 0;
-
--- Unique constraint: one conversation per tenant per platform per customer
-CREATE UNIQUE INDEX unique_conversation_per_customer 
-  ON public.chat_conversations(tenant_id, platform, customer_phone);
+CREATE UNIQUE INDEX unique_conversation_per_customer ON public.chat_conversations(tenant_id, platform, customer_phone);
 
 COMMENT ON TABLE public.chat_conversations IS 'WhatsApp and Telegram conversations';
-COMMENT ON COLUMN public.chat_conversations.sentiment_score IS 'AI-calculated sentiment score from 0 (negative) to 1 (positive)';
 
 -- ============================================================================
 -- 2. CHAT MESSAGES TABLE
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.chat_messages (
+CREATE TABLE public.chat_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
   conversation_id UUID NOT NULL REFERENCES public.chat_conversations(id) ON DELETE CASCADE,
   
   -- Message Details
   sender_type TEXT NOT NULL CHECK (sender_type IN ('customer', 'bot', 'agent', 'system')),
-  sender_id UUID REFERENCES public.profiles(id), -- NULL for customer/bot
+  sender_id UUID REFERENCES public.profiles(id),
   
   content TEXT NOT NULL,
   content_type TEXT DEFAULT 'text' CHECK (content_type IN ('text', 'image', 'video', 'audio', 'file', 'location', 'product', 'order')),
   
   -- Media & Metadata
   media_url TEXT,
-  metadata JSONB DEFAULT '{}', -- {product_id, order_id, file_name, etc.}
+  metadata JSONB DEFAULT '{}',
   
   -- External Platform IDs
   whatsapp_message_id TEXT,
@@ -109,14 +111,13 @@ CREATE INDEX idx_chat_messages_sender ON public.chat_messages(sender_type, creat
 CREATE INDEX idx_chat_messages_unread ON public.chat_messages(conversation_id) WHERE read_status = false;
 
 COMMENT ON TABLE public.chat_messages IS 'Individual messages in conversations';
-COMMENT ON COLUMN public.chat_messages.ai_confidence IS 'Confidence score for AI intent detection (0.00 to 1.00)';
 
 -- ============================================================================
 -- 3. CHAT TEMPLATES TABLE
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.chat_templates (
+CREATE TABLE public.chat_templates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE, -- NULL = global template
+  tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
   
   -- Template Details
   name TEXT NOT NULL,
@@ -124,11 +125,11 @@ CREATE TABLE IF NOT EXISTS public.chat_templates (
   
   -- Triggers
   trigger_keywords TEXT[] DEFAULT '{}',
-  trigger_conditions JSONB DEFAULT '{}', -- {time: 'after_hours', status: 'new_conversation'}
+  trigger_conditions JSONB DEFAULT '{}',
   
   -- Response
   response_text TEXT NOT NULL,
-  response_variables TEXT[] DEFAULT '{}', -- ['customer_name', 'order_number', etc.]
+  response_variables TEXT[] DEFAULT '{}',
   
   -- Media
   includes_media BOOLEAN DEFAULT false,
@@ -138,14 +139,14 @@ CREATE TABLE IF NOT EXISTS public.chat_templates (
   -- Configuration
   language TEXT DEFAULT 'tr',
   is_active BOOLEAN DEFAULT true,
-  priority INTEGER DEFAULT 5 CHECK (priority BETWEEN 1 AND 10), -- 1 (highest) to 10 (lowest)
+  priority INTEGER DEFAULT 5 CHECK (priority BETWEEN 1 AND 10),
   
   -- Platforms
   enabled_platforms TEXT[] DEFAULT ARRAY['whatsapp', 'telegram'],
   
   -- Usage Stats
   usage_count INTEGER DEFAULT 0,
-  success_rate DECIMAL(5, 2), -- percentage
+  success_rate DECIMAL(5, 2),
   last_used_at TIMESTAMPTZ,
   
   -- Timestamps
@@ -159,31 +160,30 @@ CREATE INDEX idx_chat_templates_active ON public.chat_templates(is_active, prior
 CREATE INDEX idx_chat_templates_triggers ON public.chat_templates USING GIN (trigger_keywords);
 
 COMMENT ON TABLE public.chat_templates IS 'Automated response templates for chatbots';
-COMMENT ON COLUMN public.chat_templates.response_variables IS 'Variables that can be replaced in response_text like {customer_name}';
 
 -- ============================================================================
 -- 4. VOICE COMMANDS TABLE
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.voice_commands (
+CREATE TABLE public.voice_commands (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE, -- NULL = global command
+  tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
   
   -- Command Details
   command_text TEXT NOT NULL,
-  command_variations TEXT[] DEFAULT '{}', -- ['bugünkü siparişler', 'bugün kaç sipariş var']
+  command_variations TEXT[] DEFAULT '{}',
   
   -- Classification
   category TEXT NOT NULL CHECK (category IN ('order', 'product', 'report', 'support', 'navigation', 'action')),
-  action_type TEXT NOT NULL, -- 'SHOW_DAILY_ORDERS', 'LIST_OUT_OF_STOCK', etc.
+  action_type TEXT NOT NULL,
   
   -- Execution
-  target_page TEXT, -- '/dashboard/orders'
-  target_function TEXT, -- Function to call in frontend
+  target_page TEXT,
+  target_function TEXT,
   required_parameters TEXT[] DEFAULT '{}',
   
   -- Configuration
   is_active BOOLEAN DEFAULT true,
-  requires_confirmation BOOLEAN DEFAULT false, -- For destructive actions
+  requires_confirmation BOOLEAN DEFAULT false,
   
   -- NLP Configuration
   min_confidence DECIMAL(3, 2) DEFAULT 0.80,
@@ -206,25 +206,24 @@ CREATE INDEX idx_voice_commands_active ON public.voice_commands(is_active) WHERE
 CREATE INDEX idx_voice_commands_action ON public.voice_commands(action_type);
 
 COMMENT ON TABLE public.voice_commands IS 'Voice command definitions and handlers';
-COMMENT ON COLUMN public.voice_commands.min_confidence IS 'Minimum confidence score (0.00-1.00) to execute command';
 
 -- ============================================================================
 -- 5. VOICE COMMAND LOGS TABLE
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.voice_command_logs (
+CREATE TABLE public.voice_command_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
   user_id UUID REFERENCES public.profiles(id),
   command_id UUID REFERENCES public.voice_commands(id),
   
   -- Input
-  audio_url TEXT, -- Recorded audio file
-  transcript TEXT NOT NULL, -- Speech-to-text result
+  audio_url TEXT,
+  transcript TEXT NOT NULL,
   
   -- Recognition
   matched_command TEXT,
   confidence_score DECIMAL(3, 2),
-  recognition_provider TEXT, -- 'google', 'azure', 'whisper'
+  recognition_provider TEXT,
   
   -- Execution
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'success', 'failed', 'rejected')),
@@ -251,12 +250,12 @@ COMMENT ON TABLE public.voice_command_logs IS 'Voice command execution history a
 -- ============================================================================
 -- 6. TELEGRAM BOT COMMANDS TABLE
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.telegram_bot_commands (
+CREATE TABLE public.telegram_bot_commands (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE, -- NULL = global command
+  tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
   
   -- Command Details
-  command TEXT NOT NULL, -- '/start', '/siparis', etc.
+  command TEXT NOT NULL,
   description TEXT NOT NULL,
   example_usage TEXT,
   
@@ -264,7 +263,7 @@ CREATE TABLE IF NOT EXISTS public.telegram_bot_commands (
   category TEXT NOT NULL CHECK (category IN ('navigation', 'query', 'action', 'support')),
   
   -- Handler
-  handler_function TEXT NOT NULL, -- Backend function name
+  handler_function TEXT NOT NULL,
   required_params TEXT[] DEFAULT '{}',
   
   -- Configuration
@@ -289,18 +288,14 @@ CREATE TABLE IF NOT EXISTS public.telegram_bot_commands (
 CREATE INDEX idx_telegram_commands_tenant ON public.telegram_bot_commands(tenant_id);
 CREATE INDEX idx_telegram_commands_active ON public.telegram_bot_commands(is_active, command) WHERE is_active = true;
 CREATE INDEX idx_telegram_commands_category ON public.telegram_bot_commands(category);
-
--- Unique constraint for tenant-specific commands (allows multiple NULL tenant_ids for global commands)
-CREATE UNIQUE INDEX unique_telegram_commands_per_tenant 
-  ON public.telegram_bot_commands(tenant_id, command) 
-  WHERE tenant_id IS NOT NULL;
+CREATE UNIQUE INDEX unique_telegram_commands_per_tenant ON public.telegram_bot_commands(tenant_id, command) WHERE tenant_id IS NOT NULL;
 
 COMMENT ON TABLE public.telegram_bot_commands IS 'Telegram bot command definitions and handlers';
 
 -- ============================================================================
 -- 7. CHAT STATS DAILY TABLE
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.chat_stats_daily (
+CREATE TABLE public.chat_stats_daily (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
   
@@ -326,7 +321,7 @@ CREATE TABLE IF NOT EXISTS public.chat_stats_daily (
   first_response_time_seconds INTEGER,
   
   -- Quality Metrics
-  resolution_rate DECIMAL(5, 2), -- percentage
+  resolution_rate DECIMAL(5, 2),
   customer_satisfaction_score DECIMAL(3, 2),
   sentiment_positive_count INTEGER DEFAULT 0,
   sentiment_neutral_count INTEGER DEFAULT 0,
@@ -343,18 +338,13 @@ CREATE TABLE IF NOT EXISTS public.chat_stats_daily (
 -- Indexes
 CREATE INDEX idx_chat_stats_date ON public.chat_stats_daily(stat_date DESC);
 CREATE INDEX idx_chat_stats_tenant_platform ON public.chat_stats_daily(tenant_id, platform, stat_date DESC);
-
--- Unique constraint: one stat record per tenant per date per platform
-CREATE UNIQUE INDEX unique_chat_stats_per_day 
-  ON public.chat_stats_daily(tenant_id, stat_date, platform);
+CREATE UNIQUE INDEX unique_chat_stats_per_day ON public.chat_stats_daily(tenant_id, stat_date, platform);
 
 COMMENT ON TABLE public.chat_stats_daily IS 'Daily aggregated chat automation statistics';
 
 -- ============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
-
--- Enable RLS
 ALTER TABLE public.chat_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_templates ENABLE ROW LEVEL SECURITY;
@@ -362,21 +352,6 @@ ALTER TABLE public.voice_commands ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.voice_command_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.telegram_bot_commands ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_stats_daily ENABLE ROW LEVEL SECURITY;
-
--- Drop existing policies if any
-DROP POLICY IF EXISTS "Users can view their tenant's conversations" ON public.chat_conversations;
-DROP POLICY IF EXISTS "Users can manage their tenant's conversations" ON public.chat_conversations;
-DROP POLICY IF EXISTS "Users can view their tenant's messages" ON public.chat_messages;
-DROP POLICY IF EXISTS "Users can manage their tenant's messages" ON public.chat_messages;
-DROP POLICY IF EXISTS "Users can view chat templates" ON public.chat_templates;
-DROP POLICY IF EXISTS "Users can manage tenant templates" ON public.chat_templates;
-DROP POLICY IF EXISTS "Users can view voice commands" ON public.voice_commands;
-DROP POLICY IF EXISTS "Users can manage tenant commands" ON public.voice_commands;
-DROP POLICY IF EXISTS "Users can view their command logs" ON public.voice_command_logs;
-DROP POLICY IF EXISTS "Users can create command logs" ON public.voice_command_logs;
-DROP POLICY IF EXISTS "Users can view telegram commands" ON public.telegram_bot_commands;
-DROP POLICY IF EXISTS "Users can manage tenant telegram commands" ON public.telegram_bot_commands;
-DROP POLICY IF EXISTS "Users can view their stats" ON public.chat_stats_daily;
 
 -- Chat Conversations Policies
 CREATE POLICY "Users can view their tenant's conversations"
@@ -396,7 +371,7 @@ CREATE POLICY "Users can manage their tenant's messages"
   ON public.chat_messages FOR ALL
   USING (tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
 
--- Chat Templates Policies (includes global templates)
+-- Chat Templates Policies
 CREATE POLICY "Users can view chat templates"
   ON public.chat_templates FOR SELECT
   USING (tenant_id IS NULL OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
@@ -405,7 +380,7 @@ CREATE POLICY "Users can manage tenant templates"
   ON public.chat_templates FOR ALL
   USING (tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
 
--- Voice Commands Policies (includes global commands)
+-- Voice Commands Policies
 CREATE POLICY "Users can view voice commands"
   ON public.voice_commands FOR SELECT
   USING (tenant_id IS NULL OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
@@ -423,7 +398,7 @@ CREATE POLICY "Users can create command logs"
   ON public.voice_command_logs FOR INSERT
   WITH CHECK (tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
 
--- Telegram Bot Commands Policies (includes global commands)
+-- Telegram Bot Commands Policies
 CREATE POLICY "Users can view telegram commands"
   ON public.telegram_bot_commands FOR SELECT
   USING (tenant_id IS NULL OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
@@ -438,32 +413,17 @@ CREATE POLICY "Users can view their stats"
   USING (tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = auth.uid()));
 
 -- Grant permissions
-GRANT ALL ON public.chat_conversations TO authenticated;
-GRANT ALL ON public.chat_conversations TO service_role;
-
-GRANT ALL ON public.chat_messages TO authenticated;
-GRANT ALL ON public.chat_messages TO service_role;
-
-GRANT ALL ON public.chat_templates TO authenticated;
-GRANT ALL ON public.chat_templates TO service_role;
-
-GRANT ALL ON public.voice_commands TO authenticated;
-GRANT ALL ON public.voice_commands TO service_role;
-
-GRANT ALL ON public.voice_command_logs TO authenticated;
-GRANT ALL ON public.voice_command_logs TO service_role;
-
-GRANT ALL ON public.telegram_bot_commands TO authenticated;
-GRANT ALL ON public.telegram_bot_commands TO service_role;
-
-GRANT ALL ON public.chat_stats_daily TO authenticated;
-GRANT ALL ON public.chat_stats_daily TO service_role;
+GRANT ALL ON public.chat_conversations TO authenticated, service_role;
+GRANT ALL ON public.chat_messages TO authenticated, service_role;
+GRANT ALL ON public.chat_templates TO authenticated, service_role;
+GRANT ALL ON public.voice_commands TO authenticated, service_role;
+GRANT ALL ON public.voice_command_logs TO authenticated, service_role;
+GRANT ALL ON public.telegram_bot_commands TO authenticated, service_role;
+GRANT ALL ON public.chat_stats_daily TO authenticated, service_role;
 
 -- ============================================================================
 -- TRIGGERS
 -- ============================================================================
-
--- Update updated_at timestamp
 CREATE TRIGGER update_chat_conversations_updated_at
   BEFORE UPDATE ON public.chat_conversations
   FOR EACH ROW
@@ -485,10 +445,8 @@ CREATE TRIGGER update_telegram_bot_commands_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================================
--- INITIAL DATA: Global Templates and Commands
+-- INITIAL DATA
 -- ============================================================================
-
--- Insert global chat templates (available to all tenants)
 INSERT INTO public.chat_templates (tenant_id, name, category, trigger_keywords, response_text, language, is_active, priority, enabled_platforms)
 VALUES
   (NULL, 'Hoş Geldin Mesajı', 'greeting', ARRAY['merhaba', 'selam', 'hi', 'hello', '/start'], 
@@ -497,52 +455,28 @@ VALUES
    
   (NULL, 'Sipariş Takibi', 'order-status', ARRAY['sipariş', 'kargo', 'teslimat', 'nerede', '/siparis'], 
    'Sipariş takibi için sipariş numaranızı (#12345 formatında) paylaşır mısınız?', 
-   'tr', true, 2, ARRAY['whatsapp', 'telegram']),
-   
-  (NULL, 'Ürün Bilgisi', 'product-info', ARRAY['ürün', 'stok', 'fiyat', 'price', '/urun'], 
-   'Hangi ürün hakkında bilgi almak istersiniz? Ürün adını veya kodunu paylaşabilirsiniz.', 
-   'tr', true, 2, ARRAY['whatsapp', 'telegram']),
-   
-  (NULL, 'Canlı Destek Yönlendirme', 'general', ARRAY['destek', 'temsilci', 'insan', 'agent', '/destek'], 
-   'Sizi bir müşteri temsilcisine bağlıyorum. Lütfen bekleyin... ⏳', 
-   'tr', true, 3, ARRAY['whatsapp', 'telegram'])
-ON CONFLICT DO NOTHING;
+   'tr', true, 2, ARRAY['whatsapp', 'telegram']);
 
--- Insert global voice commands
 INSERT INTO public.voice_commands (tenant_id, command_text, command_variations, category, action_type, target_page, min_confidence, language, is_active)
 VALUES
-  (NULL, 'Bugünkü siparişleri göster', ARRAY['bugünkü siparişler', 'bugün kaç sipariş var', 'günlük siparişler'], 
+  (NULL, 'Bugünkü siparişleri göster', ARRAY['bugünkü siparişler', 'bugün kaç sipariş var'], 
    'order', 'SHOW_DAILY_ORDERS', '/dashboard/orders?filter=today', 0.85, 'tr', true),
    
-  (NULL, 'Stokta olmayan ürünleri listele', ARRAY['tükenen ürünler', 'stokta ne kalmadı', 'stok bitti'], 
-   'product', 'LIST_OUT_OF_STOCK', '/products?stock=out', 0.85, 'tr', true),
-   
-  (NULL, 'Haftalık satış raporu oluştur', ARRAY['bu haftanın raporu', 'haftalık özet', 'haftalık rapor'], 
-   'report', 'GENERATE_WEEKLY_REPORT', '/analytics/reports?type=weekly', 0.80, 'tr', true),
-   
-  (NULL, 'En çok satan ürünleri göster', ARRAY['en popüler ürünler', 'best seller', 'çok satanlar'], 
-   'product', 'SHOW_BEST_SELLERS', '/analytics/products?sort=sales_desc', 0.85, 'tr', true)
-ON CONFLICT DO NOTHING;
+  (NULL, 'Stokta olmayan ürünleri listele', ARRAY['tükenen ürünler', 'stokta ne kalmadı'], 
+   'product', 'LIST_OUT_OF_STOCK', '/products?stock=out', 0.85, 'tr', true);
 
--- Insert global Telegram bot commands
 INSERT INTO public.telegram_bot_commands (tenant_id, command, description, example_usage, category, handler_function, is_active, rate_limit_per_minute)
 VALUES
   (NULL, '/start', 'Bot ile konuşmaya başla', '/start', 'navigation', 'handleStart', true, 10),
   (NULL, '/help', 'Yardım menüsünü göster', '/help', 'navigation', 'handleHelp', true, 10),
-  (NULL, '/siparis', 'Sipariş durumunu sorgula', '/siparis #12345', 'query', 'handleOrderStatus', true, 20),
-  (NULL, '/urun', 'Ürün bilgisi al', '/urun iPhone 15 Pro', 'query', 'handleProductQuery', true, 20),
-  (NULL, '/stok', 'Stok durumunu kontrol et', '/stok PROD001', 'query', 'handleStockCheck', true, 20),
-  (NULL, '/destek', 'Canlı desteğe bağlan', '/destek', 'support', 'handleSupport', true, 5)
-ON CONFLICT DO NOTHING;
+  (NULL, '/siparis', 'Sipariş durumunu sorgula', '/siparis #12345', 'query', 'handleOrderStatus', true, 20);
 
--- ============================================================================
--- SUCCESS MESSAGE
--- ============================================================================
+-- Success message
 DO $$
 BEGIN
   RAISE NOTICE '✅ Migration 054 completed successfully!';
   RAISE NOTICE '📊 Created 7 tables for chat automation';
-  RAISE NOTICE '🔐 Configured RLS policies for all tables';
-  RAISE NOTICE '📝 Inserted global templates and commands';
+  RAISE NOTICE '🔐 Configured RLS policies';
+  RAISE NOTICE '📝 Inserted initial data';
 END $$;
 
