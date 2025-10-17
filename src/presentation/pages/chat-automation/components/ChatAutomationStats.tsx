@@ -12,7 +12,7 @@ import {
   Smile,
   TrendingUp,
 } from 'lucide-react';
-import { useSupabaseClient } from '../../../contexts/SupabaseContext';
+import { getSupabaseClient } from '../../../../infrastructure/database/supabase/client';
 import useUserProfileStore from '../../../store/userProfileStore';
 
 const StatCard = ({
@@ -87,17 +87,17 @@ export default function ChatAutomationStats() {
     },
   ]);
   const [isLoading, setIsLoading] = useState(true);
-  const supabaseClient = useSupabaseClient();
+  const supabaseClient = getSupabaseClient();
   const userProfile = useUserProfileStore(state => state.profile);
 
   useEffect(() => {
-    if (!supabaseClient || !userProfile?.tenant_id) return;
+    if (!userProfile?.tenant_id) return;
 
     loadStats();
-  }, [supabaseClient, userProfile?.tenant_id]);
+  }, [userProfile?.tenant_id]);
 
   const loadStats = async () => {
-    if (!supabaseClient || !userProfile?.tenant_id) return;
+    if (!userProfile?.tenant_id) return;
 
     setIsLoading(true);
     try {
@@ -158,8 +158,7 @@ export default function ChatAutomationStats() {
           activeConversations: whatsappStat?.new_conversations || 0,
           avgResponseTime: whatsappStat?.avg_response_time_seconds || 0,
           resolutionRate: whatsappStat?.resolution_rate || 0,
-          customerSatisfaction:
-            whatsappStat?.customer_satisfaction_score || 0,
+          customerSatisfaction: whatsappStat?.customer_satisfaction_score || 0,
         },
         {
           platform: 'telegram',
@@ -167,8 +166,7 @@ export default function ChatAutomationStats() {
           activeConversations: telegramStat?.new_conversations || 0,
           avgResponseTime: telegramStat?.avg_response_time_seconds || 0,
           resolutionRate: telegramStat?.resolution_rate || 0,
-          customerSatisfaction:
-            telegramStat?.customer_satisfaction_score || 0,
+          customerSatisfaction: telegramStat?.customer_satisfaction_score || 0,
         },
       ]);
     } catch (error) {
@@ -237,20 +235,18 @@ export default function ChatAutomationStats() {
       </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
-        {isLoading ? (
-          Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-5 animate-pulse'
-            >
-              <div className='h-20'></div>
-            </div>
-          ))
-        ) : (
-          statCards.map((stat, index) => (
-            <StatCard key={stat.label} {...stat} index={index} />
-          ))
-        )}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={index}
+                className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-5 animate-pulse'
+              >
+                <div className='h-20'></div>
+              </div>
+            ))
+          : statCards.map((stat, index) => (
+              <StatCard key={stat.label} {...stat} index={index} />
+            ))}
       </div>
 
       {/* Platform Breakdown */}

@@ -18,7 +18,7 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -148,7 +148,10 @@ serve(async (req) => {
           command.command_text.toLowerCase()
         );
 
-        if (similarity > confidenceScore && similarity >= command.min_confidence) {
+        if (
+          similarity > confidenceScore &&
+          similarity >= command.min_confidence
+        ) {
           matchedCommand = command;
           confidenceScore = similarity;
         }
@@ -301,7 +304,7 @@ serve(async (req) => {
             message: 'Komut tanınmadı. Lütfen tekrar deneyin.',
             suggestions: voiceCommands
               ?.slice(0, 3)
-              .map((cmd) => cmd.command_text),
+              .map(cmd => cmd.command_text),
           }),
           {
             status: 200,
@@ -317,13 +320,10 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('❌ Error in voice-to-text function:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
 
@@ -345,7 +345,7 @@ async function transcribeAudio(
   let audioBlob: Blob;
 
   if (audioBase64) {
-    const audioBytes = Uint8Array.from(atob(audioBase64), (c) => c.charCodeAt(0));
+    const audioBytes = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
     audioBlob = new Blob([audioBytes], { type: 'audio/webm' });
   } else if (audioUrl) {
     const response = await fetch(audioUrl);
@@ -361,13 +361,16 @@ async function transcribeAudio(
   formData.append('language', language);
 
   // Call OpenAI Whisper API
-  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${openaiApiKey}`,
-    },
-    body: formData,
-  });
+  const response = await fetch(
+    'https://api.openai.com/v1/audio/transcriptions',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${openaiApiKey}`,
+      },
+      body: formData,
+    }
+  );
 
   if (!response.ok) {
     const error = await response.text();
@@ -519,4 +522,3 @@ async function executeVoiceCommand(
       };
   }
 }
-

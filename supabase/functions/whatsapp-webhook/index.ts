@@ -17,7 +17,7 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -66,7 +66,10 @@ serve(async (req) => {
         console.log('ℹ️  No messages in payload, returning ok');
         return new Response(
           JSON.stringify({ success: true, message: 'No messages' }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
         );
       }
 
@@ -77,7 +80,10 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ success: true, processed: messages.length }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
@@ -87,10 +93,10 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('❌ Error in WhatsApp webhook:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
 
@@ -321,4 +327,3 @@ async function sendWhatsAppMessage(to: string, text: string) {
     throw error;
   }
 }
-

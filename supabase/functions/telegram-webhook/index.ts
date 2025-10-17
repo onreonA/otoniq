@@ -17,7 +17,7 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async req => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -452,4 +452,3 @@ async function sendTelegramMessage(chatId: number, text: string) {
     throw error;
   }
 }
-
