@@ -9,7 +9,7 @@ import { MessageSquare, Clock, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { getSupabaseClient } from '../../../../infrastructure/database/supabase/client';
-import useUserProfileStore from '../../../store/userProfileStore';
+import { useAuthStore } from '../../../store/auth/authStore';
 
 interface ChatConversation {
   id: string;
@@ -41,7 +41,7 @@ export default function ConversationList({
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const supabaseClient = getSupabaseClient();
-  const userProfile = useUserProfileStore(state => state.profile);
+  const userProfile = useAuthStore(state => state.userProfile);
 
   // Load conversations from database
   useEffect(() => {

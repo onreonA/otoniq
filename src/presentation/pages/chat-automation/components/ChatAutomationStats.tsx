@@ -13,7 +13,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { getSupabaseClient } from '../../../../infrastructure/database/supabase/client';
-import useUserProfileStore from '../../../store/userProfileStore';
+import { useAuthStore } from '../../../store/auth/authStore';
 
 const StatCard = ({
   icon: Icon,
@@ -88,7 +88,7 @@ export default function ChatAutomationStats() {
   ]);
   const [isLoading, setIsLoading] = useState(true);
   const supabaseClient = getSupabaseClient();
-  const userProfile = useUserProfileStore(state => state.profile);
+  const userProfile = useAuthStore(state => state.userProfile);
 
   useEffect(() => {
     if (!userProfile?.tenant_id) return;
