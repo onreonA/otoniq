@@ -3,6 +3,7 @@
  * Displays WhatsApp & Telegram statistics
  */
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare,
@@ -11,7 +12,8 @@ import {
   Smile,
   TrendingUp,
 } from 'lucide-react';
-import { mockChatStats, getCombinedStats } from '../../../mocks/chatAutomation';
+import { useSupabaseClient } from '../../../contexts/SupabaseContext';
+import useUserProfileStore from '../../../store/userProfileStore';
 
 const StatCard = ({
   icon: Icon,
@@ -49,46 +51,171 @@ const StatCard = ({
 );
 
 export default function ChatAutomationStats() {
-  const combinedStats = getCombinedStats();
+  const [stats, setStats] = useState({
+    totalConversations: 0,
+    activeConversations: 0,
+    avgResponseTime: 0,
+    resolutionRate: 0,
+    customerSatisfaction: 0,
+    messagesLast24h: 0,
+  });
+  const [platformStats, setPlatformStats] = useState<
+    Array<{
+      platform: 'whatsapp' | 'telegram';
+      totalConversations: number;
+      activeConversations: number;
+      avgResponseTime: number;
+      resolutionRate: number;
+      customerSatisfaction: number;
+    }>
+  >([
+    {
+      platform: 'whatsapp',
+      totalConversations: 0,
+      activeConversations: 0,
+      avgResponseTime: 0,
+      resolutionRate: 0,
+      customerSatisfaction: 0,
+    },
+    {
+      platform: 'telegram',
+      totalConversations: 0,
+      activeConversations: 0,
+      avgResponseTime: 0,
+      resolutionRate: 0,
+      customerSatisfaction: 0,
+    },
+  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabaseClient = useSupabaseClient();
+  const userProfile = useUserProfileStore(state => state.profile);
 
-  const stats = [
+  useEffect(() => {
+    if (!supabaseClient || !userProfile?.tenant_id) return;
+
+    loadStats();
+  }, [supabaseClient, userProfile?.tenant_id]);
+
+  const loadStats = async () => {
+    if (!supabaseClient || !userProfile?.tenant_id) return;
+
+    setIsLoading(true);
+    try {
+      // Load today's stats from chat_stats_daily
+      const today = new Date().toISOString().split('T')[0];
+
+      const { data: todayStats, error: statsError } = await supabaseClient
+        .from('chat_stats_daily')
+        .select('*')
+        .eq('tenant_id', userProfile.tenant_id)
+        .eq('stat_date', today);
+
+      if (statsError) {
+        console.error('Error loading stats:', statsError);
+      }
+
+      // Calculate combined stats
+      const allPlatformStat = todayStats?.find(s => s.platform === 'all');
+      const whatsappStat = todayStats?.find(s => s.platform === 'whatsapp');
+      const telegramStat = todayStats?.find(s => s.platform === 'telegram');
+
+      if (allPlatformStat) {
+        setStats({
+          totalConversations: allPlatformStat.total_conversations || 0,
+          activeConversations: allPlatformStat.new_conversations || 0,
+          avgResponseTime: allPlatformStat.avg_response_time_seconds || 0,
+          resolutionRate: allPlatformStat.resolution_rate || 0,
+          customerSatisfaction:
+            allPlatformStat.customer_satisfaction_score || 0,
+          messagesLast24h: allPlatformStat.total_messages || 0,
+        });
+      } else {
+        // Fallback: Load directly from conversations table
+        const { data: conversations } = await supabaseClient
+          .from('chat_conversations')
+          .select('*')
+          .eq('tenant_id', userProfile.tenant_id);
+
+        const totalConv = conversations?.length || 0;
+        const activeConv =
+          conversations?.filter(c => c.status === 'active').length || 0;
+
+        setStats({
+          totalConversations: totalConv,
+          activeConversations: activeConv,
+          avgResponseTime: 0,
+          resolutionRate: 0,
+          customerSatisfaction: 0,
+          messagesLast24h: 0,
+        });
+      }
+
+      // Set platform-specific stats
+      setPlatformStats([
+        {
+          platform: 'whatsapp',
+          totalConversations: whatsappStat?.total_conversations || 0,
+          activeConversations: whatsappStat?.new_conversations || 0,
+          avgResponseTime: whatsappStat?.avg_response_time_seconds || 0,
+          resolutionRate: whatsappStat?.resolution_rate || 0,
+          customerSatisfaction:
+            whatsappStat?.customer_satisfaction_score || 0,
+        },
+        {
+          platform: 'telegram',
+          totalConversations: telegramStat?.total_conversations || 0,
+          activeConversations: telegramStat?.new_conversations || 0,
+          avgResponseTime: telegramStat?.avg_response_time_seconds || 0,
+          resolutionRate: telegramStat?.resolution_rate || 0,
+          customerSatisfaction:
+            telegramStat?.customer_satisfaction_score || 0,
+        },
+      ]);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const statCards = [
     {
       icon: MessageSquare,
       label: 'Toplam Konuşma',
-      value: combinedStats.totalConversations.toLocaleString('tr-TR'),
+      value: stats.totalConversations.toLocaleString('tr-TR'),
       color: 'text-blue-400',
     },
     {
       icon: TrendingUp,
       label: 'Aktif Sohbet',
-      value: combinedStats.activeConversations,
+      value: stats.activeConversations,
       color: 'text-green-400',
     },
     {
       icon: Clock,
       label: 'Ort. Yanıt Süresi',
-      value: combinedStats.avgResponseTime,
+      value: stats.avgResponseTime,
       suffix: 's',
       color: 'text-purple-400',
     },
     {
       icon: CheckCircle,
       label: 'Çözüm Oranı',
-      value: combinedStats.resolutionRate,
+      value: stats.resolutionRate,
       suffix: '%',
       color: 'text-teal-400',
     },
     {
       icon: Smile,
       label: 'Müşteri Memnuniyeti',
-      value: combinedStats.customerSatisfaction,
+      value: stats.customerSatisfaction,
       suffix: '%',
       color: 'text-pink-400',
     },
     {
       icon: MessageSquare,
       label: 'Mesaj (24h)',
-      value: combinedStats.messagesLast24h.toLocaleString('tr-TR'),
+      value: stats.messagesLast24h.toLocaleString('tr-TR'),
       color: 'text-orange-400',
     },
   ];
@@ -110,14 +237,25 @@ export default function ChatAutomationStats() {
       </div>
 
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6'>
-        {stats.map((stat, index) => (
-          <StatCard key={stat.label} {...stat} index={index} />
-        ))}
+        {isLoading ? (
+          Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-5 animate-pulse'
+            >
+              <div className='h-20'></div>
+            </div>
+          ))
+        ) : (
+          statCards.map((stat, index) => (
+            <StatCard key={stat.label} {...stat} index={index} />
+          ))
+        )}
       </div>
 
       {/* Platform Breakdown */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-        {mockChatStats.map((platformStat, index) => (
+        {platformStats.map((platformStat, index) => (
           <motion.div
             key={platformStat.platform}
             className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-5'

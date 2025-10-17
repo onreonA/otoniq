@@ -12,7 +12,21 @@ import ChatWindow from './components/ChatWindow';
 import VoiceCommandsPanel from './components/VoiceCommandsPanel';
 import ChatTemplates from './components/ChatTemplates';
 import TelegramCommands from './components/TelegramCommands';
-import { ChatConversation } from '../../mocks/chatAutomation';
+
+interface ChatConversation {
+  id: string;
+  platform: 'whatsapp' | 'telegram';
+  customerName: string;
+  customerPhone: string;
+  customerAvatar: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  status: 'active' | 'resolved' | 'pending' | 'escalated' | 'archived';
+  sentiment: 'positive' | 'neutral' | 'negative';
+  tags: string[];
+  assignedAgent?: string;
+}
 
 export default function ChatAutomationPage() {
   const [activeTab, setActiveTab] = useState<
