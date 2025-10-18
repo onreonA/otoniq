@@ -884,31 +884,37 @@ const ShopifyIntegrationPage = () => {
               Shopify ürünleri barkod kodu ile Otoniq ürünleriyle eşleştirilir.
               Aynı barkoda sahip ürünler tüm platformlarda senkronize edilir.
             </p>
-            
+
             {/* Barkod Mapping Status */}
             <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
               <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
                 <div className='flex items-center gap-3 mb-2'>
                   <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                  <span className='text-sm font-medium text-white'>Eşleşen Ürünler</span>
+                  <span className='text-sm font-medium text-white'>
+                    Eşleşen Ürünler
+                  </span>
                 </div>
                 <p className='text-2xl font-bold text-white'>0</p>
                 <p className='text-xs text-white/50'>Barkod ile eşleşen</p>
               </div>
-              
+
               <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
                 <div className='flex items-center gap-3 mb-2'>
                   <div className='w-2 h-2 bg-yellow-500 rounded-full'></div>
-                  <span className='text-sm font-medium text-white'>Eşleşmeyen Ürünler</span>
+                  <span className='text-sm font-medium text-white'>
+                    Eşleşmeyen Ürünler
+                  </span>
                 </div>
                 <p className='text-2xl font-bold text-white'>0</p>
                 <p className='text-xs text-white/50'>Barkod eksik</p>
               </div>
-              
+
               <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
                 <div className='flex items-center gap-3 mb-2'>
                   <div className='w-2 h-2 bg-blue-500 rounded-full'></div>
-                  <span className='text-sm font-medium text-white'>Toplam Ürün</span>
+                  <span className='text-sm font-medium text-white'>
+                    Toplam Ürün
+                  </span>
                 </div>
                 <p className='text-2xl font-bold text-white'>0</p>
                 <p className='text-xs text-white/50'>Shopify'dan gelen</p>
@@ -932,7 +938,7 @@ const ShopifyIntegrationPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
                 <div className='flex items-center justify-between'>
                   <div>
@@ -948,7 +954,7 @@ const ShopifyIntegrationPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className='p-4 bg-white/5 rounded-lg border border-white/10'>
                 <div className='flex items-center justify-between'>
                   <div>
@@ -968,12 +974,15 @@ const ShopifyIntegrationPage = () => {
 
             {/* Recent Mappings */}
             <div className='mt-6'>
-              <h3 className='text-lg font-semibold text-white mb-4'>Son Eşleştirmeler</h3>
+              <h3 className='text-lg font-semibold text-white mb-4'>
+                Son Eşleştirmeler
+              </h3>
               <div className='space-y-2'>
                 <div className='text-center py-8'>
                   <p className='text-white/60'>Henüz eşleştirme yok</p>
                   <p className='text-white/40 text-sm'>
-                    Shopify'dan ürün senkronizasyonu yaptıktan sonra burada görünecek
+                    Shopify'dan ürün senkronizasyonu yaptıktan sonra burada
+                    görünecek
                   </p>
                 </div>
               </div>

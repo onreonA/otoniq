@@ -570,4 +570,117 @@ export class N8NService {
       createdBy: row.created_by,
     };
   }
+
+  /**
+   * Trigger workflow directly via webhook URL
+   * Used for Daily Report and Low Stock Alert workflows
+   */
+  static async triggerWebhook(
+    webhookUrl: string,
+    data: any
+  ): Promise<{ success: boolean; executionId?: string; error?: string }> {
+    try {
+      const response = await axios.post(webhookUrl, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000, // 30 seconds
+      });
+
+      return {
+        success: true,
+        executionId: response.data?.executionId || `webhook_${Date.now()}`,
+      };
+    } catch (error: any) {
+      console.error('Error triggering webhook:', error);
+      return {
+        success: false,
+        error: error.message || 'Unknown webhook error',
+      };
+    }
+  }
+
+  /**
+   * Trigger Daily Report workflow
+   */
+  static async triggerDailyReport(tenantId: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      const workflows = await this.getTenantWorkflows(tenantId);
+      const dailyReportWorkflow = workflows.find(
+        w => w.n8nWorkflowId === 'daily-sales-report-n8n'
+      );
+
+      if (!dailyReportWorkflow || !dailyReportWorkflow.webhookUrl) {
+        return {
+          success: false,
+          message: 'Daily Report workflow not configured',
+        };
+      }
+
+      const result = await this.triggerWebhook(dailyReportWorkflow.webhookUrl, {
+        tenantId,
+        reportDate: new Date().toISOString().split('T')[0],
+        trigger: 'manual',
+      });
+
+      return {
+        success: result.success,
+        message: result.success
+          ? 'Daily report is being generated...'
+          : result.error || 'Failed to trigger daily report',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Error triggering daily report',
+      };
+    }
+  }
+
+  /**
+   * Trigger Low Stock Alert workflow
+   */
+  static async triggerLowStockAlert(
+    tenantId: string,
+    threshold?: number
+  ): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      const workflows = await this.getTenantWorkflows(tenantId);
+      const lowStockWorkflow = workflows.find(
+        w => w.n8nWorkflowId === 'low-stock-alert-n8n'
+      );
+
+      if (!lowStockWorkflow || !lowStockWorkflow.webhookUrl) {
+        return {
+          success: false,
+          message: 'Low Stock Alert workflow not configured',
+        };
+      }
+
+      const result = await this.triggerWebhook(lowStockWorkflow.webhookUrl, {
+        tenantId,
+        threshold: threshold || 10,
+        trigger: 'manual',
+        checkDate: new Date().toISOString(),
+      });
+
+      return {
+        success: result.success,
+        message: result.success
+          ? 'Checking stock levels...'
+          : result.error || 'Failed to trigger stock check',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Error triggering stock alert',
+      };
+    }
+  }
 }

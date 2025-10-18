@@ -6,102 +6,54 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import FeatureIntro from '../../../components/common/FeatureIntro';
-
-interface WorkflowOutput {
-  id: string;
-  workflowId: string;
-  workflowName: string;
-  executionId: string;
-  outputType: 'report' | 'image' | 'video' | 'email' | 'document' | 'data';
-  fileName: string;
-  fileUrl: string;
-  fileSize: number;
-  mimeType: string;
-  outputData: any;
-  metadata: any;
-  createdAt: string;
-}
+import {
+  WorkflowOutputService,
+  type WorkflowOutput,
+} from '../../../../infrastructure/services/WorkflowOutputService';
+import { useAuthStore } from '../../../store/auth/authStore';
 
 export default function WorkflowOutputsPage() {
+  const { userProfile } = useAuthStore();
   const [outputs, setOutputs] = useState<WorkflowOutput[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedWorkflow, setSelectedWorkflow] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [previewOutput, setPreviewOutput] = useState<WorkflowOutput | null>(
     null
   );
 
   useEffect(() => {
     loadOutputs();
-  }, [selectedType, selectedWorkflow]);
+  }, [selectedType, selectedWorkflow, searchQuery]);
 
   const loadOutputs = async () => {
-    setLoading(true);
-    // Mock data for now
-    setTimeout(() => {
-      setOutputs(getMockOutputs());
+    if (!userProfile?.tenant_id) {
+      console.log('❌ No tenant_id found');
       setLoading(false);
-    }, 500);
-  };
+      return;
+    }
 
-  const getMockOutputs = (): WorkflowOutput[] => {
-    return [
-      {
-        id: '1',
-        workflowId: 'wf-daily-report',
-        workflowName: 'Günlük Satış Raporu',
-        executionId: 'exec-001',
-        outputType: 'report',
-        fileName: 'daily-sales-report-2024-01-15.pdf',
-        fileUrl: '#',
-        fileSize: 2450000,
-        mimeType: 'application/pdf',
-        outputData: {
-          totalSales: 125000,
-          totalOrders: 45,
-          averageOrderValue: 2777.78,
-        },
-        metadata: { generatedAt: new Date().toISOString() },
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        id: '2',
-        workflowId: 'wf-social-media',
-        workflowName: 'Sosyal Medya Otomasyonu',
-        executionId: 'exec-002',
-        outputType: 'image',
-        fileName: 'instagram-post-product-123.jpg',
-        fileUrl: 'https://picsum.photos/400/400',
-        fileSize: 850000,
-        mimeType: 'image/jpeg',
-        outputData: {
-          platform: 'instagram',
-          postId: 'ig-12345',
-          likes: 125,
-        },
-        metadata: { productId: '123', platform: 'instagram' },
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
-      },
-      {
-        id: '3',
-        workflowId: 'wf-email-campaign',
-        workflowName: 'E-posta Kampanyası',
-        executionId: 'exec-003',
-        outputType: 'email',
-        fileName: 'campaign-new-products-jan.html',
-        fileUrl: '#',
-        fileSize: 125000,
-        mimeType: 'text/html',
-        outputData: {
-          recipients: 250,
-          sent: 248,
-          opened: 125,
-          clicked: 35,
-        },
-        metadata: { campaignId: 'camp-001' },
-        createdAt: new Date(Date.now() - 7200000).toISOString(),
-      },
-    ];
+    setLoading(true);
+
+    try {
+      const data = await WorkflowOutputService.getTenantOutputs(
+        userProfile.tenant_id,
+        {
+          workflowId: selectedWorkflow !== 'all' ? selectedWorkflow : undefined,
+          outputType: selectedType !== 'all' ? selectedType : undefined,
+          searchQuery: searchQuery || undefined,
+        }
+      );
+
+      console.log('✅ Outputs loaded:', data.length);
+      setOutputs(data);
+    } catch (error) {
+      console.error('❌ Error loading outputs:', error);
+      toast.error('Çıktılar yüklenemedi');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -144,9 +96,22 @@ export default function WorkflowOutputsPage() {
     }
   };
 
-  const handleDownload = (output: WorkflowOutput) => {
-    toast.success(`İndiriliyor: ${output.fileName}`);
-    // Implement download logic
+  const handleDownload = async (output: WorkflowOutput) => {
+    if (!output.fileUrl) {
+      toast.error('Dosya URL bulunamadı');
+      return;
+    }
+
+    try {
+      toast.loading(`İndiriliyor: ${output.fileName}`);
+      await WorkflowOutputService.downloadFile(output.fileUrl, output.fileName);
+      toast.dismiss();
+      toast.success('İndirme başarılı!');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.dismiss();
+      toast.error('İndirme başarısız');
+    }
   };
 
   const handleBulkDownload = () => {
@@ -155,13 +120,30 @@ export default function WorkflowOutputsPage() {
       return;
     }
     toast.success(`${outputs.length} dosya ZIP olarak indiriliyor...`);
-    // Implement bulk download logic
+    // TODO: Implement ZIP bulk download logic
   };
 
-  const handleDelete = (outputId: string) => {
-    if (confirm('Bu çıktıyı silmek istediğinizden emin misiniz?')) {
-      setOutputs(outputs.filter(o => o.id !== outputId));
-      toast.success('Çıktı silindi');
+  const handleDelete = async (outputId: string) => {
+    if (!confirm('Bu çıktıyı silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      toast.loading('Siliniyor...');
+      const success = await WorkflowOutputService.deleteOutput(outputId);
+
+      if (success) {
+        setOutputs(outputs.filter(o => o.id !== outputId));
+        toast.dismiss();
+        toast.success('Çıktı silindi');
+      } else {
+        toast.dismiss();
+        toast.error('Silme başarısız');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.dismiss();
+      toast.error('Silme başarısız');
     }
   };
 
@@ -265,6 +247,8 @@ export default function WorkflowOutputsPage() {
                 <input
                   type='text'
                   placeholder='Dosya adı...'
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className='w-full bg-gray-800/50 border border-white/10 rounded-lg px-4 py-2 pl-10 text-white focus:outline-none focus:border-indigo-500'
                 />
                 <i className='ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400'></i>
@@ -326,7 +310,13 @@ export default function WorkflowOutputsPage() {
                 <div className='flex items-center justify-between text-xs text-gray-500 mb-4'>
                   <span>{formatFileSize(output.fileSize)}</span>
                   <span>
-                    {new Date(output.createdAt).toLocaleDateString('tr-TR')}
+                    {new Date(output.createdAt).toLocaleString('tr-TR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </span>
                 </div>
 
@@ -339,13 +329,15 @@ export default function WorkflowOutputsPage() {
                     <i className='ri-eye-line'></i>
                     Önizle
                   </button>
-                  <button
-                    onClick={() => handleDownload(output)}
-                    className='flex-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1'
-                  >
-                    <i className='ri-download-line'></i>
-                    İndir
-                  </button>
+                  {output.fileUrl && (
+                    <button
+                      onClick={() => handleDownload(output)}
+                      className='flex-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1'
+                    >
+                      <i className='ri-download-line'></i>
+                      İndir
+                    </button>
+                  )}
                   <button
                     onClick={() => handleDelete(output.id)}
                     className='bg-red-600/20 hover:bg-red-600/30 text-red-400 px-3 py-2 rounded-lg text-xs font-medium transition-colors'

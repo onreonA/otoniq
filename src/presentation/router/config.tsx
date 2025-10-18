@@ -43,6 +43,25 @@ const WorkflowDetailPage = lazy(
 const FeedDoctorPage = lazy(() => import('../pages/feed-doctor/page'));
 const CreativePage = lazy(() => import('../pages/creative/page'));
 const ChatAutomationPage = lazy(() => import('../pages/chat-automation/page'));
+const CompetitorAnalysisPage = lazy(
+  () => import('../pages/competitor-analysis/page')
+);
+const MapScannerPage = lazy(
+  () => import('../pages/lead-generation/map-scanner/page')
+);
+const CampaignsPage = lazy(
+  () => import('../pages/lead-generation/campaigns/page')
+);
+const LeadsPage = lazy(() => import('../pages/lead-generation/leads/page'));
+const ContactsPage = lazy(
+  () => import('../pages/lead-generation/contacts/page')
+);
+const SequencesPage = lazy(
+  () => import('../pages/lead-generation/sequences/page')
+);
+const LeadAnalyticsPage = lazy(
+  () => import('../pages/lead-generation/analytics/page')
+);
 const ARVRPage = lazy(() => import('../pages/ar-vr/page'));
 const IoTPage = lazy(() => import('../pages/iot/page'));
 const AdminPage = lazy(() => import('../pages/admin/page'));
@@ -207,6 +226,34 @@ const routes: RouteObject[] = [
       {
         path: '/chat-automation',
         element: <ChatAutomationPage />,
+      },
+      {
+        path: '/competitor-analysis',
+        element: <CompetitorAnalysisPage />,
+      },
+      {
+        path: '/lead-generation/map-scanner',
+        element: <MapScannerPage />,
+      },
+      {
+        path: '/lead-generation/campaigns',
+        element: <CampaignsPage />,
+      },
+      {
+        path: '/lead-generation/leads',
+        element: <LeadsPage />,
+      },
+      {
+        path: '/lead-generation/contacts',
+        element: <ContactsPage />,
+      },
+      {
+        path: '/lead-generation/sequences',
+        element: <SequencesPage />,
+      },
+      {
+        path: '/lead-generation/analytics',
+        element: <LeadAnalyticsPage />,
       },
       {
         path: '/ar-vr',

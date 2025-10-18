@@ -5,6 +5,7 @@
 
 import { WorkflowData } from '../../../mocks/automation';
 import toast from 'react-hot-toast';
+import { Play, Pause, TestTube, Settings, Clock, Zap } from 'lucide-react';
 
 interface Props {
   workflow: WorkflowData;
@@ -94,12 +95,32 @@ export default function WorkflowCard({ workflow, onViewDetails }: Props) {
 
           {/* Info */}
           <div className='flex-1 min-w-0'>
-            <h3 className='text-white font-semibold text-lg mb-1'>
-              {workflow.name}
-            </h3>
+            <div className='flex items-center gap-2 mb-1'>
+              <h3 className='text-white font-semibold text-lg'>
+                {workflow.name}
+              </h3>
+              {workflow.isN8NManaged && (
+                <span className='px-2 py-0.5 bg-gradient-to-r from-orange-500/20 to-amber-500/20 border border-orange-500/30 rounded text-xs font-medium text-orange-400 flex items-center gap-1'>
+                  <Zap size={12} />
+                  N8N
+                </span>
+              )}
+            </div>
             <p className='text-gray-300 text-sm line-clamp-2'>
               {workflow.description}
             </p>
+            {workflow.schedule && (
+              <div className='flex items-center gap-1 mt-2 text-xs text-gray-400'>
+                <Clock size={12} />
+                <span>
+                  {workflow.schedule === '0 9 * * *'
+                    ? 'Her gün 09:00'
+                    : workflow.schedule === '*/5 * * * *'
+                      ? 'Her 5 dakikada'
+                      : workflow.schedule}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -144,22 +165,34 @@ export default function WorkflowCard({ workflow, onViewDetails }: Props) {
       <div className='flex gap-2'>
         <button
           onClick={handleRun}
-          className='flex-1 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium transition-all duration-300 shadow-lg hover:shadow-xl'
+          className='flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium transition-all duration-300 shadow-lg hover:shadow-xl'
         >
-          <i className='ri-play-fill mr-2'></i>
+          <Play size={16} fill='white' />
           Çalıştır
         </button>
         <button
           onClick={handlePause}
-          className='px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium transition-all duration-300'
+          className='px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium transition-all duration-300'
+          title='Duraklat'
         >
-          <i className='ri-pause-line'></i>
+          <Pause size={16} />
         </button>
         <button
           onClick={handleTest}
-          className='px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium transition-all duration-300'
+          className='px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium transition-all duration-300'
+          title='Test Et'
         >
-          <i className='ri-flask-line'></i>
+          <TestTube size={16} />
+        </button>
+        <button
+          onClick={e => {
+            e.stopPropagation();
+            onViewDetails(workflow);
+          }}
+          className='px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium transition-all duration-300'
+          title='Ayarlar'
+        >
+          <Settings size={16} />
         </button>
       </div>
     </div>

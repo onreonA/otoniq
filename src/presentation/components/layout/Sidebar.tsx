@@ -37,6 +37,10 @@ import {
   Bell,
   Share2,
   Mail,
+  Target,
+  MapPin,
+  Folder,
+  Linkedin,
 } from 'lucide-react';
 import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { useUIStore } from '../../store/ui/uiStore';
@@ -79,6 +83,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Bell,
   Share2,
   Mail,
+  Target,
+  MapPin,
+  Folder,
+  Linkedin,
 };
 
 /**

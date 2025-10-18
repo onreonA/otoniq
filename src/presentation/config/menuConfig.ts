@@ -357,7 +357,58 @@ export const tenantMenuConfig: MenuGroup[] = [
         label: 'Chat Otomasyonu',
         icon: 'MessageSquare',
         path: '/chat-automation',
+      },
+      {
+        id: 'competitor-analysis',
+        label: 'Rakip Fırsatları',
+        icon: 'Target',
+        path: '/competitor-analysis',
         badge: 'new',
+      },
+      {
+        id: 'lead-generation',
+        label: 'Lead Generation',
+        icon: 'MapPin',
+        path: '/lead-generation/map-scanner',
+        badge: 'new',
+        children: [
+          {
+            id: 'map-scanner',
+            label: 'Bölge Taraması',
+            icon: 'MapPin',
+            path: '/lead-generation/map-scanner',
+          },
+          {
+            id: 'campaigns',
+            label: 'Kampanyalar',
+            icon: 'Folder',
+            path: '/lead-generation/campaigns',
+          },
+          {
+            id: 'leads',
+            label: "Lead'ler",
+            icon: 'Users',
+            path: '/lead-generation/leads',
+          },
+          {
+            id: 'contacts',
+            label: 'LinkedIn Kişiler',
+            icon: 'Linkedin',
+            path: '/lead-generation/contacts',
+          },
+          {
+            id: 'sequences',
+            label: 'Sequences',
+            icon: 'Zap',
+            path: '/lead-generation/sequences',
+          },
+          {
+            id: 'lead-analytics',
+            label: 'Analitikler',
+            icon: 'BarChart3',
+            path: '/lead-generation/analytics',
+          },
+        ],
       },
       {
         id: 'ar-vr',

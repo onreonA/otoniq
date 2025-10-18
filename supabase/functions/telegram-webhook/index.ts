@@ -119,19 +119,9 @@ async function handleTelegramMessage(message: any, supabaseClient: any) {
       type: contentType,
     });
 
-    // Get tenant (for now, use first tenant - in production, map users to tenants)
-    const { data: tenants } = await supabaseClient
-      .from('tenants')
-      .select('id')
-      .limit(1)
-      .single();
-
-    if (!tenants) {
-      console.error('❌ No tenant found');
-      return;
-    }
-
-    const tenantId = tenants.id;
+    // TEMPORARY: Hardcoded tenant for testing (bilgi@omerfarukunsal.com)
+    // TODO: Implement proper Telegram user -> tenant mapping system
+    const tenantId = '86b2681e-483b-4d75-9837-717f5f43eca8';
 
     // Upsert conversation
     const { data: conversation, error: convError } = await supabaseClient

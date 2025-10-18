@@ -16,13 +16,31 @@ export interface WorkflowData {
     | 'email-marketing'
     | 'customer-support'
     | 'inventory'
-    | 'analytics';
+    | 'analytics'
+    | 'reports';
   lastRunAt: string;
   lastResult: 'success' | 'fail' | 'partial';
   totalRuns: number;
   successRate: number;
   icon: string;
   color: string;
+  // N8N specific fields
+  n8nWorkflowId?: string;
+  schedule?: string; // Cron expression
+  webhookUrl?: string;
+  isN8NManaged?: boolean;
+  // Configuration
+  config?: {
+    // Daily Report config
+    reportTime?: string;
+    reportRecipients?: string[];
+    reportFormat?: 'email' | 'pdf' | 'html';
+    // Low Stock Alert config
+    stockThreshold?: number;
+    checkInterval?: number; // minutes
+    alertChannels?: Array<'email' | 'sms' | 'slack'>;
+    productsToTrack?: string[];
+  };
 }
 
 export const mockWorkflows: WorkflowData[] = [
@@ -65,6 +83,53 @@ export const mockWorkflows: WorkflowData[] = [
     successRate: 97.8,
     icon: 'ri-customer-service-line',
     color: 'from-green-500 to-emerald-500',
+  },
+  {
+    id: 'low-stock-alert',
+    name: '⚠️ Düşük Stok Uyarısı',
+    description:
+      'Stok seviyesi belirlenen eşiğin altına düştüğünde otomatik uyarı gönderir (N8N)',
+    status: 'active',
+    category: 'inventory',
+    lastRunAt: format(subHours(new Date(), 0.08), 'yyyy-MM-dd HH:mm:ss'), // 5 minutes ago
+    lastResult: 'success',
+    totalRuns: 1247,
+    successRate: 99.8,
+    icon: 'ri-alarm-warning-line',
+    color: 'from-orange-500 to-red-500',
+    n8nWorkflowId: 'low-stock-alert-n8n',
+    schedule: '*/5 * * * *', // Every 5 minutes
+    webhookUrl: 'https://otoniq-n8n.app.n8n.cloud/webhook/low-stock-alert',
+    isN8NManaged: true,
+    config: {
+      stockThreshold: 10,
+      checkInterval: 5,
+      alertChannels: ['email', 'slack'],
+      productsToTrack: ['all'],
+    },
+  },
+  {
+    id: 'daily-report',
+    name: '📊 Günlük Satış Raporu',
+    description:
+      "Her sabah saat 09:00'da günlük satış performans raporu oluşturur ve gönderir (N8N)",
+    status: 'active',
+    category: 'reports',
+    lastRunAt: format(subHours(new Date(), 3), 'yyyy-MM-dd HH:mm:ss'), // 3 hours ago
+    lastResult: 'success',
+    totalRuns: 187,
+    successRate: 100,
+    icon: 'ri-file-chart-line',
+    color: 'from-blue-500 to-purple-500',
+    n8nWorkflowId: 'daily-sales-report-n8n',
+    schedule: '0 9 * * *', // Daily at 9 AM
+    webhookUrl: 'https://otoniq-n8n.app.n8n.cloud/webhook/daily-report',
+    isN8NManaged: true,
+    config: {
+      reportTime: '09:00',
+      reportRecipients: ['admin@otoniq.ai', 'bilgi@omerfarukunsal.com'],
+      reportFormat: 'email',
+    },
   },
   {
     id: '4',

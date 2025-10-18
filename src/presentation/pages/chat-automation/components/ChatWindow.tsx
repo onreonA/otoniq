@@ -14,10 +14,35 @@ import {
   Info,
   User,
   Bot,
+  MessageSquare as MessageSquareIcon,
 } from 'lucide-react';
-import { ChatConversation, ChatMessage } from '../../../mocks/chatAutomation';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { getSupabaseClient } from '../../../../infrastructure/database/supabase/client';
+
+interface ChatConversation {
+  id: string;
+  platform: 'whatsapp' | 'telegram';
+  customerName: string;
+  customerPhone: string;
+  customerAvatar: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  status: 'active' | 'resolved' | 'pending' | 'escalated' | 'archived';
+  sentiment: 'positive' | 'neutral' | 'negative';
+  tags: string[];
+  assignedAgent?: string;
+}
+
+interface ChatMessage {
+  id: string;
+  sender: 'customer' | 'agent' | 'bot' | 'system';
+  content: string;
+  timestamp: string;
+  read: boolean;
+  type: 'text' | 'image' | 'video' | 'audio' | 'file';
+}
 
 interface ChatWindowProps {
   conversation: ChatConversation | null;
@@ -26,13 +51,50 @@ interface ChatWindowProps {
 export default function ChatWindow({ conversation }: ChatWindowProps) {
   const [messageInput, setMessageInput] = useState('');
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const supabaseClient = getSupabaseClient();
 
+  // Load messages from database when conversation changes
   useEffect(() => {
     if (conversation) {
-      setLocalMessages(conversation.messages);
+      loadMessages(conversation.id);
+    } else {
+      setLocalMessages([]);
     }
   }, [conversation]);
+
+  const loadMessages = async (conversationId: string) => {
+    setIsLoadingMessages(true);
+    try {
+      const { data, error } = await supabaseClient
+        .from('chat_messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error loading messages:', error);
+        return;
+      }
+
+      const transformedMessages: ChatMessage[] =
+        data?.map(msg => ({
+          id: msg.id,
+          sender: msg.sender_type,
+          content: msg.content,
+          timestamp: msg.sent_at || msg.created_at,
+          read: msg.read_status || false,
+          type: msg.content_type || 'text',
+        })) || [];
+
+      setLocalMessages(transformedMessages);
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -84,6 +146,21 @@ export default function ChatWindow({ conversation }: ChatWindowProps) {
           <p className='text-sm'>
             Mesajları görüntülemek için sol taraftan bir konuşma seçin
           </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (isLoadingMessages) {
+    return (
+      <div className='flex flex-col items-center justify-center h-full text-gray-400'>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className='text-center'
+        >
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4'></div>
+          <p className='text-sm'>Mesajlar yükleniyor...</p>
         </motion.div>
       </div>
     );

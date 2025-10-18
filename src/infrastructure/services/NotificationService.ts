@@ -565,7 +565,6 @@ export class NotificationService {
     return data;
   }
 
-
   private determineChannels(
     requestedChannels?: NotificationChannel,
     preferences?: NotificationPreference

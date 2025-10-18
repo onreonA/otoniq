@@ -5,6 +5,7 @@ import AIAssistant from './components/AIAssistant';
 import RecentActivity from './components/RecentActivity';
 import QuickActions from './components/QuickActions';
 import PerformanceChart from './components/PerformanceChart';
+import AutomationWidget from './components/AutomationWidget';
 
 export default function Dashboard() {
   const [user] = useState({
@@ -64,9 +65,10 @@ export default function Dashboard() {
             <RecentActivity />
           </div>
 
-          {/* Right Column - AI Assistant & Quick Actions */}
+          {/* Right Column - AI Assistant, Automation & Quick Actions */}
           <div className='space-y-8'>
             <AIAssistant />
+            <AutomationWidget />
             <QuickActions />
           </div>
         </div>

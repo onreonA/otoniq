@@ -18,6 +18,7 @@ import type {
   StockMovement,
   Warehouse as WarehouseType,
 } from '../../../domain/entities/Inventory';
+import LowStockAlertWidget from './components/LowStockAlertWidget';
 
 type TabType = 'stock' | 'movements' | 'warehouses';
 
@@ -169,6 +170,11 @@ const InventoryPage = () => {
         <p className='text-white/80'>
           Tüm depolarınızdaki stok seviyelerini takip edin ve yönetin
         </p>
+      </div>
+
+      {/* Low Stock Alert Widget - N8N Integration */}
+      <div className='mb-6'>
+        <LowStockAlertWidget />
       </div>
 
       {/* Stats Grid */}
