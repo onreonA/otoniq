@@ -3,6 +3,7 @@ import {
   TenantService,
   Tenant,
 } from '../../../../infrastructure/database/supabase/tenant.service';
+import CreateTenantModal from './CreateTenantModal';
 import TenantModal from './TenantModal';
 import toast from 'react-hot-toast';
 
@@ -382,18 +383,26 @@ export default function TenantManagement() {
         </div>
       </div>
 
-      {/* Tenant Modal */}
-      <TenantModal
-        isOpen={showCreateModal || !!editingTenant}
-        onClose={() => {
-          setShowCreateModal(false);
-          setEditingTenant(null);
-        }}
+      {/* Create Tenant Modal */}
+      <CreateTenantModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
         onSuccess={() => {
           loadTenants();
         }}
-        editingTenant={editingTenant}
       />
+
+      {/* Edit Tenant Modal */}
+      {editingTenant && (
+        <TenantModal
+          isOpen={!!editingTenant}
+          onClose={() => setEditingTenant(null)}
+          onSuccess={() => {
+            loadTenants();
+          }}
+          editingTenant={editingTenant}
+        />
+      )}
     </div>
   );
 }
