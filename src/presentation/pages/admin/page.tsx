@@ -2,6 +2,8 @@ import { useState } from 'react';
 import AdminStats from './components/AdminStats';
 import UserManagement from './components/UserManagement';
 import TenantManagement from './components/TenantManagement';
+import SubscriptionManagement from './components/SubscriptionManagement';
+import UsageAnalytics from './components/UsageAnalytics';
 import SystemMonitoring from './components/SystemMonitoring';
 import AIModelStatus from './components/AIModelStatus';
 import RevenueAnalytics from './components/RevenueAnalytics';
@@ -12,14 +14,12 @@ export default function AdminPanel() {
   const tabs = [
     { id: 'overview', name: 'Genel Bakış', icon: 'ri-dashboard-line' },
     { id: 'tenants', name: 'Müşteri Yönetimi', icon: 'ri-building-line' },
+    { id: 'subscriptions', name: 'Abonelikler', icon: 'ri-vip-crown-line' },
+    { id: 'usage', name: 'Kullanım Analizi', icon: 'ri-bar-chart-box-line' },
     { id: 'users', name: 'Kullanıcı Yönetimi', icon: 'ri-user-settings-line' },
+    { id: 'revenue', name: 'Gelir Analizi', icon: 'ri-money-dollar-circle-line' },
     { id: 'system', name: 'Sistem İzleme', icon: 'ri-computer-line' },
     { id: 'ai', name: 'AI Modelleri', icon: 'ri-robot-line' },
-    {
-      id: 'revenue',
-      name: 'Gelir Analizi',
-      icon: 'ri-money-dollar-circle-line',
-    },
   ];
 
   const renderContent = () => {
@@ -36,14 +36,18 @@ export default function AdminPanel() {
         );
       case 'tenants':
         return <TenantManagement />;
+      case 'subscriptions':
+        return <SubscriptionManagement />;
+      case 'usage':
+        return <UsageAnalytics />;
       case 'users':
         return <UserManagement />;
+      case 'revenue':
+        return <RevenueAnalytics />;
       case 'system':
         return <SystemMonitoring />;
       case 'ai':
         return <AIModelStatus />;
-      case 'revenue':
-        return <RevenueAnalytics />;
       default:
         return <AdminStats />;
     }
