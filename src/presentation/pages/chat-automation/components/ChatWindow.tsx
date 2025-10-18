@@ -14,7 +14,7 @@ import {
   Info,
   User,
   Bot,
-  MessageSquare as MessageSquareIcon,
+  MessageSquare,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -139,7 +139,7 @@ export default function ChatWindow({ conversation }: ChatWindowProps) {
           transition={{ duration: 0.3 }}
           className='text-center'
         >
-          <MessageSquareIcon size={64} className='mx-auto mb-4 opacity-50' />
+          <MessageSquare size={64} className='mx-auto mb-4 opacity-50' />
           <h3 className='text-xl font-semibold text-white mb-2'>
             Bir konuşma seçin
           </h3>
@@ -329,26 +329,3 @@ export default function ChatWindow({ conversation }: ChatWindowProps) {
     </div>
   );
 }
-
-// Placeholder icon component
-const MessageSquareIcon = ({
-  size,
-  className,
-}: {
-  size: number;
-  className?: string;
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox='0 0 24 24'
-    fill='none'
-    stroke='currentColor'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    className={className}
-  >
-    <path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' />
-  </svg>
-);

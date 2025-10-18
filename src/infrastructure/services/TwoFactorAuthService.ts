@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { authenticator } from 'otplib';
-// @ts-ignore - qrcode types are not needed for our use case
+// @ts-expect-error - qrcode types are not needed for our use case
 import QRCode from 'qrcode';
 import type { User } from '@supabase/supabase-js';
 
