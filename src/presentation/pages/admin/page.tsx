@@ -17,7 +17,11 @@ export default function AdminPanel() {
     { id: 'subscriptions', name: 'Abonelikler', icon: 'ri-vip-crown-line' },
     { id: 'usage', name: 'Kullanım Analizi', icon: 'ri-bar-chart-box-line' },
     { id: 'users', name: 'Kullanıcı Yönetimi', icon: 'ri-user-settings-line' },
-    { id: 'revenue', name: 'Gelir Analizi', icon: 'ri-money-dollar-circle-line' },
+    {
+      id: 'revenue',
+      name: 'Gelir Analizi',
+      icon: 'ri-money-dollar-circle-line',
+    },
     { id: 'system', name: 'Sistem İzleme', icon: 'ri-computer-line' },
     { id: 'ai', name: 'AI Modelleri', icon: 'ri-robot-line' },
   ];

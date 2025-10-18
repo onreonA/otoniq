@@ -35,7 +35,13 @@ export interface TenantSubscription {
   id: string;
   tenant_id: string;
   plan_id: string;
-  status: 'trial' | 'active' | 'past_due' | 'suspended' | 'cancelled' | 'expired';
+  status:
+    | 'trial'
+    | 'active'
+    | 'past_due'
+    | 'suspended'
+    | 'cancelled'
+    | 'expired';
   billing_cycle: 'monthly' | 'yearly';
   billing_email: string | null;
   current_period_start: string;
@@ -312,8 +318,8 @@ export class SubscriptionService {
       const isTrial = request.is_trial || false;
       const trialDays = request.trial_days || 14;
 
-      let periodStart = now;
-      let periodEnd = new Date(now);
+      const periodStart = now;
+      const periodEnd = new Date(now);
       let trialEndsAt = null;
 
       if (isTrial) {
@@ -706,16 +712,16 @@ export class SubscriptionService {
 
       const total = subscriptions?.length || 0;
       const active =
-        subscriptions?.filter((s) => s.status === 'active').length || 0;
+        subscriptions?.filter(s => s.status === 'active').length || 0;
       const trial =
-        subscriptions?.filter((s) => s.status === 'trial').length || 0;
+        subscriptions?.filter(s => s.status === 'trial').length || 0;
       const cancelled =
-        subscriptions?.filter((s) => s.status === 'cancelled').length || 0;
+        subscriptions?.filter(s => s.status === 'cancelled').length || 0;
 
       // Calculate MRR (Monthly Recurring Revenue)
       const mrr =
         subscriptions
-          ?.filter((s) => s.status === 'active')
+          ?.filter(s => s.status === 'active')
           .reduce((sum, s) => {
             const amount =
               s.billing_cycle === 'yearly'
@@ -766,4 +772,3 @@ export class SubscriptionService {
 
 // Export singleton instance
 export const subscriptionService = new SubscriptionService();
-

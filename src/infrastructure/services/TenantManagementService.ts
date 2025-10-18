@@ -491,7 +491,7 @@ export class TenantManagementService {
       ];
 
       // Create CSV rows
-      const rows = tenants.map((tenant) => [
+      const rows = tenants.map(tenant => [
         tenant.id,
         tenant.company_name,
         tenant.domain || '',
@@ -503,7 +503,7 @@ export class TenantManagementService {
       // Combine headers and rows
       const csvContent = [
         headers.join(','),
-        ...rows.map((row) => row.join(',')),
+        ...rows.map(row => row.join(',')),
       ].join('\n');
 
       return csvContent;
@@ -581,4 +581,3 @@ export class TenantManagementService {
 
 // Export singleton instance
 export const tenantManagementService = new TenantManagementService();
-

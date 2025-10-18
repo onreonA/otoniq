@@ -13,6 +13,15 @@ export default function ProductManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterStock, setFilterStock] = useState('all');
+  const [filterPriceRange, setFilterPriceRange] = useState({
+    min: '',
+    max: '',
+  });
+  const [filterPlatform, setFilterPlatform] = useState('all');
+  const [filterDateRange, setFilterDateRange] = useState({ from: '', to: '' });
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -37,6 +46,17 @@ export default function ProductManagement() {
         filters: {
           status: filterStatus === 'all' ? undefined : (filterStatus as any),
           product_type: filterType === 'all' ? undefined : (filterType as any),
+          category: filterCategory === 'all' ? undefined : filterCategory,
+          stock_status: filterStock === 'all' ? undefined : filterStock,
+          price_min: filterPriceRange.min
+            ? parseFloat(filterPriceRange.min)
+            : undefined,
+          price_max: filterPriceRange.max
+            ? parseFloat(filterPriceRange.max)
+            : undefined,
+          platform: filterPlatform === 'all' ? undefined : filterPlatform,
+          date_from: filterDateRange.from || undefined,
+          date_to: filterDateRange.to || undefined,
           search: searchTerm || undefined,
         },
         pagination: {
@@ -67,6 +87,13 @@ export default function ProductManagement() {
     searchTerm,
     filterStatus,
     filterType,
+    filterCategory,
+    filterStock,
+    filterPriceRange.min,
+    filterPriceRange.max,
+    filterPlatform,
+    filterDateRange.from,
+    filterDateRange.to,
     currentPage,
   ]);
 
@@ -75,12 +102,75 @@ export default function ProductManagement() {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      product.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       filterStatus === 'all' || product.status === filterStatus;
     const matchesType =
       filterType === 'all' || product.product_type === filterType;
-    return matchesSearch && matchesStatus && matchesType;
+    const matchesCategory =
+      filterCategory === 'all' || product.categories?.includes(filterCategory);
+    const matchesStock = (() => {
+      if (filterStock === 'all') return true;
+      const totalStock = product.getTotalStock();
+      switch (filterStock) {
+        case 'in_stock':
+          return totalStock > 0;
+        case 'low_stock':
+          return totalStock > 0 && totalStock <= 10;
+        case 'out_of_stock':
+          return totalStock === 0;
+        default:
+          return true;
+      }
+    })();
+    const matchesPrice = (() => {
+      if (!filterPriceRange.min && !filterPriceRange.max) return true;
+      const minPrice = product.getMinPrice();
+      const maxPrice = product.getMaxPrice();
+      if (!minPrice && !maxPrice) return true;
+      const price = minPrice || maxPrice || 0;
+      const min = filterPriceRange.min ? parseFloat(filterPriceRange.min) : 0;
+      const max = filterPriceRange.max
+        ? parseFloat(filterPriceRange.max)
+        : Infinity;
+      return price >= min && price <= max;
+    })();
+    const matchesPlatform = (() => {
+      if (filterPlatform === 'all') return true;
+      const source = product.metadata?.source;
+      switch (filterPlatform) {
+        case 'manual':
+          return !source;
+        case 'odoo':
+          return source === 'odoo';
+        case 'shopify':
+          return source === 'shopify';
+        default:
+          return true;
+      }
+    })();
+    const matchesDate = (() => {
+      if (!filterDateRange.from && !filterDateRange.to) return true;
+      const productDate = new Date(product.created_at);
+      const fromDate = filterDateRange.from
+        ? new Date(filterDateRange.from)
+        : new Date(0);
+      const toDate = filterDateRange.to
+        ? new Date(filterDateRange.to)
+        : new Date();
+      return productDate >= fromDate && productDate <= toDate;
+    })();
+
+    return (
+      matchesSearch &&
+      matchesStatus &&
+      matchesType &&
+      matchesCategory &&
+      matchesStock &&
+      matchesPrice &&
+      matchesPlatform &&
+      matchesDate
+    );
   });
 
   // Durum rengi
@@ -147,6 +237,19 @@ export default function ProductManagement() {
     }
   };
 
+  // Filtreleri temizle
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setFilterStatus('all');
+    setFilterType('all');
+    setFilterCategory('all');
+    setFilterStock('all');
+    setFilterPriceRange({ min: '', max: '' });
+    setFilterPlatform('all');
+    setFilterDateRange({ from: '', to: '' });
+    setShowAdvancedFilters(false);
+  };
+
   // Ürün seçimi
   const toggleProductSelection = (productId: string) => {
     setSelectedProducts(prev =>
@@ -167,6 +270,99 @@ export default function ProductManagement() {
       console.error('Toplu durum güncelleme hatası:', error);
       toast.error('Durum güncellenirken hata oluştu');
     }
+  };
+
+  // Toplu silme
+  const handleBulkDelete = async () => {
+    if (
+      !confirm(
+        `${selectedProducts.length} ürünü silmek istediğinizden emin misiniz?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await productService.bulkDeleteProducts(selectedProducts);
+      toast.success(`${selectedProducts.length} ürün silindi`);
+      setSelectedProducts([]);
+      loadProducts();
+    } catch (error) {
+      console.error('Toplu silme hatası:', error);
+      toast.error('Ürünler silinirken hata oluştu');
+    }
+  };
+
+  // Toplu kategori atama
+  const handleBulkCategoryUpdate = async (category: string) => {
+    if (!category) return;
+
+    try {
+      await productService.bulkUpdateCategories(selectedProducts, category);
+      toast.success(`${selectedProducts.length} ürünün kategorisi güncellendi`);
+      setSelectedProducts([]);
+      loadProducts();
+    } catch (error) {
+      console.error('Toplu kategori güncelleme hatası:', error);
+      toast.error('Kategoriler güncellenirken hata oluştu');
+    }
+  };
+
+  // CSV Export
+  const handleExportCSV = () => {
+    try {
+      const csvData = filteredProducts.map(product => ({
+        SKU: product.sku,
+        'Ürün Adı': product.name,
+        Açıklama: product.description || '',
+        'Kısa Açıklama': product.short_description || '',
+        Durum: getStatusText(product.status),
+        Tip: getTypeText(product.product_type),
+        Fiyat: product.getMinPrice() || 0,
+        Stok: product.getTotalStock(),
+        Kategoriler: product.categories?.join(', ') || '',
+        Etiketler: product.tags?.join(', ') || '',
+        'Oluşturulma Tarihi': new Date(product.created_at).toLocaleDateString(
+          'tr-TR'
+        ),
+        'Güncelleme Tarihi': new Date(product.updated_at).toLocaleDateString(
+          'tr-TR'
+        ),
+      }));
+
+      const csvContent = [
+        Object.keys(csvData[0]).join(','),
+        ...csvData.map(row =>
+          Object.values(row)
+            .map(value => `"${value}"`)
+            .join(',')
+        ),
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute(
+        'download',
+        `urunler_${new Date().toISOString().split('T')[0]}.csv`
+      );
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('CSV dosyası indirildi');
+    } catch (error) {
+      console.error('CSV export hatası:', error);
+      toast.error('CSV dosyası oluşturulurken hata oluştu');
+    }
+  };
+
+  // Excel Export
+  const handleExportExcel = () => {
+    // Excel export için xlsx kütüphanesi gerekli
+    toast.info('Excel export özelliği yakında eklenecek');
   };
 
   // Ürün silme
@@ -215,6 +411,24 @@ export default function ProductManagement() {
               </p>
             </div>
             <div className='flex items-center space-x-3'>
+              {/* Export Buttons */}
+              <div className='flex space-x-2'>
+                <button
+                  onClick={handleExportCSV}
+                  className='bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 border border-green-500/30 hover:border-green-500/50 flex items-center gap-2'
+                >
+                  <i className='ri-file-download-line'></i>
+                  <span className='text-sm'>CSV İndir</span>
+                </button>
+                <button
+                  onClick={handleExportExcel}
+                  className='bg-gradient-to-r from-orange-500/20 to-red-500/20 hover:from-orange-500/30 hover:to-red-500/30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 border border-orange-500/30 hover:border-orange-500/50 flex items-center gap-2'
+                >
+                  <i className='ri-file-excel-line'></i>
+                  <span className='text-sm'>Excel İndir</span>
+                </button>
+              </div>
+
               <Link
                 to='/integrations'
                 className='bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 border border-purple-500/30 hover:border-purple-500/50 flex items-center gap-2'
@@ -235,7 +449,8 @@ export default function ProductManagement() {
 
         {/* Filters */}
         <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8'>
-          <div className='flex flex-col md:flex-row gap-4'>
+          {/* Basic Filters */}
+          <div className='flex flex-col md:flex-row gap-4 mb-4'>
             {/* Search */}
             <div className='flex-1'>
               <div className='relative'>
@@ -280,33 +495,232 @@ export default function ProductManagement() {
               </select>
             </div>
 
-            {/* Bulk Actions */}
-            {selectedProducts.length > 0 && (
-              <div className='flex space-x-2'>
-                <button
-                  onClick={() => handleBulkStatusUpdate('active')}
-                  className='bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 text-green-400 px-4 py-3 rounded-xl transition-colors cursor-pointer'
-                >
-                  <i className='ri-check-line mr-2'></i>
-                  Aktifleştir
-                </button>
-                <button
-                  onClick={() => handleBulkStatusUpdate('inactive')}
-                  className='bg-gray-500/20 hover:bg-gray-500/30 border border-gray-500/50 text-gray-400 px-4 py-3 rounded-xl transition-colors cursor-pointer'
-                >
-                  <i className='ri-pause-line mr-2'></i>
-                  Pasifleştir
-                </button>
-                <button
-                  onClick={() => handleBulkStatusUpdate('archived')}
-                  className='bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 px-4 py-3 rounded-xl transition-colors cursor-pointer'
-                >
-                  <i className='ri-archive-line mr-2'></i>
-                  Arşivle
-                </button>
-              </div>
-            )}
+            {/* Advanced Filters Toggle */}
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className='bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 text-purple-400 px-4 py-3 rounded-xl transition-colors cursor-pointer flex items-center gap-2'
+            >
+              <i
+                className={`ri-filter-3-line ${showAdvancedFilters ? 'rotate-180' : ''} transition-transform`}
+              ></i>
+              <span className='text-sm'>Gelişmiş</span>
+            </button>
+
+            {/* Clear Filters */}
+            <button
+              onClick={clearAllFilters}
+              className='bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl transition-colors cursor-pointer flex items-center gap-2'
+            >
+              <i className='ri-refresh-line'></i>
+              <span className='text-sm'>Temizle</span>
+            </button>
           </div>
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className='border-t border-white/10 pt-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+                {/* Category Filter */}
+                <div>
+                  <label className='block text-gray-300 text-sm mb-2'>
+                    Kategori
+                  </label>
+                  <select
+                    value={filterCategory}
+                    onChange={e => setFilterCategory(e.target.value)}
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors pr-8'
+                  >
+                    <option value='all'>Tüm Kategoriler</option>
+                    <option value='electronics'>Elektronik</option>
+                    <option value='clothing'>Giyim</option>
+                    <option value='home'>Ev & Yaşam</option>
+                    <option value='sports'>Spor</option>
+                    <option value='books'>Kitap</option>
+                  </select>
+                </div>
+
+                {/* Stock Filter */}
+                <div>
+                  <label className='block text-gray-300 text-sm mb-2'>
+                    Stok Durumu
+                  </label>
+                  <select
+                    value={filterStock}
+                    onChange={e => setFilterStock(e.target.value)}
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors pr-8'
+                  >
+                    <option value='all'>Tüm Stoklar</option>
+                    <option value='in_stock'>Stokta Var</option>
+                    <option value='low_stock'>Düşük Stok</option>
+                    <option value='out_of_stock'>Stokta Yok</option>
+                  </select>
+                </div>
+
+                {/* Platform Filter */}
+                <div>
+                  <label className='block text-gray-300 text-sm mb-2'>
+                    Platform
+                  </label>
+                  <select
+                    value={filterPlatform}
+                    onChange={e => setFilterPlatform(e.target.value)}
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors pr-8'
+                  >
+                    <option value='all'>Tüm Platformlar</option>
+                    <option value='manual'>Manuel</option>
+                    <option value='odoo'>Odoo</option>
+                    <option value='shopify'>Shopify</option>
+                  </select>
+                </div>
+
+                {/* Date Range */}
+                <div>
+                  <label className='block text-gray-300 text-sm mb-2'>
+                    Tarih Aralığı
+                  </label>
+                  <div className='flex gap-2'>
+                    <input
+                      type='date'
+                      value={filterDateRange.from}
+                      onChange={e =>
+                        setFilterDateRange(prev => ({
+                          ...prev,
+                          from: e.target.value,
+                        }))
+                      }
+                      className='flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-400 transition-colors'
+                      placeholder='Başlangıç'
+                    />
+                    <input
+                      type='date'
+                      value={filterDateRange.to}
+                      onChange={e =>
+                        setFilterDateRange(prev => ({
+                          ...prev,
+                          to: e.target.value,
+                        }))
+                      }
+                      className='flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-400 transition-colors'
+                      placeholder='Bitiş'
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Price Range */}
+              <div className='mt-4'>
+                <label className='block text-gray-300 text-sm mb-2'>
+                  Fiyat Aralığı (₺)
+                </label>
+                <div className='flex gap-4 items-center'>
+                  <input
+                    type='number'
+                    placeholder='Min Fiyat'
+                    value={filterPriceRange.min}
+                    onChange={e =>
+                      setFilterPriceRange(prev => ({
+                        ...prev,
+                        min: e.target.value,
+                      }))
+                    }
+                    className='w-32 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                  />
+                  <span className='text-gray-400'>-</span>
+                  <input
+                    type='number'
+                    placeholder='Max Fiyat'
+                    value={filterPriceRange.max}
+                    onChange={e =>
+                      setFilterPriceRange(prev => ({
+                        ...prev,
+                        max: e.target.value,
+                      }))
+                    }
+                    className='w-32 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Actions */}
+          {selectedProducts.length > 0 && (
+            <div className='border-t border-white/10 pt-4 mt-4'>
+              <div className='flex items-center justify-between'>
+                <div className='text-gray-300 text-sm'>
+                  {selectedProducts.length} ürün seçildi
+                </div>
+                <div className='flex flex-wrap gap-2'>
+                  {/* Status Actions */}
+                  <div className='flex space-x-2'>
+                    <button
+                      onClick={() => handleBulkStatusUpdate('active')}
+                      className='bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 text-green-400 px-3 py-2 rounded-lg transition-colors cursor-pointer text-sm'
+                    >
+                      <i className='ri-check-line mr-1'></i>
+                      Aktifleştir
+                    </button>
+                    <button
+                      onClick={() => handleBulkStatusUpdate('inactive')}
+                      className='bg-gray-500/20 hover:bg-gray-500/30 border border-gray-500/50 text-gray-400 px-3 py-2 rounded-lg transition-colors cursor-pointer text-sm'
+                    >
+                      <i className='ri-pause-line mr-1'></i>
+                      Pasifleştir
+                    </button>
+                    <button
+                      onClick={() => handleBulkStatusUpdate('archived')}
+                      className='bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 px-3 py-2 rounded-lg transition-colors cursor-pointer text-sm'
+                    >
+                      <i className='ri-archive-line mr-1'></i>
+                      Arşivle
+                    </button>
+                  </div>
+
+                  {/* Category Actions */}
+                  <div className='flex space-x-2'>
+                    <select
+                      onChange={e => handleBulkCategoryUpdate(e.target.value)}
+                      className='bg-blue-500/20 border border-blue-500/50 text-blue-400 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-blue-400'
+                    >
+                      <option value=''>Kategori Ata</option>
+                      <option value='electronics'>Elektronik</option>
+                      <option value='clothing'>Giyim</option>
+                      <option value='home'>Ev & Yaşam</option>
+                      <option value='sports'>Spor</option>
+                      <option value='books'>Kitap</option>
+                    </select>
+                  </div>
+
+                  {/* Export Actions */}
+                  <div className='flex space-x-2'>
+                    <button
+                      onClick={handleExportCSV}
+                      className='bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-400 px-3 py-2 rounded-lg transition-colors cursor-pointer text-sm'
+                    >
+                      <i className='ri-file-download-line mr-1'></i>
+                      CSV
+                    </button>
+                    <button
+                      onClick={handleExportExcel}
+                      className='bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/50 text-orange-400 px-3 py-2 rounded-lg transition-colors cursor-pointer text-sm'
+                    >
+                      <i className='ri-file-excel-line mr-1'></i>
+                      Excel
+                    </button>
+                  </div>
+
+                  {/* Delete Action */}
+                  <button
+                    onClick={handleBulkDelete}
+                    className='bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-400 px-3 py-2 rounded-lg transition-colors cursor-pointer text-sm'
+                  >
+                    <i className='ri-delete-bin-line mr-1'></i>
+                    Sil
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Products Table */}

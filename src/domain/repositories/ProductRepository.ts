@@ -11,14 +11,21 @@ export interface ProductFilters {
   tenant_id?: string;
   status?: 'active' | 'inactive' | 'draft' | 'archived';
   product_type?: 'simple' | 'variable' | 'grouped' | 'external';
+  category?: string;
   categories?: string[];
   tags?: string[];
   search?: string;
   min_price?: number;
   max_price?: number;
+  price_min?: number;
+  price_max?: number;
   in_stock?: boolean;
+  stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock';
+  platform?: 'manual' | 'odoo' | 'shopify';
   created_after?: Date;
   created_before?: Date;
+  date_from?: string;
+  date_to?: string;
 }
 
 export interface ProductSortOptions {
@@ -145,6 +152,11 @@ export interface ProductRepository {
    * Bulk delete products
    */
   bulkDelete(productIds: string[]): Promise<void>;
+
+  /**
+   * Bulk update product categories
+   */
+  bulkUpdateCategories(productIds: string[], category: string): Promise<void>;
 
   /**
    * Get product statistics

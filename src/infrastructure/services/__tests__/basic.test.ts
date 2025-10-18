@@ -105,4 +105,3 @@ describe('TenantManagementService - Basic Structure', () => {
     expect(average).toBe(4.5);
   });
 });
-

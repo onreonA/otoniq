@@ -224,6 +224,24 @@ export class ProductService {
   }
 
   /**
+   * Bulk update product categories
+   */
+  async bulkUpdateCategories(
+    productIds: string[],
+    category: string
+  ): Promise<void> {
+    try {
+      return await this.productRepository.bulkUpdateCategories(
+        productIds,
+        category
+      );
+    } catch (error) {
+      console.error('Bulk update categories error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get product statistics
    */
   async getProductStatistics(tenantId: string) {

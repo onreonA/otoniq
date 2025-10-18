@@ -81,9 +81,8 @@ describe('BillingService', () => {
 
   describe('getTransactionHistory', () => {
     it('should fetch transaction history for a tenant', async () => {
-      const transactions = await billingService.getTransactionHistory(
-        'test-tenant-id'
-      );
+      const transactions =
+        await billingService.getTransactionHistory('test-tenant-id');
       expect(Array.isArray(transactions)).toBe(true);
     });
 
@@ -227,9 +226,7 @@ describe('BillingService', () => {
 
     it('should calculate net revenue correctly', async () => {
       const stats = await billingService.getRevenueStats();
-      expect(stats.net_revenue).toBe(
-        stats.total_revenue - stats.total_refunds
-      );
+      expect(stats.net_revenue).toBe(stats.total_revenue - stats.total_refunds);
     });
   });
 
@@ -242,7 +239,10 @@ describe('BillingService', () => {
       };
 
       try {
-        await billingService.processPayment('test-transaction-id', paymentDetails);
+        await billingService.processPayment(
+          'test-transaction-id',
+          paymentDetails
+        );
       } catch (error) {
         expect(error).toBeDefined();
       }
@@ -256,4 +256,3 @@ describe('BillingService', () => {
     });
   });
 });
-

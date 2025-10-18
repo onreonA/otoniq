@@ -7,9 +7,11 @@ This directory contains unit tests for the service layer of the Otoniq.ai applic
 ## Test Files
 
 ### ✅ Basic Tests
+
 - **basic.test.ts** - Basic infrastructure tests and data structure validation
 
 ### 🧪 Service Tests
+
 - **SubscriptionService.test.ts** - Subscription plan and lifecycle management tests
 - **BillingService.test.ts** - Billing, transactions, and invoice tests
 - **TenantManagementService.test.ts** - Tenant CRUD and management tests
@@ -38,6 +40,7 @@ npm run test:ui
 ### SubscriptionService Tests
 
 Tests cover:
+
 - ✅ Plan management (CRUD operations)
 - ✅ Subscription lifecycle (create, update, cancel, renew)
 - ✅ Trial management (start, convert to paid)
@@ -47,6 +50,7 @@ Tests cover:
 ### BillingService Tests
 
 Tests cover:
+
 - ✅ Transaction management
 - ✅ Payment processing
 - ✅ Invoice generation and management
@@ -56,6 +60,7 @@ Tests cover:
 ### TenantManagementService Tests
 
 Tests cover:
+
 - ✅ Tenant CRUD operations
 - ✅ Tenant filtering and search
 - ✅ Status management (suspend, activate)
@@ -153,4 +158,3 @@ When adding new service methods:
 - [Vitest Documentation](https://vitest.dev/)
 - [Testing Library](https://testing-library.com/)
 - [Supabase Testing Guide](https://supabase.com/docs/guides/testing)
-

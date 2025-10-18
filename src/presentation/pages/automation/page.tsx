@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
 import { WorkflowInstaller } from '../../../infrastructure/workflows/WorkflowInstaller';
@@ -121,6 +122,34 @@ export default function AutomationPage() {
             <i className='ri-download-cloud-line text-xl'></i>
             {isLoading ? 'Yükleniyor...' : "📦 Varsayılan Workflow'ları Yükle"}
           </button>
+          <Link
+            to='/automation/workflow-builder'
+            className='px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-300 flex items-center gap-2 shadow-lg'
+          >
+            <i className='ri-node-tree text-xl'></i>
+            🎨 Workflow Builder
+          </Link>
+          <Link
+            to='/automation/template-marketplace'
+            className='px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-xl font-medium transition-all duration-300 flex items-center gap-2 shadow-lg'
+          >
+            <i className='ri-store-line text-xl'></i>
+            🏪 Template Marketplace
+          </Link>
+          <Link
+            to='/automation/analytics'
+            className='px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-medium transition-all duration-300 flex items-center gap-2 shadow-lg'
+          >
+            <i className='ri-bar-chart-line text-xl'></i>
+            📊 Analytics Dashboard
+          </Link>
+          <Link
+            to='/automation/collaboration'
+            className='px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-300 flex items-center gap-2 shadow-lg'
+          >
+            <i className='ri-team-line text-xl'></i>
+            👥 Collaboration Tools
+          </Link>
         </div>
 
         {/* Stats Overview */}

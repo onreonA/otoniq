@@ -3,6 +3,12 @@ import { productService } from '../../../../infrastructure/services/ProductServi
 import { Product } from '../../../../domain/entities/Product';
 import { CreateProductRequest } from '../../../../application/use-cases/product/CreateProductUseCase';
 import { UpdateProductRequest } from '../../../../application/use-cases/product/UpdateProductUseCase';
+import ImageUploader from './ImageUploader';
+import VariantManager from './VariantManager';
+import SEOPreview from './SEOPreview';
+import OdooIntegration from './OdooIntegration';
+import ProductAnalytics from './ProductAnalytics';
+import { ProductVariant } from '../../../../domain/entities/Product';
 import toast from 'react-hot-toast';
 
 interface ProductModalProps {
@@ -43,6 +49,9 @@ export default function ProductModal({
     metadata: {},
   });
 
+  const [images, setImages] = useState<string[]>([]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
+
   // Form reset
   useEffect(() => {
     if (isOpen) {
@@ -64,6 +73,10 @@ export default function ProductModal({
           seo_keywords: editingProduct.seo_keywords,
           metadata: editingProduct.metadata,
         });
+        // Load existing images
+        setImages(editingProduct.images?.map(img => img.url) || []);
+        // Load existing variants
+        setVariants(editingProduct.variants || []);
       } else {
         setFormData({
           tenant_id: tenantId || defaultTenantId,
@@ -82,6 +95,8 @@ export default function ProductModal({
           seo_keywords: [],
           metadata: {},
         });
+        setImages([]);
+        setVariants([]);
       }
     }
   }, [isOpen, editingProduct, tenantId]);
@@ -383,6 +398,71 @@ export default function ProductModal({
               placeholder='telefon, akıllı telefon, iphone'
             />
           </div>
+
+          {/* SEO Preview */}
+          <div>
+            <SEOPreview
+              title={formData.seo_title || formData.name}
+              description={
+                formData.seo_description || formData.short_description
+              }
+              keywords={formData.seo_keywords}
+              className='bg-white/5 border border-white/10 rounded-xl p-4'
+            />
+          </div>
+
+          {/* Product Images */}
+          <div>
+            <label className='block text-white font-medium mb-2'>
+              Ürün Resimleri
+            </label>
+            <ImageUploader
+              images={images}
+              onImagesChange={setImages}
+              maxImages={10}
+              className='bg-white/5 border border-white/10 rounded-xl p-4'
+            />
+          </div>
+
+          {/* Product Variants */}
+          <div>
+            <label className='block text-white font-medium mb-2'>
+              Ürün Varyantları
+            </label>
+            <VariantManager
+              variants={variants}
+              onVariantsChange={setVariants}
+              productType={formData.product_type}
+              className='bg-white/5 border border-white/10 rounded-xl p-4'
+            />
+          </div>
+
+          {/* Odoo Integration */}
+          <div>
+            <label className='block text-white font-medium mb-2'>
+              Odoo Entegrasyonu
+            </label>
+            <OdooIntegration
+              productId={editingProduct?.id}
+              onSync={() => {
+                toast.success("Ürün Odoo'ya senkronize edildi");
+              }}
+              className='bg-white/5 border border-white/10 rounded-xl p-4'
+            />
+          </div>
+
+          {/* Product Analytics */}
+          {editingProduct && (
+            <div>
+              <label className='block text-white font-medium mb-2'>
+                Ürün Analitikleri
+              </label>
+              <ProductAnalytics
+                productId={editingProduct.id}
+                className='bg-white/5 border border-white/10 rounded-xl p-4'
+              />
+            </div>
+          )}
 
           {/* Actions */}
           <div className='flex space-x-4 pt-4'>

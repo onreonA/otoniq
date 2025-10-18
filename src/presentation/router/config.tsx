@@ -29,13 +29,29 @@ const ShopifyIntegrationPage = lazy(
 const AlibabaIntegrationPage = lazy(
   () => import('../pages/integrations/alibaba/page')
 );
-const MarketplaceConnectionsPage = lazy(
-  () => import('../pages/marketplace/page')
+const MarketplacesPage = lazy(() => import('../pages/marketplaces/page'));
+const ConnectMarketplacePage = lazy(
+  () => import('../pages/marketplaces/connect/page')
+);
+const MarketplaceDetailPage = lazy(
+  () => import('../pages/marketplaces/[id]/page')
 );
 const AnalyticsPage = lazy(() => import('../pages/analytics/page'));
 const AutomationPage = lazy(() => import('../pages/automation/page'));
 const AutomationOutputsPage = lazy(
   () => import('../pages/automation/outputs/page')
+);
+const WorkflowBuilderPage = lazy(
+  () => import('../pages/automation/workflow-builder/page')
+);
+const TemplateMarketplacePage = lazy(
+  () => import('../pages/automation/template-marketplace/page')
+);
+const WorkflowAnalyticsPage = lazy(
+  () => import('../pages/automation/analytics/page')
+);
+const WorkflowCollaborationPage = lazy(
+  () => import('../pages/automation/collaboration/page')
 );
 const WorkflowDetailPage = lazy(
   () => import('../pages/automation/workflow-detail/[id]/page')
@@ -188,8 +204,16 @@ const routes: RouteObject[] = [
         element: <AlibabaIntegrationPage />,
       },
       {
-        path: '/marketplace',
-        element: <MarketplaceConnectionsPage />,
+        path: '/marketplaces',
+        element: <MarketplacesPage />,
+      },
+      {
+        path: '/marketplaces/connect',
+        element: <ConnectMarketplacePage />,
+      },
+      {
+        path: '/marketplaces/:id',
+        element: <MarketplaceDetailPage />,
       },
       {
         path: '/analytics',
@@ -214,6 +238,22 @@ const routes: RouteObject[] = [
       {
         path: '/automation/outputs',
         element: <AutomationOutputsPage />,
+      },
+      {
+        path: '/automation/workflow-builder',
+        element: <WorkflowBuilderPage />,
+      },
+      {
+        path: '/automation/template-marketplace',
+        element: <TemplateMarketplacePage />,
+      },
+      {
+        path: '/automation/analytics',
+        element: <WorkflowAnalyticsPage />,
+      },
+      {
+        path: '/automation/collaboration',
+        element: <WorkflowCollaborationPage />,
       },
       {
         path: '/automation/workflow/:id',

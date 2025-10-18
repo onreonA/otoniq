@@ -701,7 +701,8 @@ export class BillingService {
 
       if (error) throw error;
 
-      const total = data?.reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0;
+      const total =
+        data?.reduce((sum, t) => sum + (t.total_amount || 0), 0) || 0;
       return Math.round(total * 100) / 100;
     } catch (error) {
       console.error('Error getting total revenue:', error);
@@ -797,25 +798,27 @@ export class BillingService {
 
       if (error) throw error;
 
-      const completed = data?.filter((t) => t.status === 'completed') || [];
+      const completed = data?.filter(t => t.status === 'completed') || [];
       const totalRevenue =
         completed.reduce((sum, t) => sum + t.total_amount, 0) || 0;
 
       const subscriptionRevenue =
         completed
-          .filter((t) => t.transaction_type === 'subscription_payment')
+          .filter(t => t.transaction_type === 'subscription_payment')
           .reduce((sum, t) => sum + t.total_amount, 0) || 0;
 
       const totalRefunds =
         data
-          ?.filter((t) => t.status === 'refunded' || t.status === 'partially_refunded')
+          ?.filter(
+            t => t.status === 'refunded' || t.status === 'partially_refunded'
+          )
           .reduce((sum, t) => sum + t.refund_amount, 0) || 0;
 
       const netRevenue = totalRevenue - totalRefunds;
 
       const transactionCount = completed.length;
 
-      const payingTenants = new Set(completed.map((t) => t.tenant_id)).size;
+      const payingTenants = new Set(completed.map(t => t.tenant_id)).size;
 
       const averageTransaction =
         transactionCount > 0 ? totalRevenue / transactionCount : 0;
@@ -857,4 +860,3 @@ export class BillingService {
 
 // Export singleton instance
 export const billingService = new BillingService();
-

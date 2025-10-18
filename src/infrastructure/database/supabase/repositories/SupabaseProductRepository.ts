@@ -101,6 +101,12 @@ export class SupabaseProductRepository implements ProductRepository {
         query = query.eq('product_type', filters.product_type);
       }
 
+      // Category filter (single category)
+      if (filters.category) {
+        query = query.contains('categories', [filters.category]);
+      }
+
+      // Categories filter (multiple categories)
       if (filters.categories && filters.categories.length > 0) {
         query = query.overlaps('categories', filters.categories);
       }
@@ -120,6 +126,56 @@ export class SupabaseProductRepository implements ProductRepository {
         );
       }
 
+      // Price range filters
+      if (filters.min_price !== undefined) {
+        query = query.gte('price', filters.min_price);
+      }
+      if (filters.max_price !== undefined) {
+        query = query.lte('price', filters.max_price);
+      }
+      if (filters.price_min !== undefined) {
+        query = query.gte('price', filters.price_min);
+      }
+      if (filters.price_max !== undefined) {
+        query = query.lte('price', filters.price_max);
+      }
+
+      // Stock status filters
+      if (filters.stock_status) {
+        switch (filters.stock_status) {
+          case 'in_stock':
+            // Products with stock > 0
+            query = query.gt('product_variants.stock_quantity', 0);
+            break;
+          case 'low_stock':
+            // Products with stock > 0 and <= 10
+            query = query
+              .gt('product_variants.stock_quantity', 0)
+              .lte('product_variants.stock_quantity', 10);
+            break;
+          case 'out_of_stock':
+            // Products with stock = 0
+            query = query.eq('product_variants.stock_quantity', 0);
+            break;
+        }
+      }
+
+      // Platform filter
+      if (filters.platform) {
+        switch (filters.platform) {
+          case 'manual':
+            query = query.is('metadata->source', null);
+            break;
+          case 'odoo':
+            query = query.eq('metadata->source', 'odoo');
+            break;
+          case 'shopify':
+            query = query.eq('metadata->source', 'shopify');
+            break;
+        }
+      }
+
+      // Legacy stock filter
       if (filters.in_stock !== undefined) {
         if (filters.in_stock) {
           // Products with variants that have stock > 0
@@ -130,12 +186,22 @@ export class SupabaseProductRepository implements ProductRepository {
         }
       }
 
+      // Date range filters
       if (filters.created_after) {
         query = query.gte('created_at', filters.created_after.toISOString());
       }
 
       if (filters.created_before) {
         query = query.lte('created_at', filters.created_before.toISOString());
+      }
+
+      // New date range filters
+      if (filters.date_from) {
+        query = query.gte('created_at', filters.date_from);
+      }
+
+      if (filters.date_to) {
+        query = query.lte('created_at', filters.date_to);
       }
 
       // Apply sorting
@@ -563,6 +629,29 @@ export class SupabaseProductRepository implements ProductRepository {
       if (error) throw error;
     } catch (error) {
       console.error('Bulk delete error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Bulk update product categories
+   */
+  async bulkUpdateCategories(
+    productIds: string[],
+    category: string
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({
+          categories: [category],
+          updated_at: new Date().toISOString(),
+        })
+        .in('id', productIds);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Bulk update categories error:', error);
       throw error;
     }
   }

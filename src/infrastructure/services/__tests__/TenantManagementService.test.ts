@@ -223,9 +223,8 @@ describe('TenantManagementService', () => {
   describe('getTenantStats', () => {
     it('should return tenant statistics', async () => {
       try {
-        const stats = await tenantManagementService.getTenantStats(
-          'test-tenant-id'
-        );
+        const stats =
+          await tenantManagementService.getTenantStats('test-tenant-id');
 
         expect(stats).toHaveProperty('total_users');
         expect(stats).toHaveProperty('total_products');
@@ -296,4 +295,3 @@ describe('TenantManagementService', () => {
     });
   });
 });
-
