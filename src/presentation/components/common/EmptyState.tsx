@@ -20,14 +20,14 @@ interface EmptyStateProps {
   children?: ReactNode;
 }
 
-export default function EmptyState({
+export const EmptyState = ({
   icon: Icon,
   emoji,
   title,
   description,
   action,
   children,
-}: EmptyStateProps) {
+}: EmptyStateProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -59,4 +59,4 @@ export default function EmptyState({
       {children && <div className='mt-6'>{children}</div>}
     </motion.div>
   );
-}
+};

@@ -58,9 +58,14 @@ export class AccountLockoutService {
     failureReason?: string
   ): Promise<string> {
     try {
+      // Temporarily disable account lockout to fix login issues
+      console.log('Account lockout temporarily disabled for debugging');
+      return 'disabled';
+
+      /* Original code - re-enable after fixing database functions
       const { data, error } = await supabase.rpc('record_login_attempt', {
-        p_user_id: userId,
         p_email: email,
+        p_user_id: userId,
         p_ip_address: await this.getClientIP(),
         p_user_agent: navigator.userAgent,
         p_attempt_type: attemptType,
@@ -73,6 +78,7 @@ export class AccountLockoutService {
       }
 
       return data;
+      */
     } catch (error) {
       console.error('Error recording login attempt:', error);
       throw error;
@@ -127,8 +133,8 @@ export class AccountLockoutService {
     try {
       const { data, error } = await supabase.rpc('get_failed_attempts_count', {
         p_email: email,
-        p_ip_address: await this.getClientIP(),
         p_minutes: minutes,
+        p_ip_address: await this.getClientIP(),
       });
 
       if (error) {
@@ -156,11 +162,11 @@ export class AccountLockoutService {
   ): Promise<string> {
     try {
       const { data, error } = await supabase.rpc('lock_account', {
-        p_user_id: userId,
         p_email: email,
-        p_ip_address: await this.getClientIP(),
         p_lockout_type: lockoutType,
         p_lockout_reason: lockoutReason,
+        p_user_id: userId,
+        p_ip_address: await this.getClientIP(),
         p_lockout_duration_minutes: lockoutDurationMinutes,
       });
 

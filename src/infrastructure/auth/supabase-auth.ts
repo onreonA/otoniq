@@ -7,6 +7,7 @@
 
 import { supabase } from '../database/supabase/client';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
+import { LoginTrackingService } from '../services/LoginTrackingService';
 
 export interface LoginCredentials {
   email: string;
@@ -59,6 +60,11 @@ export async function login(
           'Kullanıcı bulunamadı. Lütfen yöneticinizle iletişime geçin.'
         ),
       };
+    }
+
+    // Son giriş tarihini güncelle
+    if (data.user) {
+      await LoginTrackingService.updateLastLogin(data.user.id);
     }
 
     console.log('✅ Login successful:', data.user.email);
@@ -200,6 +206,11 @@ export async function refreshSession(): Promise<AuthResponse<Session>> {
         data: null,
         error: new Error('No session returned'),
       };
+    }
+
+    // Son giriş tarihini güncelle
+    if (data.session.user) {
+      await LoginTrackingService.updateLastLogin(data.session.user.id);
     }
 
     return { data: data.session, error: null };
@@ -350,7 +361,7 @@ async function checkUserInDatabase(userId: string): Promise<boolean> {
 export async function getUserProfile(userId: string) {
   try {
     const { data, error } = await supabase
-      .from('profiles')
+      .from('users')
       .select(
         `
         *,

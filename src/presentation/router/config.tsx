@@ -18,6 +18,8 @@ const ProductManagementPage = lazy(() => import('../pages/products/page'));
 const CategoriesPage = lazy(() => import('../pages/categories/page'));
 const InventoryPage = lazy(() => import('../pages/inventory/page'));
 const OrdersPage = lazy(() => import('../pages/orders/page'));
+const OrderDetailPage = lazy(() => import('../pages/orders/[id]/page'));
+const CreateOrderPage = lazy(() => import('../pages/orders/create/page'));
 const CustomersPage = lazy(() => import('../pages/customers/page'));
 const IntegrationsPage = lazy(() => import('../pages/integrations/page'));
 const OdooIntegrationPage = lazy(
@@ -182,6 +184,14 @@ const routes: RouteObject[] = [
       {
         path: '/orders',
         element: <OrdersPage />,
+      },
+      {
+        path: '/orders/:id',
+        element: <OrderDetailPage />,
+      },
+      {
+        path: '/orders/create',
+        element: <CreateOrderPage />,
       },
       {
         path: '/customers',

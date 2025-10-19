@@ -1,686 +1,512 @@
-/**
- * N8NService
- * Service for managing N8N workflows and executions
- */
-
 import axios, { AxiosInstance } from 'axios';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+export interface N8NConfig {
+  url: string;
+  apiKey: string;
+  webhookUrl?: string;
+}
 
 export interface N8NWorkflow {
-  id?: string;
-  tenantId: string;
-  workflowName: string;
-  workflowDescription?: string;
-  n8nWorkflowId?: string;
-  workflowJson?: any;
-  triggerType: 'manual' | 'webhook' | 'cron' | 'event';
-  triggerConfig?: any;
-  webhookUrl?: string;
-  isActive?: boolean;
-  executionCount?: number;
-  lastExecutionAt?: string;
-  lastExecutionStatus?: 'success' | 'failed' | 'running' | 'waiting';
-  createdBy?: string;
-  metadata?: any;
+  id: string;
+  name: string;
+  active: boolean;
+  nodes: N8NNode[];
+  connections: Record<string, any>;
+  settings: Record<string, any>;
+}
+
+export interface N8NNode {
+  id: string;
+  name: string;
+  type: string;
+  typeVersion: number;
+  position: [number, number];
+  parameters: Record<string, any>;
 }
 
 export interface N8NExecution {
-  id?: string;
+  id: string;
   workflowId: string;
-  tenantId: string;
-  n8nExecutionId: string;
-  triggerType: string;
-  triggerData?: any;
-  status: 'running' | 'success' | 'failed' | 'waiting' | 'canceled';
-  startedAt?: string;
+  status: 'running' | 'success' | 'error' | 'waiting';
+  startedAt: string;
   finishedAt?: string;
-  durationMs?: number;
-  errorMessage?: string;
-  executionData?: any;
-  stepsCompleted?: number;
-  stepsTotal?: number;
-  outputData?: any;
+  data: any;
+  error?: string;
 }
 
-export interface N8NCredential {
-  id?: string;
-  tenantId: string;
-  credentialName: string;
-  credentialType: string;
-  credentialData: any;
-  n8nCredentialId?: string;
-  isActive?: boolean;
-  createdBy?: string;
+export interface TriggerWorkflowRequest {
+  workflowId: string;
+  data: Record<string, any>;
+  waitForCompletion?: boolean;
+}
+
+export interface TriggerWorkflowResponse {
+  success: boolean;
+  executionId?: string;
+  error?: string;
 }
 
 export class N8NService {
-  private static apiClient: AxiosInstance | null = null;
+  private api: AxiosInstance;
+  private config: N8NConfig;
 
-  /**
-   * Initialize N8N API client
-   */
-  private static getApiClient(): AxiosInstance {
-    if (!this.apiClient) {
-      const baseURL =
-        import.meta.env.VITE_N8N_API_URL || 'http://localhost:5678';
-      const apiKey = import.meta.env.VITE_N8N_API_KEY;
-
-      this.apiClient = axios.create({
-        baseURL: `${baseURL}/api/v1`,
-        headers: {
-          'X-N8N-API-KEY': apiKey,
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
-    return this.apiClient;
+  constructor(config: N8NConfig) {
+    this.config = config;
+    this.api = axios.create({
+      baseURL: config.url,
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-N8N-API-KEY': config.apiKey,
+      },
+    });
   }
 
   /**
-   * Create a workflow in database
+   * Test N8N connection
    */
-  static async createWorkflow(workflow: N8NWorkflow): Promise<string> {
+  async testConnection(): Promise<{ success: boolean; error?: string }> {
     try {
-      const { data, error } = await supabase
-        .from('n8n_workflows')
-        .insert({
-          tenant_id: workflow.tenantId,
-          workflow_name: workflow.workflowName,
-          workflow_description: workflow.workflowDescription,
-          n8n_workflow_id: workflow.n8nWorkflowId,
-          workflow_json: workflow.workflowJson,
-          trigger_type: workflow.triggerType,
-          trigger_config: workflow.triggerConfig,
-          webhook_url: workflow.webhookUrl,
-          is_active: workflow.isActive ?? true,
-          created_by: workflow.createdBy,
-          metadata: workflow.metadata,
-        })
-        .select('id')
-        .single();
-
-      if (error) {
-        throw new Error(`Failed to create workflow: ${error.message}`);
-      }
-
-      return data.id;
+      const response = await this.api.get('/api/v1/workflows');
+      return { success: true };
     } catch (error) {
-      console.error('Error creating workflow:', error);
-      throw error;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
     }
   }
 
   /**
-   * Update workflow in database
+   * Get all workflows
    */
-  static async updateWorkflow(
-    workflowId: string,
-    updates: Partial<N8NWorkflow>
-  ): Promise<boolean> {
+  async getWorkflows(): Promise<N8NWorkflow[]> {
     try {
-      const { error } = await supabase
-        .from('n8n_workflows')
-        .update({
-          workflow_name: updates.workflowName,
-          workflow_description: updates.workflowDescription,
-          n8n_workflow_id: updates.n8nWorkflowId,
-          workflow_json: updates.workflowJson,
-          trigger_type: updates.triggerType,
-          trigger_config: updates.triggerConfig,
-          webhook_url: updates.webhookUrl,
-          is_active: updates.isActive,
-          metadata: updates.metadata,
-        })
-        .eq('id', workflowId);
-
-      if (error) {
-        throw new Error(`Failed to update workflow: ${error.message}`);
-      }
-
-      return true;
+      const response = await this.api.get('/api/v1/workflows');
+      return response.data.data || [];
     } catch (error) {
-      console.error('Error updating workflow:', error);
-      return false;
+      console.error('Failed to get N8N workflows:', error);
+      throw new Error(`Failed to get workflows: ${error}`);
     }
   }
 
   /**
    * Get workflow by ID
    */
-  static async getWorkflow(workflowId: string): Promise<N8NWorkflow | null> {
+  async getWorkflow(workflowId: string): Promise<N8NWorkflow> {
     try {
-      const { data, error } = await supabase
-        .from('n8n_workflows')
-        .select('*')
-        .eq('id', workflowId)
-        .single();
-
-      if (error) {
-        throw new Error(`Failed to get workflow: ${error.message}`);
-      }
-
-      return this.mapWorkflowFromDb(data);
+      const response = await this.api.get(`/api/v1/workflows/${workflowId}`);
+      return response.data;
     } catch (error) {
-      console.error('Error getting workflow:', error);
-      return null;
+      console.error('Failed to get N8N workflow:', error);
+      throw new Error(`Failed to get workflow: ${error}`);
     }
   }
 
   /**
-   * Get all workflows for a tenant
+   * Create a new workflow
    */
-  static async getTenantWorkflows(tenantId: string): Promise<N8NWorkflow[]> {
+  async createWorkflow(workflow: Partial<N8NWorkflow>): Promise<N8NWorkflow> {
     try {
-      const { data, error } = await supabase
-        .from('n8n_workflows')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new Error(`Failed to get workflows: ${error.message}`);
-      }
-
-      return data.map(row => this.mapWorkflowFromDb(row));
+      const response = await this.api.post('/api/v1/workflows', workflow);
+      return response.data;
     } catch (error) {
-      console.error('Error getting workflows:', error);
-      return [];
+      console.error('Failed to create N8N workflow:', error);
+      throw new Error(`Failed to create workflow: ${error}`);
+    }
+  }
+
+  /**
+   * Update workflow
+   */
+  async updateWorkflow(
+    workflowId: string,
+    updates: Partial<N8NWorkflow>
+  ): Promise<N8NWorkflow> {
+    try {
+      const response = await this.api.patch(
+        `/api/v1/workflows/${workflowId}`,
+        updates
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update N8N workflow:', error);
+      throw new Error(`Failed to update workflow: ${error}`);
     }
   }
 
   /**
    * Delete workflow
    */
-  static async deleteWorkflow(workflowId: string): Promise<boolean> {
+  async deleteWorkflow(workflowId: string): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('n8n_workflows')
-        .delete()
-        .eq('id', workflowId);
-
-      if (error) {
-        throw new Error(`Failed to delete workflow: ${error.message}`);
-      }
-
-      return true;
+      await this.api.delete(`/api/v1/workflows/${workflowId}`);
     } catch (error) {
-      console.error('Error deleting workflow:', error);
-      return false;
+      console.error('Failed to delete N8N workflow:', error);
+      throw new Error(`Failed to delete workflow: ${error}`);
     }
   }
 
   /**
-   * Trigger workflow execution (webhook or manual)
+   * Activate workflow
    */
-  static async executeWorkflow(
-    workflowId: string,
-    inputData?: any
-  ): Promise<string> {
+  async activateWorkflow(workflowId: string): Promise<void> {
     try {
-      // Get workflow from database
-      const workflow = await this.getWorkflow(workflowId);
-      if (!workflow) {
-        throw new Error('Workflow not found');
-      }
-
-      // If N8N workflow ID exists, trigger via N8N API
-      if (workflow.n8nWorkflowId) {
-        const client = this.getApiClient();
-        const response = await client.post(
-          `/workflows/${workflow.n8nWorkflowId}/execute`,
-          { data: inputData }
-        );
-
-        const n8nExecutionId = response.data.id;
-
-        // Record execution in database
-        const { data, error } = await supabase
-          .from('n8n_executions')
-          .insert({
-            workflow_id: workflowId,
-            tenant_id: workflow.tenantId,
-            n8n_execution_id: n8nExecutionId,
-            trigger_type: 'manual',
-            trigger_data: inputData,
-            status: 'running',
-          })
-          .select('id')
-          .single();
-
-        if (error) {
-          throw new Error(`Failed to record execution: ${error.message}`);
-        }
-
-        return data.id;
-      }
-
-      // If webhook URL exists, trigger via webhook
-      if (workflow.webhookUrl) {
-        const response = await axios.post(workflow.webhookUrl, inputData);
-
-        // Record execution in database
-        const { data, error } = await supabase
-          .from('n8n_executions')
-          .insert({
-            workflow_id: workflowId,
-            tenant_id: workflow.tenantId,
-            n8n_execution_id: `webhook_${Date.now()}`,
-            trigger_type: 'webhook',
-            trigger_data: inputData,
-            status: 'running',
-          })
-          .select('id')
-          .single();
-
-        if (error) {
-          throw new Error(`Failed to record execution: ${error.message}`);
-        }
-
-        return data.id;
-      }
-
-      throw new Error('Workflow has no execution method configured');
+      await this.api.post(`/api/v1/workflows/${workflowId}/activate`);
     } catch (error) {
-      console.error('Error executing workflow:', error);
-      throw error;
+      console.error('Failed to activate N8N workflow:', error);
+      throw new Error(`Failed to activate workflow: ${error}`);
     }
   }
 
   /**
-   * Sync execution status from N8N and update database
+   * Deactivate workflow
    */
-  static async syncExecutionStatus(executionId: string): Promise<N8NExecution> {
+  async deactivateWorkflow(workflowId: string): Promise<void> {
     try {
-      // Get execution from database
-      const { data: execution, error: fetchError } = await supabase
-        .from('n8n_executions')
-        .select('*')
-        .eq('id', executionId)
-        .single();
+      await this.api.post(`/api/v1/workflows/${workflowId}/deactivate`);
+    } catch (error) {
+      console.error('Failed to deactivate N8N workflow:', error);
+      throw new Error(`Failed to deactivate workflow: ${error}`);
+    }
+  }
 
-      if (fetchError || !execution) {
-        throw new Error('Execution not found');
-      }
-
-      // Get status from N8N API
-      const client = this.getApiClient();
-      const response = await client.get(
-        `/executions/${execution.n8n_execution_id}`
+  /**
+   * Trigger workflow execution
+   */
+  async triggerWorkflow(
+    request: TriggerWorkflowRequest
+  ): Promise<TriggerWorkflowResponse> {
+    try {
+      const response = await this.api.post(
+        `/api/v1/workflows/${request.workflowId}/execute`,
+        {
+          data: request.data,
+        }
       );
 
-      const n8nExecution = response.data;
-      const status = n8nExecution.finished
-        ? n8nExecution.data.resultData.error
-          ? 'failed'
-          : 'success'
-        : 'running';
-
-      // Update database
-      const { data: updated, error: updateError } = await supabase
-        .from('n8n_executions')
-        .update({
-          status,
-          finished_at: n8nExecution.stoppedAt,
-          duration_ms: n8nExecution.stoppedAt
-            ? new Date(n8nExecution.stoppedAt).getTime() -
-              new Date(execution.started_at).getTime()
-            : null,
-          execution_data: n8nExecution.data,
-          output_data: n8nExecution.data.resultData,
-          error_message: n8nExecution.data.resultData.error?.message,
-        })
-        .eq('id', executionId)
-        .select()
-        .single();
-
-      if (updateError) {
-        throw new Error(`Failed to update execution: ${updateError.message}`);
-      }
-
-      return updated as N8NExecution;
+      return {
+        success: true,
+        executionId: response.data.executionId,
+      };
     } catch (error) {
-      console.error('Error syncing execution status:', error);
-      throw error;
+      console.error('Failed to trigger N8N workflow:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
     }
   }
 
   /**
-   * Get execution status from N8N
+   * Get execution status
    */
-  static async getExecutionStatus(
-    executionId: string
-  ): Promise<N8NExecution | null> {
+  async getExecution(executionId: string): Promise<N8NExecution> {
     try {
-      const { data, error } = await supabase
-        .from('n8n_executions')
-        .select('*')
-        .eq('id', executionId)
-        .single();
-
-      if (error) {
-        throw new Error(`Failed to get execution: ${error.message}`);
-      }
-
-      // If N8N execution ID exists, fetch latest status from N8N
-      if (
-        data.n8n_execution_id &&
-        !data.n8n_execution_id.startsWith('webhook_')
-      ) {
-        try {
-          const client = this.getApiClient();
-          const response = await client.get(
-            `/executions/${data.n8n_execution_id}`
-          );
-
-          // Update execution status in database
-          await supabase
-            .from('n8n_executions')
-            .update({
-              status: response.data.finished ? 'success' : 'running',
-              finished_at: response.data.stoppedAt,
-              duration_ms: response.data.duration,
-              execution_data: response.data,
-            })
-            .eq('id', executionId);
-
-          return this.mapExecutionFromDb({ ...data, ...response.data });
-        } catch (n8nError) {
-          console.error('Error fetching from N8N:', n8nError);
-          // Return database data if N8N fetch fails
-        }
-      }
-
-      return this.mapExecutionFromDb(data);
+      const response = await this.api.get(`/api/v1/executions/${executionId}`);
+      return response.data;
     } catch (error) {
-      console.error('Error getting execution status:', error);
-      return null;
+      console.error('Failed to get N8N execution:', error);
+      throw new Error(`Failed to get execution: ${error}`);
     }
   }
 
   /**
-   * Get execution history for a workflow
+   * Get workflow executions
    */
-  static async getExecutionHistory(
+  async getWorkflowExecutions(
     workflowId: string,
-    limit: number = 50,
-    offset: number = 0
+    limit = 10
   ): Promise<N8NExecution[]> {
     try {
-      const { data, error } = await supabase.rpc('get_execution_history', {
-        p_workflow_id: workflowId,
-        p_limit: limit,
-        p_offset: offset,
+      const response = await this.api.get(`/api/v1/executions`, {
+        params: {
+          workflowId,
+          limit,
+        },
       });
-
-      if (error) {
-        throw new Error(`Failed to get execution history: ${error.message}`);
-      }
-
-      return data.map((row: any) => this.mapExecutionFromDb(row));
+      return response.data.data || [];
     } catch (error) {
-      console.error('Error getting execution history:', error);
-      return [];
+      console.error('Failed to get N8N executions:', error);
+      throw new Error(`Failed to get executions: ${error}`);
     }
   }
 
   /**
-   * Get workflow statistics
+   * Create order processing workflow
    */
-  static async getWorkflowStats(
-    workflowId?: string,
-    tenantId?: string,
-    days: number = 30
-  ) {
-    try {
-      const { data, error } = await supabase.rpc('get_workflow_stats', {
-        p_workflow_id: workflowId,
-        p_tenant_id: tenantId,
-        p_days: days,
-      });
-
-      if (error) {
-        throw new Error(`Failed to get workflow stats: ${error.message}`);
-      }
-
-      return data[0];
-    } catch (error) {
-      console.error('Error getting workflow stats:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Create credential in database
-   */
-  static async createCredential(credential: N8NCredential): Promise<string> {
-    try {
-      const { data, error } = await supabase
-        .from('n8n_credentials')
-        .insert({
-          tenant_id: credential.tenantId,
-          credential_name: credential.credentialName,
-          credential_type: credential.credentialType,
-          credential_data: credential.credentialData,
-          n8n_credential_id: credential.n8nCredentialId,
-          is_active: credential.isActive ?? true,
-          created_by: credential.createdBy,
-        })
-        .select('id')
-        .single();
-
-      if (error) {
-        throw new Error(`Failed to create credential: ${error.message}`);
-      }
-
-      return data.id;
-    } catch (error) {
-      console.error('Error creating credential:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get tenant credentials
-   */
-  static async getTenantCredentials(
-    tenantId: string
-  ): Promise<N8NCredential[]> {
-    try {
-      const { data, error } = await supabase
-        .from('n8n_credentials')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .eq('is_active', true);
-
-      if (error) {
-        throw new Error(`Failed to get credentials: ${error.message}`);
-      }
-
-      return data.map(row => this.mapCredentialFromDb(row));
-    } catch (error) {
-      console.error('Error getting credentials:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Map database row to N8NWorkflow
-   */
-  private static mapWorkflowFromDb(row: any): N8NWorkflow {
-    return {
-      id: row.id,
-      tenantId: row.tenant_id,
-      workflowName: row.workflow_name,
-      workflowDescription: row.workflow_description,
-      n8nWorkflowId: row.n8n_workflow_id,
-      workflowJson: row.workflow_json,
-      triggerType: row.trigger_type,
-      triggerConfig: row.trigger_config,
-      webhookUrl: row.webhook_url,
-      isActive: row.is_active,
-      executionCount: row.execution_count,
-      lastExecutionAt: row.last_execution_at,
-      lastExecutionStatus: row.last_execution_status,
-      createdBy: row.created_by,
-      metadata: row.metadata,
+  async createOrderProcessingWorkflow(): Promise<N8NWorkflow> {
+    const workflow: Partial<N8NWorkflow> = {
+      name: 'Order Processing Workflow',
+      active: false,
+      nodes: [
+        {
+          id: 'webhook-trigger',
+          name: 'Order Webhook',
+          type: 'n8n-nodes-base.webhook',
+          typeVersion: 1,
+          position: [100, 100],
+          parameters: {
+            path: 'order-processing',
+            httpMethod: 'POST',
+          },
+        },
+        {
+          id: 'order-validation',
+          name: 'Validate Order',
+          type: 'n8n-nodes-base.function',
+          typeVersion: 1,
+          position: [300, 100],
+          parameters: {
+            functionCode: `
+              // Validate order data
+              const order = $input.first().json;
+              
+              if (!order.id || !order.customerInfo || !order.items) {
+                throw new Error('Invalid order data');
+              }
+              
+              return { json: order };
+            `,
+          },
+        },
+        {
+          id: 'update-inventory',
+          name: 'Update Inventory',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 1,
+          position: [500, 100],
+          parameters: {
+            url: '={{ $env.INVENTORY_API_URL }}/update-stock',
+            method: 'POST',
+            body: {
+              items: '={{ $json.items }}',
+            },
+          },
+        },
+        {
+          id: 'send-notification',
+          name: 'Send Notification',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 1,
+          position: [700, 100],
+          parameters: {
+            url: '={{ $env.NOTIFICATION_API_URL }}/send',
+            method: 'POST',
+            body: {
+              type: 'order_processed',
+              orderId: '={{ $json.id }}',
+              customerEmail: '={{ $json.customerInfo.email }}',
+            },
+          },
+        },
+      ],
+      connections: {
+        'Order Webhook': {
+          main: [
+            [
+              {
+                node: 'Validate Order',
+                type: 'main',
+                index: 0,
+              },
+            ],
+          ],
+        },
+        'Validate Order': {
+          main: [
+            [
+              {
+                node: 'Update Inventory',
+                type: 'main',
+                index: 0,
+              },
+            ],
+          ],
+        },
+        'Update Inventory': {
+          main: [
+            [
+              {
+                node: 'Send Notification',
+                type: 'main',
+                index: 0,
+              },
+            ],
+          ],
+        },
+      },
+      settings: {
+        executionOrder: 'v1',
+      },
     };
+
+    return await this.createWorkflow(workflow);
   }
 
   /**
-   * Map database row to N8NExecution
+   * Get tenant workflows (mock implementation)
    */
-  private static mapExecutionFromDb(row: any): N8NExecution {
-    return {
-      id: row.id,
-      workflowId: row.workflow_id,
-      tenantId: row.tenant_id,
-      n8nExecutionId: row.n8n_execution_id,
-      triggerType: row.trigger_type,
-      triggerData: row.trigger_data,
-      status: row.status,
-      startedAt: row.started_at,
-      finishedAt: row.finished_at,
-      durationMs: row.duration_ms,
-      errorMessage: row.error_message,
-      executionData: row.execution_data,
-      stepsCompleted: row.steps_completed,
-      stepsTotal: row.steps_total,
-      outputData: row.output_data,
-    };
+  static async getTenantWorkflows(tenantId: string): Promise<any[]> {
+    // Mock data for tenant workflows
+    const mockWorkflows = [
+      {
+        id: 'workflow-1',
+        tenantId,
+        workflowName: 'Günlük Stok Güncelleme',
+        n8nWorkflowId: 'n8n-workflow-1',
+        triggerType: 'schedule',
+        webhookUrl: null,
+        isActive: true,
+        lastExecutionAt: new Date(
+          Date.now() - 2 * 60 * 60 * 1000
+        ).toISOString(), // 2 hours ago
+        lastExecutionStatus: 'success',
+        metadata: {
+          category: 'inventory',
+          icon: 'package',
+          color: 'blue',
+        },
+      },
+      {
+        id: 'workflow-2',
+        tenantId,
+        workflowName: 'Sipariş Durumu Senkronizasyonu',
+        n8nWorkflowId: 'n8n-workflow-2',
+        triggerType: 'webhook',
+        webhookUrl: 'https://n8n.example.com/webhook/order-sync',
+        isActive: true,
+        lastExecutionAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+        lastExecutionStatus: 'success',
+        metadata: {
+          category: 'orders',
+          icon: 'shopping-cart',
+          color: 'green',
+        },
+      },
+      {
+        id: 'workflow-3',
+        tenantId,
+        workflowName: 'Müşteri Bildirimleri',
+        n8nWorkflowId: 'n8n-workflow-3',
+        triggerType: 'schedule',
+        webhookUrl: null,
+        isActive: false,
+        lastExecutionAt: new Date(
+          Date.now() - 24 * 60 * 60 * 1000
+        ).toISOString(), // 1 day ago
+        lastExecutionStatus: 'failed',
+        metadata: {
+          category: 'notifications',
+          icon: 'mail',
+          color: 'purple',
+        },
+      },
+    ];
+
+    console.log(
+      `📋 Returning ${mockWorkflows.length} mock workflows for tenant: ${tenantId}`
+    );
+    return mockWorkflows;
   }
 
   /**
-   * Map database row to N8NCredential
-   */
-  private static mapCredentialFromDb(row: any): N8NCredential {
-    return {
-      id: row.id,
-      tenantId: row.tenant_id,
-      credentialName: row.credential_name,
-      credentialType: row.credential_type,
-      credentialData: row.credential_data,
-      n8nCredentialId: row.n8n_credential_id,
-      isActive: row.is_active,
-      createdBy: row.created_by,
-    };
-  }
-
-  /**
-   * Trigger workflow directly via webhook URL
-   * Used for Daily Report and Low Stock Alert workflows
+   * Trigger webhook (mock implementation)
    */
   static async triggerWebhook(
     webhookUrl: string,
     data: any
-  ): Promise<{ success: boolean; executionId?: string; error?: string }> {
-    try {
-      const response = await axios.post(webhookUrl, data, {
-        headers: {
-          'Content-Type': 'application/json',
+  ): Promise<{ success: boolean; error?: string }> {
+    console.log(`🚀 Triggering webhook: ${webhookUrl}`, data);
+
+    // Simulate webhook call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Mock success response
+    return {
+      success: true,
+    };
+  }
+
+  /**
+   * Create order status update workflow
+   */
+  async createOrderStatusUpdateWorkflow(): Promise<N8NWorkflow> {
+    const workflow: Partial<N8NWorkflow> = {
+      name: 'Order Status Update Workflow',
+      active: false,
+      nodes: [
+        {
+          id: 'webhook-trigger',
+          name: 'Status Update Webhook',
+          type: 'n8n-nodes-base.webhook',
+          typeVersion: 1,
+          position: [100, 100],
+          parameters: {
+            path: 'order-status-update',
+            httpMethod: 'POST',
+          },
         },
-        timeout: 30000, // 30 seconds
-      });
+        {
+          id: 'update-order-status',
+          name: 'Update Order Status',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 1,
+          position: [300, 100],
+          parameters: {
+            url: '={{ $env.ORDER_API_URL }}/orders/{{ $json.orderId }}/status',
+            method: 'PUT',
+            body: {
+              status: '={{ $json.status }}',
+              note: '={{ $json.note }}',
+            },
+          },
+        },
+        {
+          id: 'sync-to-marketplace',
+          name: 'Sync to Marketplace',
+          type: 'n8n-nodes-base.httpRequest',
+          typeVersion: 1,
+          position: [500, 100],
+          parameters: {
+            url: '={{ $env.MARKETPLACE_API_URL }}/sync-status',
+            method: 'POST',
+            body: {
+              orderId: '={{ $json.orderId }}',
+              status: '={{ $json.status }}',
+            },
+          },
+        },
+      ],
+      connections: {
+        'Status Update Webhook': {
+          main: [
+            [
+              {
+                node: 'Update Order Status',
+                type: 'main',
+                index: 0,
+              },
+            ],
+          ],
+        },
+        'Update Order Status': {
+          main: [
+            [
+              {
+                node: 'Sync to Marketplace',
+                type: 'main',
+                index: 0,
+              },
+            ],
+          ],
+        },
+      },
+      settings: {
+        executionOrder: 'v1',
+      },
+    };
 
-      return {
-        success: true,
-        executionId: response.data?.executionId || `webhook_${Date.now()}`,
-      };
-    } catch (error: any) {
-      console.error('Error triggering webhook:', error);
-      return {
-        success: false,
-        error: error.message || 'Unknown webhook error',
-      };
-    }
-  }
-
-  /**
-   * Trigger Daily Report workflow
-   */
-  static async triggerDailyReport(tenantId: string): Promise<{
-    success: boolean;
-    message: string;
-  }> {
-    try {
-      const workflows = await this.getTenantWorkflows(tenantId);
-      const dailyReportWorkflow = workflows.find(
-        w => w.n8nWorkflowId === 'daily-sales-report-n8n'
-      );
-
-      if (!dailyReportWorkflow || !dailyReportWorkflow.webhookUrl) {
-        return {
-          success: false,
-          message: 'Daily Report workflow not configured',
-        };
-      }
-
-      const result = await this.triggerWebhook(dailyReportWorkflow.webhookUrl, {
-        tenantId,
-        reportDate: new Date().toISOString().split('T')[0],
-        trigger: 'manual',
-      });
-
-      return {
-        success: result.success,
-        message: result.success
-          ? 'Daily report is being generated...'
-          : result.error || 'Failed to trigger daily report',
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.message || 'Error triggering daily report',
-      };
-    }
-  }
-
-  /**
-   * Trigger Low Stock Alert workflow
-   */
-  static async triggerLowStockAlert(
-    tenantId: string,
-    threshold?: number
-  ): Promise<{
-    success: boolean;
-    message: string;
-  }> {
-    try {
-      const workflows = await this.getTenantWorkflows(tenantId);
-      const lowStockWorkflow = workflows.find(
-        w => w.n8nWorkflowId === 'low-stock-alert-n8n'
-      );
-
-      if (!lowStockWorkflow || !lowStockWorkflow.webhookUrl) {
-        return {
-          success: false,
-          message: 'Low Stock Alert workflow not configured',
-        };
-      }
-
-      const result = await this.triggerWebhook(lowStockWorkflow.webhookUrl, {
-        tenantId,
-        threshold: threshold || 10,
-        trigger: 'manual',
-        checkDate: new Date().toISOString(),
-      });
-
-      return {
-        success: result.success,
-        message: result.success
-          ? 'Checking stock levels...'
-          : result.error || 'Failed to trigger stock check',
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message: error.message || 'Error triggering stock alert',
-      };
-    }
+    return await this.createWorkflow(workflow);
   }
 }

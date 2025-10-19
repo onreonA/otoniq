@@ -116,6 +116,27 @@ export class Money {
   }
 
   /**
+   * Get formatted amount (alias for toString)
+   */
+  getFormattedAmount(): string {
+    return this.toString();
+  }
+
+  /**
+   * Get amount value
+   */
+  getAmount(): number {
+    return this.amount;
+  }
+
+  /**
+   * Get currency code
+   */
+  getCurrency(): string {
+    return this.currency;
+  }
+
+  /**
    * Create Money from string
    */
   static fromString(amount: string, currency: string = 'TRY'): Money {

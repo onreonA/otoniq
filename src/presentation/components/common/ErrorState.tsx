@@ -13,12 +13,12 @@ interface ErrorStateProps {
   className?: string;
 }
 
-export default function ErrorState({
+export const ErrorState = ({
   title = 'Bir Hata Oluştu',
   message,
   onRetry,
   className = '',
-}: ErrorStateProps) {
+}: ErrorStateProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -46,13 +46,13 @@ export default function ErrorState({
       )}
     </motion.div>
   );
-}
+};
 
 /**
  * InlineError Component
  * Small inline error message
  */
-export function InlineError({ message }: { message: string }) {
+export const InlineError = ({ message }: { message: string }) => {
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
@@ -64,4 +64,4 @@ export function InlineError({ message }: { message: string }) {
       <p className='text-sm text-red-400'>{message}</p>
     </motion.div>
   );
-}
+};

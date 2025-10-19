@@ -335,6 +335,280 @@ export class OdooService {
   }
 
   /**
+   * Test connection
+   */
+  async testConnection(): Promise<{ success: boolean; error?: string }> {
+    try {
+      await this.connect();
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * Find partner by email
+   */
+  async findPartnerByEmail(
+    email: string
+  ): Promise<{ id: number; name: string } | null> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'search_read',
+        credentials: this.config,
+        args: [['email', '=', email]],
+        kwargs: {
+          fields: ['id', 'name', 'email'],
+          limit: 1,
+        },
+      });
+
+      if (response.data.success && response.data.result.length > 0) {
+        return {
+          id: response.data.result[0].id,
+          name: response.data.result[0].name,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Find partner by email error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create partner
+   */
+  async createPartner(partnerData: any): Promise<number> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'create',
+        credentials: this.config,
+        model: 'res.partner',
+        args: [partnerData],
+      });
+
+      if (response.data.success) {
+        return response.data.result;
+      }
+      throw new Error('Failed to create partner');
+    } catch (error) {
+      console.error('Create partner error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create sale order
+   */
+  async createSaleOrder(saleOrderData: any): Promise<number> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'create',
+        credentials: this.config,
+        model: 'sale.order',
+        args: [saleOrderData],
+      });
+
+      if (response.data.success) {
+        return response.data.result;
+      }
+      throw new Error('Failed to create sale order');
+    } catch (error) {
+      console.error('Create sale order error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create invoice
+   */
+  async createInvoice(invoiceData: any): Promise<number> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'create',
+        credentials: this.config,
+        model: 'account.move',
+        args: [invoiceData],
+      });
+
+      if (response.data.success) {
+        return response.data.result;
+      }
+      throw new Error('Failed to create invoice');
+    } catch (error) {
+      console.error('Create invoice error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create stock picking
+   */
+  async createStockPicking(pickingData: any): Promise<number> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'create',
+        credentials: this.config,
+        model: 'stock.picking',
+        args: [pickingData],
+      });
+
+      if (response.data.success) {
+        return response.data.result;
+      }
+      throw new Error('Failed to create stock picking');
+    } catch (error) {
+      console.error('Create stock picking error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find product by SKU
+   */
+  async findProductBySku(
+    sku: string
+  ): Promise<{ id: number; name: string } | null> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'search_read',
+        credentials: this.config,
+        model: 'product.product',
+        args: [['default_code', '=', sku]],
+        kwargs: {
+          fields: ['id', 'name', 'default_code'],
+          limit: 1,
+        },
+      });
+
+      if (response.data.success && response.data.result.length > 0) {
+        return {
+          id: response.data.result[0].id,
+          name: response.data.result[0].name,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Find product by SKU error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create product
+   */
+  async createProduct(productData: any): Promise<number> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'create',
+        credentials: this.config,
+        model: 'product.product',
+        args: [productData],
+      });
+
+      if (response.data.success) {
+        return response.data.result;
+      }
+      throw new Error('Failed to create product');
+    } catch (error) {
+      console.error('Create product error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get sale order
+   */
+  async getSaleOrder(saleOrderId: number): Promise<any> {
+    if (!this.isConnected) {
+      throw new Error('Odoo not connected');
+    }
+
+    try {
+      const sessionToken = await this.getSessionToken();
+      const response = await this.httpClient.post('', {
+        method: 'read',
+        credentials: this.config,
+        model: 'sale.order',
+        args: [[saleOrderId]],
+        kwargs: {
+          fields: ['partner_id', 'order_line'],
+        },
+      });
+
+      if (response.data.success && response.data.result.length > 0) {
+        return response.data.result[0];
+      }
+      throw new Error('Sale order not found');
+    } catch (error) {
+      console.error('Get sale order error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get default IDs for various Odoo objects
+   */
+  async getOutgoingPickingTypeId(): Promise<number> {
+    // Return default outgoing picking type ID
+    return 1; // This should be configured based on your Odoo setup
+  }
+
+  async getStockLocationId(): Promise<number> {
+    // Return stock location ID
+    return 1; // This should be configured based on your Odoo setup
+  }
+
+  async getCustomerLocationId(): Promise<number> {
+    // Return customer location ID
+    return 1; // This should be configured based on your Odoo setup
+  }
+
+  async getDefaultProductCategoryId(): Promise<number> {
+    // Return default product category ID
+    return 1; // This should be configured based on your Odoo setup
+  }
+
+  /**
    * Bağlantıyı kapat
    */
   async disconnect(): Promise<void> {

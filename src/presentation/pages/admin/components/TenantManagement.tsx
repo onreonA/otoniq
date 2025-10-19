@@ -5,6 +5,7 @@ import {
 } from '../../../../infrastructure/database/supabase/tenant.service';
 import CreateTenantModal from './CreateTenantModal';
 import TenantModal from './TenantModal';
+import ViewTenantModal from './ViewTenantModal';
 import toast from 'react-hot-toast';
 
 export default function TenantManagement() {
@@ -15,6 +16,7 @@ export default function TenantManagement() {
   const [selectedTenants, setSelectedTenants] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
+  const [viewingTenant, setViewingTenant] = useState<string | null>(null);
 
   // Tenant'ları yükle
   const loadTenants = async () => {
@@ -335,9 +337,7 @@ export default function TenantManagement() {
                         <i className='ri-edit-line'></i>
                       </button>
                       <button
-                        onClick={() =>
-                          window.open(`/admin/tenants/${tenant.id}`, '_blank')
-                        }
+                        onClick={() => setViewingTenant(tenant.id)}
                         className='text-green-400 hover:text-green-300 transition-colors cursor-pointer'
                         title='Detay'
                       >
@@ -401,6 +401,15 @@ export default function TenantManagement() {
             loadTenants();
           }}
           editingTenant={editingTenant}
+        />
+      )}
+
+      {/* View Tenant Modal */}
+      {viewingTenant && (
+        <ViewTenantModal
+          isOpen={!!viewingTenant}
+          onClose={() => setViewingTenant(null)}
+          tenantId={viewingTenant}
         />
       )}
     </div>

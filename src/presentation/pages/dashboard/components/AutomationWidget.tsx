@@ -24,7 +24,7 @@ interface Workflow {
   workflowName: string;
   n8nWorkflowId: string;
   triggerType: string;
-  webhookUrl?: string;
+  webhookUrl?: string | null;
   isActive: boolean;
   lastExecutionAt?: string;
   lastExecutionStatus?: 'success' | 'failed' | 'running' | 'waiting';
@@ -32,6 +32,9 @@ interface Workflow {
     category?: string;
     icon?: string;
     color?: string;
+  };
+  triggerConfig?: {
+    schedule?: string;
   };
 }
 

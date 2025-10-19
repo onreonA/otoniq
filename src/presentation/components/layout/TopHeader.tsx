@@ -131,6 +131,12 @@ const TopHeader = memo(function TopHeader() {
                     ? 'Super Admin'
                     : 'Tenant Admin'}
                 </p>
+                {/* FİRMA İSMİ BUTTON'DA DA GÖSTERİLİYOR */}
+                {userProfile?.tenant?.company_name && (
+                  <p className='text-green-400 text-xs font-medium truncate max-w-32'>
+                    🏢 {userProfile.tenant.company_name}
+                  </p>
+                )}
               </div>
               <i
                 className={`ri-arrow-down-s-line text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`}
@@ -157,6 +163,13 @@ const TopHeader = memo(function TopHeader() {
                         ? 'Super Admin'
                         : 'Tenant Admin'}
                     </div>
+                    {/* FİRMA İSMİ EKLENİYOR */}
+                    {userProfile?.tenant?.company_name && (
+                      <div className='text-green-400 text-sm font-medium mt-1 flex items-center'>
+                        <i className='ri-building-line mr-1'></i>
+                        {userProfile.tenant.company_name}
+                      </div>
+                    )}
                   </div>
 
                   <button

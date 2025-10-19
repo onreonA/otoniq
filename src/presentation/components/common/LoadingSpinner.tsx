@@ -27,12 +27,12 @@ const variantClasses = {
     'text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500',
 };
 
-export default function LoadingSpinner({
+export const LoadingSpinner = ({
   size = 'md',
   variant = 'primary',
   text,
   className = '',
-}: LoadingSpinnerProps) {
+}: LoadingSpinnerProps) => {
   return (
     <div
       className={`flex flex-col items-center justify-center gap-3 ${className}`}
@@ -56,13 +56,17 @@ export default function LoadingSpinner({
       )}
     </div>
   );
-}
+};
 
 /**
  * FullPageLoader Component
  * Full screen loading overlay
  */
-export function FullPageLoader({ text = 'Yükleniyor...' }: { text?: string }) {
+export const FullPageLoader = ({
+  text = 'Yükleniyor...',
+}: {
+  text?: string;
+}) => {
   return (
     <div className='fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center'>
       <motion.div
@@ -75,19 +79,19 @@ export function FullPageLoader({ text = 'Yükleniyor...' }: { text?: string }) {
       </motion.div>
     </div>
   );
-}
+};
 
 /**
  * InlineLoader Component
  * Inline loading indicator for buttons or small areas
  */
-export function InlineLoader({
+export const InlineLoader = ({
   size = 'sm',
   className = '',
 }: {
   size?: 'sm' | 'md';
   className?: string;
-}) {
+}) => {
   return (
     <motion.div
       animate={{ rotate: 360 }}
@@ -97,4 +101,4 @@ export function InlineLoader({
       <Loader2 className='w-full h-full' />
     </motion.div>
   );
-}
+};

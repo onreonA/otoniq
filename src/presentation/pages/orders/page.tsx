@@ -1,389 +1,488 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  ShoppingCart,
-  Clock,
+  Search,
+  Download,
+  Plus,
+  Eye,
+  Package,
   DollarSign,
   TrendingUp,
-  Package,
   AlertCircle,
-  Eye,
-  Download,
-  Printer,
+  ChevronRight,
 } from 'lucide-react';
-import { useOrders } from '../../hooks/useOrders';
-import type { OrderStatus } from '../../../domain/entities/Order';
+import { OrderService } from '../../../infrastructure/services/OrderService';
+import { Order } from '../../../domain/entities';
+import {
+  OrderStatus,
+  PaymentStatus,
+  ORDER_STATUS_LABELS,
+  PAYMENT_STATUS_LABELS,
+  ORDER_STATUS_COLORS,
+  PAYMENT_STATUS_COLORS,
+} from '../../../domain/enums/OrderStatus';
+import { OrderFilters } from '../../../domain/repositories/IOrderRepository';
+import {
+  generateMockOrders,
+  mockOrderStatistics,
+} from './mocks/ordersMockData';
+import { EmptyState } from '../../components/common/EmptyState';
+import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { ErrorState } from '../../components/common/ErrorState';
 
-const OrdersPage = () => {
-  const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all');
+const orderService = new OrderService();
+
+// Use mock data for now (will be replaced with real API calls)
+const USE_MOCK_DATA = true;
+
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState<OrderFilters>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [statistics, setStatistics] = useState({
+    totalOrders: 0,
+    totalRevenue: 0,
+    averageOrderValue: 0,
+    ordersByStatus: {} as Record<OrderStatus, number>,
+    ordersByPaymentStatus: {} as Record<PaymentStatus, number>,
+  });
 
-  const { orders, stats, loading, error } = useOrders();
+  const tenantId = '00000000-0000-0000-0000-000000000000'; // Mock tenant ID (valid UUID format)
 
-  const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      if (filterStatus !== 'all' && order.status !== filterStatus) return false;
-      if (
-        searchTerm &&
-        !order.orderNumber?.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !order.customerName?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-        return false;
-      return true;
-    });
-  }, [orders, filterStatus, searchTerm]);
+  useEffect(() => {
+    loadOrders();
+    loadStatistics();
+  }, [currentPage, filters, searchTerm]);
 
-  const statusCounts = useMemo(
-    () => ({
-      all: orders.length,
-      pending: stats?.pending || 0,
-      confirmed: stats?.confirmed || 0,
-      preparing: stats?.preparing || 0,
-      shipped: stats?.shipped || 0,
-      delivered: stats?.delivered || 0,
-      cancelled: stats?.cancelled || 0,
-    }),
-    [orders.length, stats]
-  );
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  // Helper functions
-  const getOrderStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'confirmed':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'preparing':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'shipped':
-        return 'bg-orange-100 text-orange-800 border-orange-300';
-      case 'delivered':
-        return 'bg-green-100 text-green-800 border-green-300';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 border-red-300';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+      if (USE_MOCK_DATA) {
+        // Use mock data
+        const mockOrders = generateMockOrders();
+        let filteredOrders = mockOrders;
+
+        // Apply search filter
+        if (searchTerm) {
+          filteredOrders = filteredOrders.filter(
+            order =>
+              order.orderNumber
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+              order.customerInfo.name
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase()) ||
+              order.customerInfo.email
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase())
+          );
+        }
+
+        // Apply status filter
+        if (filters.status) {
+          filteredOrders = filteredOrders.filter(
+            order => order.status === filters.status
+          );
+        }
+
+        // Apply payment status filter
+        if (filters.paymentStatus) {
+          filteredOrders = filteredOrders.filter(
+            order => order.paymentStatus === filters.paymentStatus
+          );
+        }
+
+        // Simulate pagination
+        const limit = 20;
+        const offset = (currentPage - 1) * limit;
+        const paginatedOrders = filteredOrders.slice(offset, offset + limit);
+
+        setOrders(paginatedOrders);
+        setTotalPages(Math.ceil(filteredOrders.length / limit));
+        setTotalOrders(filteredOrders.length);
+      } else {
+        // Use real API
+        const response = await orderService.getOrders({
+          tenantId,
+          filters: {
+            ...filters,
+            search: searchTerm || undefined,
+          },
+          pagination: {
+            page: currentPage,
+            limit: 20,
+          },
+          sort: {
+            field: 'orderDate',
+            direction: 'desc',
+          },
+        });
+
+        if (response.success && response.orders) {
+          setOrders(response.orders);
+          setTotalPages(response.totalPages || 1);
+          setTotalOrders(response.total || 0);
+        } else {
+          setError(response.error || 'Siparişler yüklenemedi');
+        }
+      }
+    } catch (err) {
+      console.error('Load orders error:', err);
+      setError('Siparişler yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getOrderStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Beklemede';
-      case 'confirmed':
-        return 'Onaylandı';
-      case 'preparing':
-        return 'Hazırlanıyor';
-      case 'shipped':
-        return 'Kargoda';
-      case 'delivered':
-        return 'Teslim Edildi';
-      case 'cancelled':
-        return 'İptal';
-      default:
-        return status;
+  const loadStatistics = async () => {
+    try {
+      if (USE_MOCK_DATA) {
+        // Use mock statistics
+        setStatistics(mockOrderStatistics);
+      } else {
+        // Use real API
+        const stats = await orderService.getOrderStatistics(tenantId);
+        setStatistics(stats);
+      }
+    } catch (err) {
+      console.error('Load statistics error:', err);
     }
   };
 
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'partial':
-        return 'bg-orange-100 text-orange-800';
-      case 'refunded':
-        return 'bg-purple-100 text-purple-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
   };
 
-  const getPaymentStatusLabel = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'Ödendi';
-      case 'pending':
-        return 'Bekliyor';
-      case 'partial':
-        return 'Kısmi';
-      case 'refunded':
-        return 'İade';
-      case 'failed':
-        return 'Başarısız';
-      default:
-        return status;
-    }
+  const getStatusColor = (status: OrderStatus) => {
+    const colors = {
+      pending: 'bg-yellow-500/20 text-yellow-400',
+      processing: 'bg-blue-500/20 text-blue-400',
+      shipped: 'bg-purple-500/20 text-purple-400',
+      delivered: 'bg-green-500/20 text-green-400',
+      cancelled: 'bg-red-500/20 text-red-400',
+      refunded: 'bg-gray-500/20 text-gray-400',
+    };
+    return colors[status] || 'bg-gray-500/20 text-gray-400';
   };
 
-  const getChannelLabel = (channel: string) => {
-    switch (channel) {
-      case 'web':
-        return 'Web';
-      case 'mobile':
-        return 'Mobil';
-      case 'marketplace':
-        return 'Pazaryeri';
-      case 'phone':
-        return 'Telefon';
-      case 'store':
-        return 'Mağaza';
-      default:
-        return channel;
-    }
+  const getPaymentStatusColor = (status: PaymentStatus) => {
+    const colors = {
+      pending: 'bg-yellow-500/20 text-yellow-400',
+      paid: 'bg-green-500/20 text-green-400',
+      failed: 'bg-red-500/20 text-red-400',
+      refunded: 'bg-gray-500/20 text-gray-400',
+      partially_refunded: 'bg-orange-500/20 text-orange-400',
+    };
+    return colors[status] || 'bg-gray-500/20 text-gray-400';
   };
-
-  if (loading && orders.length === 0) {
-    return (
-      <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
-        <div className='flex items-center justify-center h-64'>
-          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-white'></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className='max-w-7xl mx-auto px-2 sm:px-3 lg:px-4 py-6'>
-      {/* Error Display */}
-      {error && (
-        <div className='mb-6 bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-center gap-3'>
-          <AlertCircle className='w-5 h-5 text-red-400' />
-          <p className='text-red-200'>{error}</p>
-        </div>
-      )}
-
-      {/* Page Header */}
-      <div className='mb-6 bg-gradient-to-r from-red-600/20 to-pink-600/20 backdrop-blur-sm rounded-2xl p-6 border border-red-500/20'>
-        <h1 className='text-3xl font-bold text-white mb-2'>Sipariş Yönetimi</h1>
-        <p className='text-white/80'>
-          Tüm siparişlerinizi takip edin ve yönetin
-        </p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className='grid grid-cols-6 gap-4 mb-6'>
-        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>Toplam Sipariş</span>
-            <ShoppingCart className='w-5 h-5 text-blue-400' />
+    <div className='min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6'>
+      {/* Header */}
+      <div className='mb-8'>
+        <div className='flex items-center justify-between mb-6'>
+          <div>
+            <h1 className='text-3xl font-bold text-white mb-2'>
+              Sipariş Yönetimi
+            </h1>
+            <p className='text-gray-400'>
+              Tüm siparişlerinizi buradan yönetebilirsiniz
+            </p>
           </div>
-          <p className='text-3xl font-bold text-white'>{stats?.total || 0}</p>
-        </div>
-
-        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>Bekleyen</span>
-            <Clock className='w-5 h-5 text-yellow-400' />
-          </div>
-          <p className='text-3xl font-bold text-white'>{stats?.pending || 0}</p>
-        </div>
-
-        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>Toplam Ciro</span>
-            <DollarSign className='w-5 h-5 text-green-400' />
-          </div>
-          <p className='text-2xl font-bold text-white'>
-            ₺{((stats?.totalRevenue || 0) / 1000000).toFixed(1)}M
-          </p>
-        </div>
-
-        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>Ort. Sepet</span>
-            <TrendingUp className='w-5 h-5 text-purple-400' />
-          </div>
-          <p className='text-2xl font-bold text-white'>
-            ₺{(stats?.averageOrderValue || 0).toLocaleString('tr-TR')}
-          </p>
-        </div>
-
-        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>Bugün</span>
-            <Package className='w-5 h-5 text-orange-400' />
-          </div>
-          <p className='text-3xl font-bold text-white'>{stats?.total || 0}</p>
-        </div>
-
-        <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4'>
-          <div className='flex items-center justify-between mb-2'>
-            <span className='text-sm text-white/60'>İptal Oranı</span>
-            <AlertCircle className='w-5 h-5 text-red-400' />
-          </div>
-          <p className='text-3xl font-bold text-white'>
-            {stats?.total && stats?.cancelled
-              ? ((stats.cancelled / stats.total) * 100).toFixed(1)
-              : 0}
-            %
-          </p>
-        </div>
-      </div>
-
-      {/* Filters & Status Tabs */}
-      <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 mb-6'>
-        <div className='flex flex-col md:flex-row gap-4 mb-4'>
-          {/* Search */}
-          <div className='flex-1'>
-            <input
-              type='text'
-              placeholder='Sipariş no veya müşteri adı ara...'
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className='w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/50'
-            />
-          </div>
-
-          {/* Bulk Actions */}
-          <div className='flex gap-2'>
-            <button className='px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 transition-colors flex items-center gap-2'>
-              <Printer className='w-4 h-4' />
-              <span>Yazdır</span>
-            </button>
-            <button className='px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 transition-colors flex items-center gap-2'>
+          <div className='flex items-center space-x-3'>
+            <button className='flex items-center space-x-2 px-4 py-2 bg-gray-800/50 hover:bg-gray-800 text-white rounded-lg transition-colors border border-gray-700'>
               <Download className='w-4 h-4' />
-              <span>İndir</span>
+              <span>Dışa Aktar</span>
             </button>
+            <Link
+              to='/orders/create'
+              className='flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all shadow-lg shadow-blue-500/20'
+            >
+              <Plus className='w-4 h-4' />
+              <span>Yeni Sipariş</span>
+            </Link>
           </div>
         </div>
 
-        {/* Status Tabs */}
-        <div className='flex items-center gap-2 overflow-x-auto pb-2'>
-          {Object.entries(statusCounts).map(([status, count]) => (
-            <button
-              key={status}
-              onClick={() => setFilterStatus(status as OrderStatus | 'all')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                filterStatus === status
-                  ? 'bg-red-600 text-white shadow-lg'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
-              }`}
-            >
-              {status === 'all'
-                ? 'Tümü'
-                : getOrderStatusLabel(status as OrderStatus)}{' '}
-              ({count})
-            </button>
-          ))}
+        {/* Statistics Cards */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
+          <div className='bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-xl p-6 hover:shadow-lg hover:shadow-blue-500/10 transition-all'>
+            <div className='flex items-center justify-between mb-4'>
+              <div className='p-3 bg-blue-500/20 rounded-lg'>
+                <Package className='w-6 h-6 text-blue-400' />
+              </div>
+              <div className='flex items-center space-x-1 text-sm'>
+                <TrendingUp className='w-4 h-4 text-green-400' />
+                <span className='text-green-400'>↑ 12%</span>
+              </div>
+            </div>
+            <div>
+              <p className='text-gray-400 text-sm mb-1'>Toplam Sipariş</p>
+              <p className='text-3xl font-bold text-white'>
+                {statistics.totalOrders}
+              </p>
+            </div>
+          </div>
+
+          <div className='bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 rounded-xl p-6 hover:shadow-lg hover:shadow-green-500/10 transition-all'>
+            <div className='flex items-center justify-between mb-4'>
+              <div className='p-3 bg-green-500/20 rounded-lg'>
+                <DollarSign className='w-6 h-6 text-green-400' />
+              </div>
+              <div className='flex items-center space-x-1 text-sm'>
+                <TrendingUp className='w-4 h-4 text-green-400' />
+                <span className='text-green-400'>↑ 8%</span>
+              </div>
+            </div>
+            <div>
+              <p className='text-gray-400 text-sm mb-1'>Toplam Gelir</p>
+              <p className='text-3xl font-bold text-white'>
+                {statistics.totalRevenue.toLocaleString('tr-TR')} ₺
+              </p>
+            </div>
+          </div>
+
+          <div className='bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-xl p-6 hover:shadow-lg hover:shadow-purple-500/10 transition-all'>
+            <div className='flex items-center justify-between mb-4'>
+              <div className='p-3 bg-purple-500/20 rounded-lg'>
+                <TrendingUp className='w-6 h-6 text-purple-400' />
+              </div>
+              <div className='flex items-center space-x-1 text-sm'>
+                <TrendingUp className='w-4 h-4 text-green-400' />
+                <span className='text-green-400'>↑ 5%</span>
+              </div>
+            </div>
+            <div>
+              <p className='text-gray-400 text-sm mb-1'>Ortalama Sipariş</p>
+              <p className='text-3xl font-bold text-white'>
+                {statistics.averageOrderValue.toLocaleString('tr-TR')} ₺
+              </p>
+            </div>
+          </div>
+
+          <div className='bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-xl p-6 hover:shadow-lg hover:shadow-orange-500/10 transition-all'>
+            <div className='flex items-center justify-between mb-4'>
+              <div className='p-3 bg-orange-500/20 rounded-lg'>
+                <AlertCircle className='w-6 h-6 text-orange-400' />
+              </div>
+              <div className='flex items-center space-x-1 text-sm'>
+                <TrendingUp className='w-4 h-4 text-red-400 rotate-180' />
+                <span className='text-red-400'>↓ 2%</span>
+              </div>
+            </div>
+            <div>
+              <p className='text-gray-400 text-sm mb-1'>Bekleyen Siparişler</p>
+              <p className='text-3xl font-bold text-white'>
+                {statistics.ordersByStatus.pending || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className='relative'>
+          <Search className='absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400' />
+          <input
+            type='text'
+            placeholder='Sipariş no, müşteri adı veya email ara...'
+            value={searchTerm}
+            onChange={e => handleSearch(e.target.value)}
+            className='w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all'
+          />
         </div>
       </div>
 
       {/* Orders Table */}
-      <div className='bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden'>
-        <div className='overflow-x-auto'>
-          <table className='w-full'>
-            <thead className='bg-white/5 border-b border-white/10'>
-              <tr>
-                <th className='px-6 py-3 text-left text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  Sipariş No
-                </th>
-                <th className='px-6 py-3 text-left text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  Müşteri
-                </th>
-                <th className='px-6 py-3 text-center text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  Durum
-                </th>
-                <th className='px-6 py-3 text-center text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  Ödeme
-                </th>
-                <th className='px-6 py-3 text-center text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  Kanal
-                </th>
-                <th className='px-6 py-3 text-right text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  Toplam
-                </th>
-                <th className='px-6 py-3 text-center text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  Tarih
-                </th>
-                <th className='px-6 py-3 text-center text-xs font-medium text-white/60 uppercase tracking-wider'>
-                  İşlem
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-white/10'>
-              {filteredOrders.map(order => (
-                <tr key={order.id} className='hover:bg-white/5'>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm font-medium text-white'>
-                      {order.orderNumber}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <div className='text-sm text-white'>
-                      {order.customerName}
-                    </div>
-                    <div className='text-xs text-white/50'>
-                      {order.customerEmail}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-center'>
-                    <span
-                      className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${getOrderStatusColor(order.status)}`}
+      <div className='bg-gray-800/30 backdrop-blur-sm border border-gray-700/50 rounded-xl overflow-hidden'>
+        <div className='p-6 border-b border-gray-700/50'>
+          <h2 className='text-xl font-semibold text-white'>
+            Siparişler ({totalOrders})
+          </h2>
+        </div>
+
+        {loading ? (
+          <div className='flex items-center justify-center py-20'>
+            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500'></div>
+          </div>
+        ) : error ? (
+          <div className='p-6 text-center'>
+            <div className='inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mb-4'>
+              <AlertCircle className='w-8 h-8 text-red-400' />
+            </div>
+            <h3 className='text-xl font-semibold text-white mb-2'>
+              Bir Hata Oluştu
+            </h3>
+            <p className='text-gray-400 mb-4'>{error}</p>
+            <button
+              onClick={loadOrders}
+              className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors'
+            >
+              Tekrar Dene
+            </button>
+          </div>
+        ) : orders.length === 0 ? (
+          <div className='p-12 text-center'>
+            <div className='inline-flex items-center justify-center w-20 h-20 bg-gray-700/50 rounded-full mb-4'>
+              <Package className='w-10 h-10 text-gray-400' />
+            </div>
+            <h3 className='text-xl font-semibold text-white mb-2'>
+              Henüz Sipariş Yok
+            </h3>
+            <p className='text-gray-400 mb-6'>
+              İlk siparişinizi oluşturarak başlayın
+            </p>
+            <Link
+              to='/orders/create'
+              className='inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all shadow-lg shadow-blue-500/20'
+            >
+              <Plus className='w-5 h-5' />
+              <span>İlk Siparişi Oluştur</span>
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Table */}
+            <div className='overflow-x-auto'>
+              <table className='w-full'>
+                <thead>
+                  <tr className='border-b border-gray-700/50'>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                      Sipariş No
+                    </th>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                      Müşteri
+                    </th>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                      Tarih
+                    </th>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                      Durum
+                    </th>
+                    <th className='px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                      Ödeme
+                    </th>
+                    <th className='px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                      Toplam
+                    </th>
+                    <th className='px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                      İşlemler
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className='divide-y divide-gray-700/50'>
+                  {orders.map(order => (
+                    <tr
+                      key={order.id}
+                      className='hover:bg-gray-700/20 transition-colors'
                     >
-                      {getOrderStatusLabel(order.status)}
-                    </span>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-center'>
-                    <span
-                      className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded ${getPaymentStatusColor(order.paymentStatus)}`}
-                    >
-                      {getPaymentStatusLabel(order.paymentStatus)}
-                    </span>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-center'>
-                    <div className='text-sm text-white/70'>
-                      {getChannelLabel(order.channel)}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-right'>
-                    <div className='text-sm font-semibold text-white'>
-                      ₺
-                      {(order.totalAmount || 0).toLocaleString('tr-TR', {
-                        minimumFractionDigits: 2,
-                      })}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-center'>
-                    <div className='text-sm text-white/70'>
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString('tr-TR')
-                        : 'N/A'}
-                    </div>
-                    <div className='text-xs text-white/50'>
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleTimeString(
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <Link
+                          to={`/orders/${order.id}`}
+                          className='text-blue-400 hover:text-blue-300 font-medium'
+                        >
+                          {order.orderNumber}
+                        </Link>
+                      </td>
+                      <td className='px-6 py-4'>
+                        <div>
+                          <div className='text-white font-medium'>
+                            {order.customerInfo.name}
+                          </div>
+                          <div className='text-gray-400 text-sm'>
+                            {order.customerInfo.email}
+                          </div>
+                        </div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-gray-300'>
+                        {new Date(order.orderDate).toLocaleDateString('tr-TR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                        })}
+                        <div className='text-gray-500 text-sm'>
+                          {new Date(order.orderDate).toLocaleTimeString(
                             'tr-TR',
                             {
                               hour: '2-digit',
                               minute: '2-digit',
                             }
-                          )
-                        : 'N/A'}
-                    </div>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap text-center'>
-                    <button className='p-2 hover:bg-blue-500/20 rounded transition-colors'>
-                      <Eye className='w-4 h-4 text-blue-400' />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}
+                        >
+                          {ORDER_STATUS_LABELS[order.status]}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}
+                        >
+                          {PAYMENT_STATUS_LABELS[order.paymentStatus]}
+                        </span>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-right'>
+                        <div className='text-white font-semibold'>
+                          {order.totalAmount.getFormattedAmount()}
+                        </div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-right'>
+                        <Link
+                          to={`/orders/${order.id}`}
+                          className='inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg transition-colors'
+                        >
+                          <Eye className='w-4 h-4' />
+                          <span className='text-sm'>Görüntüle</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-        {filteredOrders.length === 0 && (
-          <div className='text-center py-12'>
-            <Package className='w-16 h-16 text-white/20 mx-auto mb-4' />
-            <p className='text-white/60'>Sipariş bulunamadı</p>
-          </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className='flex items-center justify-between px-6 py-4 border-t border-gray-700/50'>
+                <div className='text-sm text-gray-400'>
+                  Toplam {totalOrders} sipariş bulundu
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className='px-4 py-2 bg-gray-700/50 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-600'
+                  >
+                    Önceki
+                  </button>
+                  <span className='text-sm text-gray-400 px-4'>
+                    Sayfa {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className='px-4 py-2 bg-gray-700/50 hover:bg-gray-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-600'
+                  >
+                    Sonraki
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   );
-};
-
-export default OrdersPage;
+}

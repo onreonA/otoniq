@@ -1,9 +1,15 @@
-/**
- * Domain Entities Export
- */
-
 export * from './Category';
-export * from './Inventory';
 export * from './Customer';
+export * from './IntegrationLog';
+export * from './Inventory';
+export * from './Marketplace';
+export * from './MarketplaceConnection';
+export * from './MarketplaceListing';
+export * from './MarketplaceOrder';
 export * from './Order';
+export * from './OrderItem';
+export * from './OrderStatusHistory';
+export * from './Product';
 export * from './Supplier';
+export * from './WorkflowNode';
+export * from './WorkflowTemplate';
