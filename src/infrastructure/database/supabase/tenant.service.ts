@@ -9,6 +9,13 @@ export interface Tenant {
   subscription_status: 'active' | 'suspended' | 'cancelled' | 'trial';
   n8n_webhook_url?: string;
   odoo_api_config?: any;
+  odoo_company_id?: number;
+  odoo_company_name?: string;
+  odoo_connection_status?:
+    | 'not_configured'
+    | 'connected'
+    | 'failed'
+    | 'testing';
   shopify_store_config?: any;
   settings?: any;
   created_at: string;
@@ -22,6 +29,13 @@ export interface CreateTenantData {
   subscription_status?: 'active' | 'suspended' | 'cancelled' | 'trial';
   n8n_webhook_url?: string;
   odoo_api_config?: any;
+  odoo_company_id?: number;
+  odoo_company_name?: string;
+  odoo_connection_status?:
+    | 'not_configured'
+    | 'connected'
+    | 'failed'
+    | 'testing';
   shopify_store_config?: any;
   settings?: any;
 }
@@ -33,6 +47,13 @@ export interface UpdateTenantData {
   subscription_status?: 'active' | 'suspended' | 'cancelled' | 'trial';
   n8n_webhook_url?: string;
   odoo_api_config?: any;
+  odoo_company_id?: number;
+  odoo_company_name?: string;
+  odoo_connection_status?:
+    | 'not_configured'
+    | 'connected'
+    | 'failed'
+    | 'testing';
   shopify_store_config?: any;
   settings?: any;
 }

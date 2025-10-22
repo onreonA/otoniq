@@ -59,6 +59,10 @@ const WorkflowDetailPage = lazy(
   () => import('../pages/automation/workflow-detail/[id]/page')
 );
 const FeedDoctorPage = lazy(() => import('../pages/feed-doctor/page'));
+const AnalysisDetailPage = lazy(() => import('../pages/feed-doctor/[id]/page'));
+const OptimizationRulesPage = lazy(
+  () => import('../pages/feed-doctor/rules/page')
+);
 const CreativePage = lazy(() => import('../pages/creative/page'));
 const ChatAutomationPage = lazy(() => import('../pages/chat-automation/page'));
 const CompetitorAnalysisPage = lazy(
@@ -236,6 +240,14 @@ const routes: RouteObject[] = [
       {
         path: '/feed-doctor',
         element: <FeedDoctorPage />,
+      },
+      {
+        path: '/feed-doctor/:id',
+        element: <AnalysisDetailPage />,
+      },
+      {
+        path: '/feed-doctor/rules',
+        element: <OptimizationRulesPage />,
       },
       {
         path: '/social-media',

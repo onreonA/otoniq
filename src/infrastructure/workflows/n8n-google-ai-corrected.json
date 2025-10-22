@@ -1,0 +1,137 @@
+{
+  "name": "Google AI Image Generation - Corrected",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-image",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "generate-image"
+    },
+    {
+      "parameters": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:generateImage",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "={{ $json.prompt }}"
+            },
+            {
+              "name": "style",
+              "value": "={{ $json.style || 'realistic' }}"
+            },
+            {
+              "name": "quality",
+              "value": "={{ $json.quality || 'high' }}"
+            },
+            {
+              "name": "aspectRatio",
+              "value": "={{ $json.aspectRatio || '1:1' }}"
+            },
+            {
+              "name": "numImages",
+              "value": "={{ $json.numImages || 1 }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "google-ai-request",
+      "name": "Google AI HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "credentials": {
+        "googleApi": {
+          "id": "google-ai-credentials",
+          "name": "Google AI API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"images\": $json.images || [],\n  \"workflowId\": 'google-ai-workflow',\n  \"timestamp\": new Date().toISOString(),\n  \"prompt\": $('Webhook Trigger').item.json.prompt,\n  \"style\": $('Webhook Trigger').item.json.style,\n  \"quality\": $('Webhook Trigger').item.json.quality,\n  \"aspectRatio\": $('Webhook Trigger').item.json.aspectRatio,\n  \"numImages\": $('Webhook Trigger').item.json.numImages\n} }}"
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": false,\n  \"error\": $json.message || 'Unknown error occurred',\n  \"workflowId\": 'google-ai-workflow',\n  \"timestamp\": new Date().toISOString()\n} }}"
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google AI HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google AI HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}

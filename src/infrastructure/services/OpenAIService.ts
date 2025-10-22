@@ -82,7 +82,7 @@ export class OpenAIService {
             {
               role: 'system',
               content:
-                'You are an expert e-commerce product analyst specializing in SEO, content optimization, and marketplace performance. Analyze products and provide actionable improvement suggestions in JSON format.',
+                'Sen SEO, içerik optimizasyonu ve pazaryeri performansı konularında uzman bir e-ticaret ürün analisti. Ürünleri analiz et ve JSON formatında uygulanabilir iyileştirme önerileri sun. TÜM YANITLARI TÜRKÇE OLARAK VER.',
             },
             {
               role: 'user',
@@ -114,34 +114,34 @@ export class OpenAIService {
    * Build analysis prompt for OpenAI
    */
   private static buildAnalysisPrompt(request: ProductAnalysisRequest): string {
-    return `Analyze this e-commerce product and provide detailed optimization suggestions:
+    return `Bu e-ticaret ürününü analiz et ve detaylı optimizasyon önerileri sun. TÜM YANITLARI TÜRKÇE OLARAK VER:
 
-**Product Name**: ${request.productName}
-**Description**: ${request.description}
-**Category**: ${request.category || 'Not specified'}
-**Price**: ${request.price ? `₺${request.price}` : 'Not specified'}
-**Current Tags**: ${request.currentTags?.join(', ') || 'None'}
+**Ürün Adı**: ${request.productName}
+**Açıklama**: ${request.description}
+**Kategori**: ${request.category || 'Belirtilmemiş'}
+**Fiyat**: ${request.price ? `₺${request.price}` : 'Belirtilmemiş'}
+**Mevcut Etiketler**: ${request.currentTags?.join(', ') || 'Yok'}
 
-Please analyze and return JSON with the following structure:
+Lütfen aşağıdaki JSON yapısında analiz et ve TÜRKÇE yanıt ver:
 {
-  "score": <overall quality score 0-100>,
+  "score": <genel kalite skoru 0-100>,
   "issues": [
     {
       "severity": "critical|warning|info",
       "category": "seo|content|pricing|images|general",
-      "message": "Brief description of the issue",
-      "suggestion": "How to fix it"
+      "message": "Sorunun Türkçe açıklaması",
+      "suggestion": "Nasıl düzeltileceğinin Türkçe açıklaması"
     }
   ],
   "optimizations": {
-    "suggestedTitle": "Optimized SEO-friendly title",
-    "suggestedDescription": "Improved description with keywords",
-    "suggestedTags": ["tag1", "tag2", "tag3"],
-    "suggestedKeywords": ["keyword1", "keyword2"],
+    "suggestedTitle": "SEO dostu optimize edilmiş başlık",
+    "suggestedDescription": "Anahtar kelimelerle geliştirilmiş açıklama",
+    "suggestedTags": ["etiket1", "etiket2", "etiket3"],
+    "suggestedKeywords": ["anahtar1", "anahtar2"],
     "suggestedPrice": {
-      "min": <number>,
-      "max": <number>,
-      "reasoning": "Why this price range"
+      "min": <sayı>,
+      "max": <sayı>,
+      "reasoning": "Bu fiyat aralığının neden uygun olduğu"
     }
   },
   "seoScore": {
@@ -152,9 +152,9 @@ Please analyze and return JSON with the following structure:
     "overall": <0-100>
   },
   "marketInsights": {
-    "competitorAnalysis": "Brief market analysis",
+    "competitorAnalysis": "Kısa pazar analizi",
     "trendingKeywords": ["trend1", "trend2"],
-    "suggestedImprovements": ["improvement1", "improvement2"]
+    "suggestedImprovements": ["iyileştirme1", "iyileştirme2"]
   }
 }`;
   }
@@ -163,6 +163,9 @@ Please analyze and return JSON with the following structure:
    * Normalize AI response to match our interface
    */
   private static normalizeAnalysisResult(analysis: any): ProductAnalysisResult {
+    console.log('🤖 OpenAI Raw Response:', analysis);
+    console.log('🤖 OpenAI Score:', analysis.score);
+
     return {
       score: analysis.score || 50,
       issues: analysis.issues || [],
@@ -189,8 +192,49 @@ Please analyze and return JSON with the following structure:
     const hasPrice = !!request.price;
     const hasTags = request.currentTags && request.currentTags.length > 0;
 
+    // Create unique scores based on product data
+    const productName = request.productName || '';
+    const description = request.description || '';
+    const category = request.category || '';
+    const price = request.price || 0;
+
+    // Create a more robust hash using multiple factors
+    const hashString = `${productName}-${description}-${category}-${price}`;
+    const productHash = hashString.split('').reduce((a, b) => {
+      a = (a << 5) - a + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+
+    // Add some randomness based on product name length and price
+    const nameLength = productName.length;
+    const priceFactor = Math.floor(price / 10) || 1;
+
+    const baseScore =
+      (Math.abs(productHash + nameLength + priceFactor) % 40) + 60; // 60-100 range
+    const titleScore = (Math.abs(productHash * 2 + nameLength) % 30) + 70; // 70-100 range
+    const descScore =
+      (Math.abs(productHash * 3 + description.length) % 40) + 50; // 50-90 range
+    const imageScore = (Math.abs(productHash * 4 + priceFactor) % 20) + 50; // 50-70 range
+    const categoryScore =
+      (Math.abs(productHash * 5 + category.length) % 30) + 60; // 60-90 range
+    const priceScore = (Math.abs(productHash * 6 + priceFactor) % 40) + 60; // 60-100 range
+
+    console.log('🔍 Mock Analysis Debug:', {
+      productName,
+      hashString,
+      productHash,
+      nameLength,
+      priceFactor,
+      baseScore,
+      titleScore,
+      descScore,
+      imageScore,
+      categoryScore,
+      priceScore,
+    });
+
     const issues = [];
-    let score = 85;
+    let score = baseScore;
 
     // Title analysis
     if (titleLength < 20) {
@@ -267,8 +311,8 @@ Please analyze and return JSON with the following structure:
         },
       },
       seoScore: {
-        titleScore: titleLength >= 20 && titleLength <= 60 ? 90 : 60,
-        descriptionScore: descLength >= 150 ? 95 : descLength >= 100 ? 70 : 40,
+        titleScore: titleScore,
+        descriptionScore: descScore,
         keywordDensity: hasTags ? 80 : 30,
         readability: 85,
         overall: score,

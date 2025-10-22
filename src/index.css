@@ -1,9 +1,9 @@
+/* Import Theme System */
+@import './presentation/styles/theme.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import Theme System */
-@import './presentation/styles/theme.css';
 
 /* Custom Scrollbar Styles */
 @layer utilities {

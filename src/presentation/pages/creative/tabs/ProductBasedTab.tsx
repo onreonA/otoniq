@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { mockTemplates, mockCreativeStats } from '../../../mocks/creative';
 import toast from 'react-hot-toast';
+import { n8nImageService } from '../../../../infrastructure/services/N8NImageService';
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -69,17 +70,55 @@ export default function ProductBasedTab() {
     }
 
     setGenerating(true);
-    toast.loading('Görseller oluşturuluyor...', { id: 'generate' });
+    toast.loading('N8N workflow ile görseller oluşturuluyor...', {
+      id: 'generate',
+    });
 
-    // Mock generation delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    try {
+      // Generate images for each selected product and template combination
+      const generationPromises = [];
 
-    setGenerating(false);
-    toast.success(
-      `${selectedProducts.length * selectedTemplates.length} görsel başarıyla oluşturuldu! ✨`,
-      { id: 'generate' }
-    );
-    setCurrentStep(4);
+      for (const productId of selectedProducts) {
+        for (const templateId of selectedTemplates) {
+          const template = mockTemplates.find(t => t.id === templateId);
+          const product = mockProducts.find(p => p.id === productId);
+
+          if (template && product) {
+            const prompt = `${product.name} ürünü için ${template.name} şablonu. ${template.description}. 
+            Ürün açıklaması: ${product.description}. 
+            Profesyonel e-ticaret görseli, temiz arka plan, yüksek kalite.`;
+
+            generationPromises.push(
+              n8nImageService.generateImages({
+                prompt,
+                style: 'realistic',
+                aspectRatio: '1:1',
+                quality: 'high',
+                numImages: 2,
+              })
+            );
+          }
+        }
+      }
+
+      const results = await Promise.all(generationPromises);
+      console.log('🎨 Generated images:', results);
+
+      setGenerating(false);
+      toast.success(`${results.length} görsel seti başarıyla oluşturuldu! ✨`, {
+        id: 'generate',
+      });
+      setCurrentStep(4);
+    } catch (error) {
+      console.error('❌ Generation error:', error);
+      setGenerating(false);
+      toast.error(
+        'Görsel oluşturma sırasında hata oluştu. Lütfen tekrar deneyin.',
+        {
+          id: 'generate',
+        }
+      );
+    }
   };
 
   const steps = [

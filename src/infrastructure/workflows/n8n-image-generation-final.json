@@ -1,0 +1,249 @@
+{
+  "name": "Google AI Image Generation - Final",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-image",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "generate-image"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.prompt }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:generateImage",
+        "method": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-goog-api-key",
+              "value": "={{ $env.GOOGLE_AI_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"prompt\": \"{{ $json.prompt }}\",\n  \"number_of_images\": {{ $json.numImages || 1 }},\n  \"aspect_ratio\": \"{{ $json.aspectRatio || '1:1' }}\",\n  \"safety_filter_level\": \"block_some\",\n  \"person_generation\": \"allow_all\"\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "google-ai-request",
+      "name": "Google AI HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform Google AI response to frontend format\nconst webhookData = $input.first().json;\nconst aiResponse = $('Google AI HTTP Request').first().json;\n\nconst images = [];\n\n// Google AI returns images in different formats\nif (aiResponse.predictions && Array.isArray(aiResponse.predictions)) {\n  // Format 1: predictions array\n  aiResponse.predictions.forEach((pred, idx) => {\n    if (pred.bytesBase64Encoded) {\n      images.push({\n        url: `data:image/png;base64,${pred.bytesBase64Encoded}`,\n        base64: pred.bytesBase64Encoded,\n        metadata: {\n          prompt: webhookData.prompt,\n          style: webhookData.style || 'realistic',\n          aspectRatio: webhookData.aspectRatio || '1:1',\n          quality: webhookData.quality || 'high',\n          seed: webhookData.seed || Math.floor(Math.random() * 1000000),\n          generatedAt: new Date().toISOString(),\n          workflowId: 'n8n-google-ai-final'\n        }\n      });\n    }\n  });\n} else if (aiResponse.images && Array.isArray(aiResponse.images)) {\n  // Format 2: images array\n  aiResponse.images.forEach((img, idx) => {\n    images.push({\n      url: img.url || img.image_url || `data:image/png;base64,${img.bytesBase64Encoded}`,\n      base64: img.bytesBase64Encoded,\n      metadata: {\n        prompt: webhookData.prompt,\n        style: webhookData.style || 'realistic',\n        aspectRatio: webhookData.aspectRatio || '1:1',\n        quality: webhookData.quality || 'high',\n        seed: webhookData.seed || Math.floor(Math.random() * 1000000),\n        generatedAt: new Date().toISOString(),\n        workflowId: 'n8n-google-ai-final'\n      }\n    });\n  });\n}\n\nreturn {\n  success: images.length > 0,\n  images: images,\n  usage: {\n    tokensUsed: webhookData.prompt.length,\n    cost: 0,\n    workflowExecutionTime: Date.now() - new Date(webhookData.timestamp).getTime()\n  },\n  workflowId: 'n8n-google-ai-final',\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "transform-response",
+      "name": "Transform Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 200,
+        "responseBody": "={{ $json }}",
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "GET, POST, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type, Authorization"
+            }
+          ]
+        }
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Invalid input\",\n  \"message\": \"Prompt is required\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "GET, POST, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type, Authorization"
+            }
+          ]
+        }
+      },
+      "id": "validation-error",
+      "name": "Validation Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 500,
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"Image generation failed\",\n  \"message\": \"{{ $json.error || 'Unknown error occurred' }}\",\n  \"details\": \"{{ $json }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\"\n}",
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "GET, POST, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type, Authorization"
+            }
+          ]
+        }
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Google AI HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google AI HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Transform Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Response": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "id": "image-generation",
+      "name": "Image Generation"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-21T00:00:00.000Z",
+  "versionId": "final"
+}

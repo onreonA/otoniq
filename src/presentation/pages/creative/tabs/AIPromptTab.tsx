@@ -5,11 +5,19 @@
 
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import {
+  n8nImageService,
+  N8NImageRequest,
+} from '../../../../infrastructure/services/N8NImageService';
 
 export default function AIPromptTab() {
   const [prompt, setPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<number[]>([]);
+  const [generatedImages, setGeneratedImages] = useState<any[]>([]);
+  const [selectedStyle, setSelectedStyle] = useState('realistic');
+  const [selectedQuality, setSelectedQuality] = useState('high');
+  const [selectedAspectRatio, setSelectedAspectRatio] = useState('1:1');
+  const [numImages, setNumImages] = useState(4);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -18,16 +26,40 @@ export default function AIPromptTab() {
     }
 
     setGenerating(true);
-    toast.loading('AI görseller oluşturuyor...', { id: 'ai-generate' });
-
-    // Mock generation
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    setGeneratedImages([1, 2, 3, 4]);
-    setGenerating(false);
-    toast.success('4 görsel başarıyla oluşturuldu! ✨', {
+    toast.loading('N8N workflow ile görseller oluşturuluyor...', {
       id: 'ai-generate',
     });
+
+    try {
+      const request: N8NImageRequest = {
+        prompt: prompt.trim(),
+        style: selectedStyle as any,
+        aspectRatio: selectedAspectRatio as any,
+        quality: selectedQuality as any,
+        numImages: numImages,
+      };
+
+      const response = await n8nImageService.generateImages(request);
+
+      setGeneratedImages(response.images);
+      setGenerating(false);
+
+      toast.success(
+        `${response.images.length} görsel başarıyla oluşturuldu! ✨`,
+        {
+          id: 'ai-generate',
+        }
+      );
+    } catch (error) {
+      console.error('❌ Image generation error:', error);
+      setGenerating(false);
+      toast.error(
+        'Görsel oluşturma sırasında hata oluştu. Lütfen tekrar deneyin.',
+        {
+          id: 'ai-generate',
+        }
+      );
+    }
   };
 
   const promptExamples = [
@@ -61,17 +93,52 @@ export default function AIPromptTab() {
           </div>
 
           {/* Settings Row */}
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
             <div>
               <label className='block text-sm font-medium text-gray-300 mb-2'>
                 Stil
               </label>
-              <select className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-pink-500 text-sm'>
+              <select
+                value={selectedStyle}
+                onChange={e => setSelectedStyle(e.target.value)}
+                className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-pink-500 text-sm'
+              >
                 <option value='realistic'>Realistik</option>
                 <option value='artistic'>Sanatsal</option>
-                <option value='anime'>Anime</option>
-                <option value='abstract'>Soyut</option>
                 <option value='minimalist'>Minimalist</option>
+                <option value='vibrant'>Canlı</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-300 mb-2'>
+                Kalite
+              </label>
+              <select
+                value={selectedQuality}
+                onChange={e => setSelectedQuality(e.target.value)}
+                className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-pink-500 text-sm'
+              >
+                <option value='standard'>Standart</option>
+                <option value='high'>Yüksek</option>
+                <option value='ultra'>Ultra</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-300 mb-2'>
+                Boyut Oranı
+              </label>
+              <select
+                value={selectedAspectRatio}
+                onChange={e => setSelectedAspectRatio(e.target.value)}
+                className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-pink-500 text-sm'
+              >
+                <option value='1:1'>Kare (1:1)</option>
+                <option value='16:9'>Geniş (16:9)</option>
+                <option value='9:16'>Dikey (9:16)</option>
+                <option value='4:3'>Klasik (4:3)</option>
+                <option value='3:4'>Portre (3:4)</option>
               </select>
             </div>
 
@@ -79,11 +146,16 @@ export default function AIPromptTab() {
               <label className='block text-sm font-medium text-gray-300 mb-2'>
                 Görsel Sayısı
               </label>
-              <select className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-pink-500 text-sm'>
-                <option value='1'>1 Görsel</option>
-                <option value='2'>2 Görsel</option>
-                <option value='4'>4 Görsel</option>
-                <option value='8'>8 Görsel</option>
+              <select
+                value={numImages}
+                onChange={e => setNumImages(Number(e.target.value))}
+                className='w-full px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-pink-500 text-sm'
+              >
+                <option value={1}>1 Görsel</option>
+                <option value={2}>2 Görsel</option>
+                <option value={4}>4 Görsel</option>
+                <option value={6}>6 Görsel</option>
+                <option value={8}>8 Görsel</option>
               </select>
             </div>
           </div>
@@ -174,25 +246,47 @@ export default function AIPromptTab() {
           </div>
 
           <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-            {generatedImages.map((_, idx) => (
+            {generatedImages.map((image, idx) => (
               <div
                 key={idx}
                 className='bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-xl p-4 hover:scale-105 transition-all duration-300 group cursor-pointer'
               >
                 <div className='aspect-square bg-white/5 rounded-lg mb-2 flex items-center justify-center relative overflow-hidden'>
-                  <i className='ri-image-line text-4xl text-pink-400'></i>
+                  {image.url ? (
+                    <img
+                      src={image.url}
+                      alt={`Generated image ${idx + 1}`}
+                      className='w-full h-full object-cover rounded-lg'
+                    />
+                  ) : (
+                    <i className='ri-image-line text-4xl text-pink-400'></i>
+                  )}
                   <div className='absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2'>
-                    <button className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30'>
+                    <button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = image.url;
+                        link.download = `imagen-${idx + 1}.png`;
+                        link.click();
+                      }}
+                      className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30'
+                    >
                       <i className='ri-download-line text-white'></i>
                     </button>
-                    <button className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30'>
+                    <button
+                      onClick={() => window.open(image.url, '_blank')}
+                      className='w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30'
+                    >
                       <i className='ri-expand-diagonal-line text-white'></i>
                     </button>
                   </div>
                 </div>
-                <p className='text-xs text-gray-300 text-center'>
-                  AI Görsel {idx + 1}
-                </p>
+                <div className='text-xs text-gray-300 text-center space-y-1'>
+                  <p>N8N AI {idx + 1}</p>
+                  <p className='text-gray-500'>
+                    {image.metadata?.style || 'realistic'}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

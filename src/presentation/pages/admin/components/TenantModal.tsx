@@ -5,6 +5,8 @@ import {
   CreateTenantData,
   UpdateTenantData,
 } from '../../../../infrastructure/database/supabase/tenant.service';
+import { OdooCompanyService } from '../../../../infrastructure/services/OdooCompanyService';
+import { OdooService } from '../../../../infrastructure/services/OdooService';
 import toast from 'react-hot-toast';
 
 interface TenantModalProps {
@@ -28,6 +30,9 @@ export default function TenantModal({
     subscription_status: 'active',
     n8n_webhook_url: '',
     odoo_api_config: {},
+    odoo_company_id: undefined,
+    odoo_company_name: '',
+    odoo_connection_status: 'not_configured',
     shopify_store_config: {},
     settings: {},
   });
@@ -40,6 +45,19 @@ export default function TenantModal({
     fullName: '',
     role: 'tenant_admin' as 'tenant_admin' | 'tenant_user',
   });
+
+  // Odoo configuration
+  const [odooConfig, setOdooConfig] = useState({
+    url: '',
+    port: 8069,
+    db: '',
+    username: 'omer@nsl.com.tr',
+    password: 'OdoO_001!?*',
+  });
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<
+    'idle' | 'testing' | 'success' | 'error'
+  >('idle');
 
   // Form reset
   useEffect(() => {
@@ -79,6 +97,57 @@ export default function TenantModal({
   }, [isOpen, editingTenant]);
 
   // Form submit
+  // Odoo connection test handler
+  const handleTestOdooConnection = async () => {
+    if (!odooConfig.url || !odooConfig.db) {
+      toast.error('Lütfen Odoo URL ve Database bilgilerini girin');
+      return;
+    }
+
+    setTestingConnection(true);
+    setConnectionStatus('testing');
+
+    try {
+      const odooService = new OdooService({
+        url: odooConfig.url,
+        port: odooConfig.port,
+        db: odooConfig.db,
+        username: odooConfig.username,
+        password: odooConfig.password,
+        company_id: formData.odoo_company_id,
+      });
+
+      const result = await odooService.testConnection();
+
+      if (result.success) {
+        setConnectionStatus('success');
+        toast.success('Odoo bağlantısı başarılı!');
+
+        // Update form data with Odoo config
+        setFormData({
+          ...formData,
+          odoo_api_config: {
+            url: odooConfig.url,
+            port: odooConfig.port,
+            db: odooConfig.db,
+            username: odooConfig.username,
+            password: odooConfig.password,
+          },
+          odoo_connection_status: 'connected',
+        });
+      } else {
+        setConnectionStatus('error');
+        toast.error(`Odoo bağlantısı başarısız: ${result.error}`);
+      }
+    } catch (error) {
+      setConnectionStatus('error');
+      console.error('Odoo connection test error:', error);
+      toast.error('Odoo bağlantı testi sırasında hata oluştu');
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -255,6 +324,160 @@ export default function TenantModal({
                 className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
                 placeholder='https://your-n8n-instance.com/webhook/...'
               />
+            </div>
+
+            {/* Odoo ERP Configuration */}
+            <div className='space-y-4'>
+              <div className='flex items-center justify-between'>
+                <h3 className='text-lg font-semibold text-white'>
+                  Odoo ERP Konfigürasyonu
+                </h3>
+                <div className='flex items-center space-x-2'>
+                  {connectionStatus === 'testing' && (
+                    <div className='flex items-center space-x-2 text-blue-400'>
+                      <div className='animate-spin w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full'></div>
+                      <span className='text-sm'>Test ediliyor...</span>
+                    </div>
+                  )}
+                  {connectionStatus === 'success' && (
+                    <div className='flex items-center space-x-2 text-green-400'>
+                      <i className='ri-check-line'></i>
+                      <span className='text-sm'>Bağlantı başarılı</span>
+                    </div>
+                  )}
+                  {connectionStatus === 'error' && (
+                    <div className='flex items-center space-x-2 text-red-400'>
+                      <i className='ri-error-warning-line'></i>
+                      <span className='text-sm'>Bağlantı başarısız</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-300 mb-2'>
+                    Odoo URL
+                  </label>
+                  <input
+                    type='url'
+                    value={odooConfig.url}
+                    onChange={e =>
+                      setOdooConfig({ ...odooConfig, url: e.target.value })
+                    }
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                    placeholder='https://your-odoo-instance.com'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-300 mb-2'>
+                    Port
+                  </label>
+                  <input
+                    type='number'
+                    value={odooConfig.port}
+                    onChange={e =>
+                      setOdooConfig({
+                        ...odooConfig,
+                        port: parseInt(e.target.value) || 8069,
+                      })
+                    }
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                    placeholder='8069'
+                  />
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-300 mb-2'>
+                    Database
+                  </label>
+                  <input
+                    type='text'
+                    value={odooConfig.db}
+                    onChange={e =>
+                      setOdooConfig({ ...odooConfig, db: e.target.value })
+                    }
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                    placeholder='odoo_db'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-300 mb-2'>
+                    Odoo Company
+                  </label>
+                  <select
+                    value={formData.odoo_company_id || ''}
+                    onChange={e => {
+                      const companyId = parseInt(e.target.value);
+                      const company =
+                        OdooCompanyService.getCompanyById(companyId);
+                      setFormData({
+                        ...formData,
+                        odoo_company_id: companyId,
+                        odoo_company_name: company?.name || '',
+                      });
+                    }}
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 transition-colors'
+                  >
+                    <option value=''>Şirket seçin</option>
+                    {OdooCompanyService.getFormattedOptions().map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-300 mb-2'>
+                    Username
+                  </label>
+                  <input
+                    type='text'
+                    value={odooConfig.username}
+                    onChange={e =>
+                      setOdooConfig({ ...odooConfig, username: e.target.value })
+                    }
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                    placeholder='omer@nsl.com.tr'
+                  />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-300 mb-2'>
+                    Password
+                  </label>
+                  <input
+                    type='password'
+                    value={odooConfig.password}
+                    onChange={e =>
+                      setOdooConfig({ ...odooConfig, password: e.target.value })
+                    }
+                    className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors'
+                    placeholder='••••••••'
+                  />
+                </div>
+              </div>
+
+              <div className='flex justify-end'>
+                <button
+                  type='button'
+                  onClick={handleTestOdooConnection}
+                  disabled={
+                    testingConnection || !odooConfig.url || !odooConfig.db
+                  }
+                  className='px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center space-x-2'
+                >
+                  <i className='ri-test-tube-line'></i>
+                  <span>Bağlantıyı Test Et</span>
+                </button>
+              </div>
             </div>
           </div>
 

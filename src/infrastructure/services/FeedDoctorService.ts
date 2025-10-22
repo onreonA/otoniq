@@ -159,12 +159,62 @@ export class FeedDoctorService {
 
       // Run analysis
       const analysis = await this.runAnalysis(product, rules || []);
+      console.log('🔍 Analysis completed:', analysis);
+      console.log(
+        '🔍 Analysis Result before saving (overallScore):',
+        analysis.overallScore
+      );
 
       // Save analysis results
-      const { data: savedAnalysis, error: saveError } = await supabase
+      console.log('💾 Saving analysis for product:', productId);
+
+      // First, check if analysis already exists
+      const { data: existingAnalysis } = await supabase
         .from('feed_analysis')
-        .upsert(
-          {
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .eq('product_id', productId)
+        .single();
+
+      let savedAnalysis, saveError;
+
+      if (existingAnalysis) {
+        // Update existing analysis
+        console.log('🔄 Updating existing analysis:', existingAnalysis.id);
+        const result = await supabase
+          .from('feed_analysis')
+          .update({
+            overall_score: analysis.overallScore,
+            title_score: analysis.titleScore,
+            description_score: analysis.descriptionScore,
+            image_score: analysis.imageScore,
+            category_score: analysis.categoryScore,
+            price_score: analysis.priceScore,
+            analysis_data: analysis.analysisData,
+            issues: analysis.issues,
+            suggestions: analysis.suggestions,
+            optimized_title: analysis.optimizedTitle,
+            optimized_description: analysis.optimizedDescription,
+            optimized_keywords: analysis.optimizedKeywords,
+            status: 'completed',
+            analyzed_at: new Date().toISOString(),
+          })
+          .eq('id', existingAnalysis.id)
+          .select()
+          .single();
+
+        savedAnalysis = result.data;
+        saveError = result.error;
+        console.log(
+          '💾 Saved/Updated Analysis Data (overall_score):',
+          result.data?.overall_score
+        );
+      } else {
+        // Insert new analysis
+        console.log('➕ Creating new analysis');
+        const result = await supabase
+          .from('feed_analysis')
+          .insert({
             tenant_id: tenantId,
             product_id: productId,
             overall_score: analysis.overallScore,
@@ -181,13 +231,19 @@ export class FeedDoctorService {
             optimized_keywords: analysis.optimizedKeywords,
             status: 'completed',
             analyzed_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'tenant_id,product_id',
-          }
-        )
-        .select()
-        .single();
+          })
+          .select()
+          .single();
+
+        savedAnalysis = result.data;
+        saveError = result.error;
+        console.log(
+          '💾 Saved/Created Analysis Data (overall_score):',
+          result.data?.overall_score
+        );
+      }
+
+      console.log('💾 Save result:', { savedAnalysis, saveError });
 
       if (saveError) throw saveError;
 
@@ -235,7 +291,7 @@ export class FeedDoctorService {
           description: product.description || '',
           category: product.category_id,
           price: product.price,
-          images: product.images || [],
+          images: [], // Images not available in current schema
           currentTags: product.tags || [],
         });
 
@@ -262,8 +318,42 @@ export class FeedDoctorService {
       }
     }
 
-    // Fallback to rule-based analysis or combine with AI
-    if (!aiAnalysis) {
+    // Use AI analysis if available, otherwise fallback to rule-based
+    if (aiAnalysis) {
+      // Use AI analysis results
+      return {
+        tenantId: product.tenant_id,
+        productId: product.id,
+        overallScore: aiAnalysis.score,
+        titleScore: aiAnalysis.seoScore.titleScore,
+        descriptionScore: aiAnalysis.seoScore.descriptionScore,
+        imageScore: 50, // Images not available in current schema
+        categoryScore: 70, // Default category score
+        priceScore: 80, // Default price score
+        analysisData: {
+          productName: product.name,
+          analyzedFields: [
+            'title',
+            'description',
+            'images',
+            'category',
+            'price',
+          ],
+          rulesApplied: rules.length,
+          aiModel: 'gpt-4',
+          analysisDate: new Date().toISOString(),
+        },
+        issues: issues,
+        suggestions: suggestions,
+        optimizedTitle: aiAnalysis.optimizations.suggestedTitle || product.name,
+        optimizedDescription:
+          aiAnalysis.optimizations.suggestedDescription || product.description,
+        optimizedKeywords: aiAnalysis.optimizations.suggestedKeywords || [],
+        status: 'completed',
+        analyzed_at: new Date().toISOString(),
+      };
+    } else {
+      // Fallback to rule-based analysis
       // Analyze title
       const titleAnalysis = this.analyzeTitle(product.name || '', rules);
       issues.push(...titleAnalysis.issues);
@@ -277,8 +367,8 @@ export class FeedDoctorService {
       issues.push(...descAnalysis.issues);
       suggestions.push(...descAnalysis.suggestions);
 
-      // Analyze images
-      const imageAnalysis = this.analyzeImages(product.images || [], rules);
+      // Analyze images (not available in current schema)
+      const imageAnalysis = this.analyzeImages([], rules);
       issues.push(...imageAnalysis.issues);
       suggestions.push(...imageAnalysis.suggestions);
 
@@ -342,7 +432,7 @@ export class FeedDoctorService {
       overallScore: aiAnalysis.score,
       titleScore: aiAnalysis.seoScore.titleScore,
       descriptionScore: aiAnalysis.seoScore.descriptionScore,
-      imageScore: product.images?.length >= 3 ? 85 : 50,
+      imageScore: 50, // Images not available in current schema
       categoryScore: product.category_id ? 90 : 40,
       priceScore: product.price ? 80 : 30,
       analysisData: {
@@ -699,28 +789,25 @@ export class FeedDoctorService {
    */
   static async getAnalyses(tenantId: string): Promise<FeedAnalysis[]> {
     try {
+      console.log('🔍 Fetching analyses for tenant:', tenantId);
+
       const { data, error } = await supabase
         .from('feed_analysis')
-        .select(
-          `
-          *,
-          products (
-            name,
-            sku,
-            images
-          )
-        `
-        )
+        .select('*')
         .eq('tenant_id', tenantId)
-        .order('analyzed_at', { ascending: false });
+        .order('created_at', { ascending: false });
+
+      console.log('📊 Raw analysis data:', data);
+      console.log('❌ Error (if any):', error);
 
       if (error) throw error;
 
-      return (data || []).map(this.mapToFeedAnalysis);
+      const mappedData = (data || []).map(this.mapToFeedAnalysis);
+      console.log('✅ Mapped analyses:', mappedData);
+
+      return mappedData;
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Error getting analyses:', error);
-      }
+      console.error('❌ Error getting analyses:', error);
       throw error;
     }
   }
@@ -779,6 +866,46 @@ export class FeedDoctorService {
     }
 
     return { succeeded, failed, errors };
+  }
+
+  /**
+   * Get analysis by ID
+   */
+  static async getAnalysisById(
+    tenantId: string,
+    analysisId: string
+  ): Promise<FeedAnalysis | null> {
+    try {
+      const { data, error } = await supabase
+        .from('feed_analysis')
+        .select(
+          `
+          *,
+          products:product_id (
+            id,
+            name,
+            description,
+            price,
+            category_id
+          )
+        `
+        )
+        .eq('tenant_id', tenantId)
+        .eq('id', analysisId)
+        .single();
+
+      if (error) {
+        console.error('❌ Error fetching analysis:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return this.mapToFeedAnalysis(data);
+    } catch (error) {
+      console.error('❌ Error in getAnalysisById:', error);
+      return null;
+    }
   }
 
   /**

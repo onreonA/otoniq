@@ -15,6 +15,8 @@ export default function ProductManagement() {
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStock, setFilterStock] = useState('all');
+
+  // Removed Odoo integration states - products page only manages local products
   const [filterPriceRange, setFilterPriceRange] = useState({
     min: '',
     max: '',
@@ -79,6 +81,8 @@ export default function ProductManagement() {
     }
   };
 
+  // Removed Odoo product loading - this page only manages local products
+
   // İlk yükleme ve filtre değişikliklerinde yükle
   useEffect(() => {
     loadProducts();
@@ -96,6 +100,8 @@ export default function ProductManagement() {
     filterDateRange.to,
     currentPage,
   ]);
+
+  // Removed Odoo product loading useEffect
 
   // Filtreleme
   const filteredProducts = products.filter(product => {
@@ -516,6 +522,8 @@ export default function ProductManagement() {
             </button>
           </div>
 
+          {/* Removed Odoo Product Type Filters - this page only manages local products */}
+
           {/* Advanced Filters */}
           {showAdvancedFilters && (
             <div className='border-t border-white/10 pt-4'>
@@ -723,6 +731,8 @@ export default function ProductManagement() {
           )}
         </div>
 
+        {/* Removed Odoo Products Table - this page only manages local products */}
+
         {/* Products Table */}
         <div className='bg-black/20 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden'>
           <div className='overflow-x-auto'>
@@ -905,7 +915,7 @@ export default function ProductManagement() {
           {/* Pagination */}
           <div className='p-4 border-t border-white/10 flex items-center justify-between'>
             <div className='text-gray-400 text-sm'>
-              {filteredProducts.length} ürün gösteriliyor
+              {products.length} ürün bulundu
             </div>
             <div className='flex space-x-2'>
               <button
