@@ -18,7 +18,7 @@ export function initSentry() {
 
     // Performance Monitoring
     integrations: [
-      new Sentry.BrowserTracing({
+      Sentry.browserTracingIntegration({
         // Set sample rate to 1.0 to capture 100% of transactions
         // Reduce in production if needed
         tracePropagationTargets: [
@@ -27,7 +27,7 @@ export function initSentry() {
           /^https:\/\/.*\.vercel\.app/,
         ],
       }),
-      new Sentry.Replay({
+      Sentry.replayIntegration({
         // Session Replay for debugging
         maskAllText: true,
         blockAllMedia: true,
