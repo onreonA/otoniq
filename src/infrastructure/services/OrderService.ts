@@ -124,125 +124,74 @@ export class OrderService {
   /**
    * Create a new order
    */
-  async createOrder(request: CreateOrderRequest): Promise<CreateOrderResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.createOrder error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+  async createOrder(_request: CreateOrderRequest): Promise<CreateOrderResponse> {
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      error: 'Not implemented yet',
+    };
   }
 
   /**
    * Update order status
    */
   async updateOrderStatus(
-    request: UpdateOrderStatusRequest
+    _request: UpdateOrderStatusRequest
   ): Promise<UpdateOrderStatusResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.updateOrderStatus error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      error: 'Not implemented yet',
+    };
   }
 
   /**
    * Get orders with filters
    */
   async getOrders(request: GetOrdersRequest): Promise<GetOrdersResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: true,
-        orders: [],
-        total: 0,
-        page: request.page || 1,
-        limit: request.limit || 10,
-      };
-    } catch (error) {
-      console.error('OrderService.getOrders error:', error);
-      return {
-        success: false,
-        orders: [],
-        total: 0,
-        page: request.page || 1,
-        limit: request.limit || 10,
-      };
-    }
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: true,
+      orders: [],
+      total: 0,
+      page: request.page || 1,
+      limit: request.limit || 10,
+    };
   }
 
   /**
    * Get single order
    */
-  async getOrder(request: GetOrderRequest): Promise<GetOrderResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.getOrder error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+  async getOrder(_request: GetOrderRequest): Promise<GetOrderResponse> {
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      error: 'Not implemented yet',
+    };
   }
 
   /**
    * Cancel order
    */
-  async cancelOrder(request: CancelOrderRequest): Promise<CancelOrderResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.cancelOrder error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+  async cancelOrder(_request: CancelOrderRequest): Promise<CancelOrderResponse> {
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      error: 'Not implemented yet',
+    };
   }
 
   /**
    * Process refund
    */
   async processRefund(
-    request: ProcessRefundRequest
+    _request: ProcessRefundRequest
   ): Promise<ProcessRefundResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.processRefund error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      error: 'Not implemented yet',
+    };
   }
 
   /**
@@ -260,7 +209,7 @@ export class OrderService {
   /**
    * Get order statistics - Mock implementation for now
    */
-  async getOrderStatistics(tenantId: string, dateFrom?: Date, dateTo?: Date) {
+  async getOrderStatistics(_tenantId: string, _dateFrom?: Date, _dateTo?: Date) {
     // Mock data for now - will be implemented with proper use cases later
     return {
       totalOrders: 0,
@@ -288,64 +237,39 @@ export class OrderService {
    * Sync orders from marketplace
    */
   async syncOrdersFromMarketplace(
-    request: SyncOrdersFromMarketplaceRequest
+    _request: SyncOrdersFromMarketplaceRequest
   ): Promise<SyncOrdersFromMarketplaceResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        syncedCount: 0,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.syncOrdersFromMarketplace error:', error);
-      return {
-        success: false,
-        syncedCount: 0,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      syncedCount: 0,
+      error: 'Not implemented yet',
+    };
   }
 
   /**
    * Sync order status to marketplace
    */
   async syncOrderStatusToMarketplace(
-    request: SyncOrderStatusToMarketplaceRequest
+    _request: SyncOrderStatusToMarketplaceRequest
   ): Promise<SyncOrderStatusToMarketplaceResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.syncOrderStatusToMarketplace error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      error: 'Not implemented yet',
+    };
   }
 
   /**
    * Sync order to Odoo
    */
   async syncOrderToOdoo(
-    request: SyncOrderToOdooRequest
+    _request: SyncOrderToOdooRequest
   ): Promise<SyncOrderToOdooResponse> {
-    try {
-      // Mock implementation - will be replaced with proper use case
-      return {
-        success: false,
-        error: 'Not implemented yet',
-      };
-    } catch (error) {
-      console.error('OrderService.syncOrderToOdoo error:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      };
-    }
+    // Mock implementation - will be replaced with proper use case
+    return {
+      success: false,
+      error: 'Not implemented yet',
+    };
   }
 }
