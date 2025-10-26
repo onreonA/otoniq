@@ -424,33 +424,6 @@ export class FeedDoctorService {
         status: 'completed',
       };
     }
-
-    // If we reach here without returning, use AI analysis results
-    const aiResult = {
-      tenantId: product.tenant_id,
-      productId: product.id,
-      overallScore: aiAnalysis.score,
-      titleScore: aiAnalysis.seoScore.titleScore,
-      descriptionScore: aiAnalysis.seoScore.descriptionScore,
-      imageScore: 50, // Images not available in current schema
-      categoryScore: product.category_id ? 90 : 40,
-      priceScore: product.price ? 80 : 30,
-      analysisData: {
-        productName: product.name,
-        analyzedFields: ['title', 'description', 'images', 'category', 'price'],
-        rulesApplied: rules.length,
-        aiPowered: true,
-        marketInsights: aiAnalysis.marketInsights,
-      },
-      issues,
-      suggestions,
-      optimizedTitle: aiAnalysis.optimizations.suggestedTitle,
-      optimizedDescription: aiAnalysis.optimizations.suggestedDescription,
-      optimizedKeywords: aiAnalysis.optimizations.suggestedKeywords || [],
-      status: 'completed',
-    };
-
-    return aiResult;
   }
 
   /**
