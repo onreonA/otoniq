@@ -425,8 +425,8 @@ export class FeedDoctorService {
       };
     }
 
-    // Use AI analysis results
-    return {
+    // If we reach here without returning, use AI analysis results
+    const aiResult = {
       tenantId: product.tenant_id,
       productId: product.id,
       overallScore: aiAnalysis.score,
@@ -449,6 +449,8 @@ export class FeedDoctorService {
       optimizedKeywords: aiAnalysis.optimizations.suggestedKeywords || [],
       status: 'completed',
     };
+
+    return aiResult;
   }
 
   /**
