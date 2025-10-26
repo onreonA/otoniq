@@ -646,54 +646,49 @@ export class TemplateMarketplaceService {
       templateCount: number;
     }>
   > {
-    try {
-      // Mock data for now - will be replaced with real database calls
-      return [
-        {
-          id: '1',
-          name: 'E-commerce',
-          description: 'E-commerce and online store automation',
-          icon: 'ri-store-line',
-          color: '#3B82F6',
-          templateCount: 45,
-        },
-        {
-          id: '2',
-          name: 'Customer Support',
-          description: 'Customer support and service automation',
-          icon: 'ri-customer-service-line',
-          color: '#10B981',
-          templateCount: 32,
-        },
-        {
-          id: '3',
-          name: 'Data Integration',
-          description: 'Data sync and integration workflows',
-          icon: 'ri-database-line',
-          color: '#F59E0B',
-          templateCount: 28,
-        },
-        {
-          id: '4',
-          name: 'Marketing',
-          description: 'Marketing automation and campaigns',
-          icon: 'ri-marketing-line',
-          color: '#EF4444',
-          templateCount: 23,
-        },
-        {
-          id: '5',
-          name: 'HR & Admin',
-          description: 'Human resources and administration',
-          icon: 'ri-user-line',
-          color: '#8B5CF6',
-          templateCount: 18,
-        },
-      ];
-    } catch (error) {
-      console.error('Get template categories error:', error);
-      throw error;
-    }
+    // Mock data for now - will be replaced with real database calls
+    return [
+      {
+        id: '1',
+        name: 'E-commerce',
+        description: 'E-commerce and online store automation',
+        icon: 'ri-store-line',
+        color: '#3B82F6',
+        templateCount: 45,
+      },
+      {
+        id: '2',
+        name: 'Customer Support',
+        description: 'Customer support and service automation',
+        icon: 'ri-customer-service-line',
+        color: '#10B981',
+        templateCount: 32,
+      },
+      {
+        id: '3',
+        name: 'Data Integration',
+        description: 'Data sync and integration workflows',
+        icon: 'ri-database-line',
+        color: '#F59E0B',
+        templateCount: 28,
+      },
+      {
+        id: '4',
+        name: 'Marketing',
+        description: 'Marketing automation and campaigns',
+        icon: 'ri-marketing-line',
+        color: '#EF4444',
+        templateCount: 23,
+      },
+      {
+        id: '5',
+        name: 'HR & Admin',
+        description: 'Human resources and administration',
+        icon: 'ri-user-line',
+        color: '#8B5CF6',
+        templateCount: 18,
+      },
+    ];
   }
 
   /**

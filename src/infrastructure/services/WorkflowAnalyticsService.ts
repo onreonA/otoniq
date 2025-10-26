@@ -146,19 +146,14 @@ export class WorkflowAnalyticsService {
   async getWorkflowHealthScore(
     workflowId: string
   ): Promise<WorkflowHealthScore> {
-    try {
-      // Mock data for now - will be replaced with real RPC calls
-      return {
-        overallScore: 87.5,
-        performanceScore: 92.0,
-        reliabilityScore: 95.0,
-        efficiencyScore: 85.0,
-        costScore: 78.0,
-      };
-    } catch (error) {
-      console.error('Get workflow health score error:', error);
-      throw error;
-    }
+    // Mock data for now - will be replaced with real RPC calls
+    return {
+      overallScore: 87.5,
+      performanceScore: 92.0,
+      reliabilityScore: 95.0,
+      efficiencyScore: 85.0,
+      costScore: 78.0,
+    };
   }
 
   /**
@@ -383,20 +378,15 @@ export class WorkflowAnalyticsService {
     totalCost: number;
     healthScore: number;
   }> {
-    try {
-      // This would be implemented with proper aggregation queries
-      // For now, returning mock data
-      return {
-        totalWorkflows: 12,
-        totalExecutions: 1547,
-        avgSuccessRate: 94.2,
-        totalCost: 245.67,
-        healthScore: 87.5,
-      };
-    } catch (error) {
-      console.error('Get tenant analytics summary error:', error);
-      throw error;
-    }
+    // This would be implemented with proper aggregation queries
+    // For now, returning mock data
+    return {
+      totalWorkflows: 12,
+      totalExecutions: 1547,
+      avgSuccessRate: 94.2,
+      totalCost: 245.67,
+      healthScore: 87.5,
+    };
   }
 
   /**
