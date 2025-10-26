@@ -81,9 +81,7 @@ export interface CreatePlanRequest {
   badge_color?: string;
 }
 
-export interface UpdatePlanRequest extends Partial<CreatePlanRequest> {
-  // Additional fields can be added here as needed
-}
+export type UpdatePlanRequest = Partial<CreatePlanRequest>;
 
 export interface CreateSubscriptionRequest {
   tenant_id: string;

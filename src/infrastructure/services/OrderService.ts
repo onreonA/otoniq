@@ -123,32 +123,27 @@ export class OrderService {
    * Get order statistics - Mock implementation for now
    */
   async getOrderStatistics(tenantId: string, dateFrom?: Date, dateTo?: Date) {
-    try {
-      // Mock data for now - will be implemented with proper use cases later
-      return {
-        totalOrders: 0,
-        totalRevenue: 0,
-        averageOrderValue: 0,
-        ordersByStatus: {
-          pending: 0,
-          processing: 0,
-          shipped: 0,
-          delivered: 0,
-          cancelled: 0,
-          refunded: 0,
-        },
-        ordersByPaymentStatus: {
-          pending: 0,
-          paid: 0,
-          failed: 0,
-          refunded: 0,
-          partially_refunded: 0,
-        },
-      };
-    } catch (error) {
-      console.error('OrderService.getOrderStatistics error:', error);
-      throw error;
-    }
+    // Mock data for now - will be implemented with proper use cases later
+    return {
+      totalOrders: 0,
+      totalRevenue: 0,
+      averageOrderValue: 0,
+      ordersByStatus: {
+        pending: 0,
+        processing: 0,
+        shipped: 0,
+        delivered: 0,
+        cancelled: 0,
+        refunded: 0,
+      },
+      ordersByPaymentStatus: {
+        pending: 0,
+        paid: 0,
+        failed: 0,
+        refunded: 0,
+        partially_refunded: 0,
+      },
+    };
   }
 
   /**
